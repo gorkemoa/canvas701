@@ -1,6 +1,7 @@
+import 'package:canvas701/canvas701/theme/canvas701_theme_data.dart';
+import 'package:canvas701/canvas701/view/product/product_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../theme/theme.dart';
 import '../../api/dummy_data.dart';
 import '../../model/model.dart';
 import '../widgets/widgets.dart';
@@ -92,7 +93,6 @@ class HomePage extends StatelessWidget {
           ),
         ],
       ),
-      bottomNavigationBar: _buildBottomNav(),
     );
   }
 
@@ -298,10 +298,10 @@ class HomePage extends StatelessWidget {
           return ProductCard(
             product: product,
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('${product.name} detayına git'),
-                  duration: const Duration(seconds: 1),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ProductDetailPage(product: product),
                 ),
               );
             },
@@ -324,49 +324,6 @@ class HomePage extends StatelessWidget {
             },
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildBottomNav() {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Canvas701Colors.surface,
-        border: Border(top: BorderSide(color: Canvas701Colors.divider)),
-      ),
-      child: SafeArea(
-        child: BottomNavigationBar(
-          currentIndex: 0,
-          selectedItemColor: Canvas701Colors.primary,
-          unselectedItemColor: Canvas701Colors.textTertiary,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
-              activeIcon: Icon(Icons.home),
-              label: 'Ana Sayfa',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.grid_view_outlined),
-              activeIcon: Icon(Icons.grid_view),
-              label: 'Kategoriler',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.favorite_outline),
-              activeIcon: Icon(Icons.favorite),
-              label: 'Favoriler',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.shopping_bag_outlined),
-              activeIcon: Icon(Icons.shopping_bag),
-              label: 'Sepet',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              activeIcon: Icon(Icons.person),
-              label: 'Profil',
-            ),
-          ],
-        ),
       ),
     );
   }

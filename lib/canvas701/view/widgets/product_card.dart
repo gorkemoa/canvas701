@@ -1,7 +1,7 @@
+import 'package:canvas701/canvas701/theme/canvas701_theme_data.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../model/model.dart';
-import '../../theme/theme.dart';
 
 /// Canvas701 Ürün Kartı Widget
 /// 
