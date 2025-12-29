@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../theme/theme.dart';
 import '../../api/dummy_data.dart';
 import '../../model/model.dart';
@@ -19,11 +20,7 @@ class HomePage extends StatelessWidget {
             floating: true,
             backgroundColor: Canvas701Colors.surface,
             elevation: 0,
-            title: Image.asset(  
-
-              'assets/logo.png',
-              height: 32,
-            ),
+            title: Image.asset('assets/logo.png', height: 32),
             centerTitle: true,
             leading: IconButton(
               icon: const Icon(Icons.search, color: Canvas701Colors.primary),
@@ -33,13 +30,19 @@ class HomePage extends StatelessWidget {
             ),
             actions: [
               IconButton(
-                icon: const Icon(Icons.favorite_outline, color: Canvas701Colors.primary),
+                icon: const Icon(
+                  Icons.favorite_outline,
+                  color: Canvas701Colors.primary,
+                ),
                 onPressed: () {
                   // TODO: Favorites
                 },
               ),
               IconButton(
-                icon: const Icon(Icons.shopping_bag_outlined, color: Canvas701Colors.primary),
+                icon: const Icon(
+                  Icons.shopping_bag_outlined,
+                  color: Canvas701Colors.primary,
+                ),
                 onPressed: () {
                   // TODO: Cart
                 },
@@ -48,22 +51,16 @@ class HomePage extends StatelessWidget {
           ),
 
           // Hero Banner
-          SliverToBoxAdapter(
-            child: _buildHeroBanner(),
-          ),
+          SliverToBoxAdapter(child: _buildHeroBanner()),
 
           // USP Bar
-          SliverToBoxAdapter(
-            child: _buildUSPBar(),
-          ),
+          SliverToBoxAdapter(child: _buildUSPBar()),
 
           // Categories Section
           SliverToBoxAdapter(
             child: _buildSectionHeader('Kategoriler', onSeeAll: () {}),
           ),
-          SliverToBoxAdapter(
-            child: _buildCategoriesGrid(),
-          ),
+          SliverToBoxAdapter(child: _buildCategoriesGrid()),
 
           // Bestsellers Section
           SliverToBoxAdapter(
@@ -106,7 +103,7 @@ class HomePage extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: Canvas701Radius.cardRadius,
         image: const DecorationImage(
-          image: AssetImage('assets/hero_banner.jpg'),
+          image: NetworkImage('https://picsum.photos/seed/hero/800/400'),
           fit: BoxFit.cover,
         ),
       ),
@@ -124,31 +121,32 @@ class HomePage extends StatelessWidget {
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 12,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w900,
                     letterSpacing: 2,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black54,
+                        offset: Offset(0, 1),
+                        blurRadius: 12,
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: Canvas701Spacing.xs),
-                const Text(
+                Text(
                   'Evinize Sanat Katın',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 24,
                     fontWeight: FontWeight.w700,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withOpacity(0.7),
+                        offset: const Offset(0, 2),
+                        blurRadius: 14,
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: Canvas701Spacing.md),
-                ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Canvas701Colors.primary,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: Canvas701Spacing.lg,
-                      vertical: Canvas701Spacing.sm,
-                    ),
-                  ),
-                  child: const Text('Keşfet'),
                 ),
               ],
             ),
@@ -177,10 +175,7 @@ class HomePage extends StatelessWidget {
       children: [
         Icon(icon, size: 24, color: Canvas701Colors.textSecondary),
         const SizedBox(height: Canvas701Spacing.xs),
-        Text(
-          text,
-          style: Canvas701Typography.labelSmall,
-        ),
+        Text(text, style: Canvas701Typography.labelSmall),
       ],
     );
   }
@@ -198,10 +193,7 @@ class HomePage extends StatelessWidget {
         children: [
           Text(title, style: Canvas701Typography.headlineSmall),
           if (onSeeAll != null)
-            TextButton(
-              onPressed: onSeeAll,
-              child: const Text('Tümü'),
-            ),
+            TextButton(onPressed: onSeeAll, child: const Text('Tümü')),
         ],
       ),
     );
@@ -227,41 +219,6 @@ class HomePage extends StatelessWidget {
   }
 
   Widget _buildCategoryItem(Category category) {
-    // Kategori ikonları
-    final categoryIcons = {
-      'Araba': Icons.directions_car,
-      'Atatürk': Icons.account_balance,
-      'Büst & Heykel': Icons.palette,
-      'Deniz Canlıları': Icons.waves,
-      'Dini': Icons.mosque,
-      'Dizi & Film & Karakterler': Icons.movie,
-      'Doğa & Hayvan': Icons.nature,
-      'Kış': Icons.ac_unit,
-      'Manzara': Icons.landscape,
-      'Marka': Icons.local_offer,
-      'Melek': Icons.auto_awesome,
-      'Minimalist': Icons.minimize,
-      'Motorsiklet': Icons.two_wheeler,
-      'Mutfak': Icons.restaurant,
-      'Neon & Yazı': Icons.lightbulb,
-      'Nu': Icons.brush,
-      'Oyun': Icons.sports_esports,
-      'Perspektif': Icons.view_in_ar,
-      'Popart': Icons.color_lens,
-      'Siyah Beyaz': Icons.contrast,
-      'Spor': Icons.sports_soccer,
-      'Sürrealist': Icons.psychology,
-      'Şehir': Icons.location_city,
-      'Tarih': Icons.history_edu,
-      'Teknoloji': Icons.computer,
-      'Türkçülük': Icons.flag,
-      'Ünlü Tablolar': Icons.museum,
-      'Ünlü Sanatçı': Icons.person,
-      'Uzay': Icons.rocket_launch,
-      'Vintage': Icons.camera_roll,
-      'Yeşilçam': Icons.video_library,
-    };
-    
     return GestureDetector(
       onTap: () {
         // TODO: Navigate to category
@@ -273,16 +230,43 @@ class HomePage extends StatelessWidget {
             height: 70,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Canvas701Colors.primary.withOpacity(0.1),
-              border: Border.all(
-                color: Canvas701Colors.primary.withOpacity(0.3),
-                width: 2,
-              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-            child: Icon(
-              categoryIcons[category.name] ?? Icons.image,
-              size: 32,
-              color: Canvas701Colors.primary,
+            child: ClipOval(
+              child: CachedNetworkImage(
+                imageUrl: category.imageUrl ?? '',
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Container(
+                  color: Canvas701Colors.surfaceVariant,
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: Canvas701Colors.accent,
+                      strokeWidth: 2,
+                    ),
+                  ),
+                ),
+                errorWidget: (context, url, error) => Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Canvas701Colors.primary.withOpacity(0.1),
+                    border: Border.all(
+                      color: Canvas701Colors.primary.withOpacity(0.3),
+                      width: 2,
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.image_outlined,
+                    size: 32,
+                    color: Canvas701Colors.primary,
+                  ),
+                ),
+              ),
             ),
           ),
           const SizedBox(height: Canvas701Spacing.xs),
@@ -326,10 +310,7 @@ class HomePage extends StatelessWidget {
                 SnackBar(
                   content: Text('${product.name} sepete eklendi!'),
                   duration: const Duration(seconds: 2),
-                  action: SnackBarAction(
-                    label: 'Geri Al',
-                    onPressed: () {},
-                  ),
+                  action: SnackBarAction(label: 'Geri Al', onPressed: () {}),
                 ),
               );
             },
@@ -351,9 +332,7 @@ class HomePage extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         color: Canvas701Colors.surface,
-        border: Border(
-          top: BorderSide(color: Canvas701Colors.divider),
-        ),
+        border: Border(top: BorderSide(color: Canvas701Colors.divider)),
       ),
       child: SafeArea(
         child: BottomNavigationBar(
