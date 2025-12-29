@@ -20,6 +20,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   late ProductSize _selectedSize;
   int _quantity = 1;
   bool _isFavorite = false;
+  int _activeTabIndex = 0;
 
   @override
   void initState() {
@@ -404,49 +405,130 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   Widget _buildDescription() {
-    return DefaultTabController(
-      length: 3,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const TabBar(
-            labelColor: Canvas701Colors.primary,
-            unselectedLabelColor: Canvas701Colors.textTertiary,
-            indicatorColor: Canvas701Colors.primary,
-            labelStyle: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
-            tabs: [
-              Tab(text: 'Ürün Özellikleri'),
-              Tab(text: 'Teslimat'),
-              Tab(text: 'İade Koşulları'),
-            ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildTabItem(0, 'Ürün Özellikleri'),
+            _buildTabItem(1, 'Teslimat'),
+            _buildTabItem(2, 'İade Koşulları'),
+          ],
+        ),
+        const Divider(height: 1, thickness: 1, color: Canvas701Colors.divider),
+        const SizedBox(height: Canvas701Spacing.md),
+        _buildTabContent(),
+      ],
+    );
+  }
+
+  Widget _buildTabItem(int index, String title) {
+    final isActive = _activeTabIndex == index;
+    return GestureDetector(
+      onTap: () => setState(() => _activeTabIndex = index),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: Canvas701Spacing.md,
+          vertical: Canvas701Spacing.sm,
+        ),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: isActive ? Canvas701Colors.primary : Colors.transparent,
+              width: 2,
+            ),
           ),
-          SizedBox(
-            height: 200,
-            child: TabBarView(
+        ),
+        child: Text(
+          title,
+          style: TextStyle(
+            color: isActive ? Canvas701Colors.primary : Canvas701Colors.textTertiary,
+            fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+            fontSize: 13,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTabContent() {
+    switch (_activeTabIndex) {
+      case 0:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              widget.product.description,
+              style: Canvas701Typography.bodyMedium.copyWith(height: 1.6),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: Canvas701Spacing.md),
+            _buildBulletPoint('380 gr/m² %100 Pamuklu Kanvas Kumaş'),
+            _buildBulletPoint('HP Latex Mürekkep (Kokusuz ve Sağlıklı)'),
+            _buildBulletPoint('3cm Derinliğinde Fırınlanmış Ahşap Şase'),
+            _buildBulletPoint('Kenarlar Görselin Devamı Şeklinde Kaplanır'),
+          ],
+        );
+      case 1:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: Canvas701Spacing.md),
-                  child: Text(
-                    widget.product.description,
-                    style: Canvas701Typography.bodyMedium.copyWith(height: 1.6),
-                  ),
-                ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: Canvas701Spacing.md),
-                  child: Text(
-                    'Siparişleriniz 2-4 iş günü içerisinde kargoya teslim edilir. Tüm Türkiye\'ye ücretsiz kargo seçeneğimiz mevcuttur.',
-                    style: Canvas701Typography.bodyMedium,
-                  ),
-                ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: Canvas701Spacing.md),
-                  child: Text(
-                    'Ürününüzü teslim aldığınız tarihten itibaren 14 gün içerisinde iade edebilirsiniz. Kişiye özel ürünlerde iade kabul edilmemektedir.',
-                    style: Canvas701Typography.bodyMedium,
-                  ),
-                ),
+                const Icon(Icons.local_shipping_outlined, color: Canvas701Colors.primary, size: 20),
+                const SizedBox(width: Canvas701Spacing.sm),
+                Text('Hızlı ve Güvenli Teslimat', style: Canvas701Typography.titleSmall),
               ],
             ),
+            const SizedBox(height: Canvas701Spacing.sm),
+            Text(
+              'Siparişleriniz 2-4 iş günü içerisinde kargoya teslim edilir. Özel korumalı ambalajı ile hasarsız teslimat garantisi sunuyoruz.',
+              style: Canvas701Typography.bodyMedium.copyWith(height: 1.5),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        );
+      case 2:
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.assignment_return_outlined, color: Canvas701Colors.primary, size: 20),
+                const SizedBox(width: Canvas701Spacing.sm),
+                Text('Kolay İade Süreci', style: Canvas701Typography.titleSmall),
+              ],
+            ),
+            const SizedBox(height: Canvas701Spacing.sm),
+            Text(
+              'Ürününüzü teslim aldığınız tarihten itibaren 14 gün içerisinde iade edebilirsiniz. Kişiye özel hazırlanan ürünlerde (isimli vb.) iade kabul edilmemektedir.',
+              style: Canvas701Typography.bodyMedium.copyWith(height: 1.5),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        );
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  Widget _buildBulletPoint(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(top: 6),
+            child: Icon(Icons.circle, size: 6, color: Canvas701Colors.primary),
+          ),
+          const SizedBox(width: Canvas701Spacing.sm),
+          Flexible(
+            child: Text(text, style: Canvas701Typography.bodyMedium),
           ),
         ],
       ),
