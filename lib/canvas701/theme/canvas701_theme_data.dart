@@ -6,9 +6,9 @@ class Canvas701Colors {
   Canvas701Colors._();
 
   // Ana Renkler
-  static const Color primary = Color(0xFF79C47A); // Yeşil
-  static const Color secondary = Color(0xFF515455); // Koyu Gri
-  static const Color accent = Color(0xFF79C47A); // Yeşil (vurgu)
+  static const Color primary = Color(0xFFA63793); // Mor
+  static const Color secondary = Color(0xFF262422); // Koyu Gri
+  static const Color accent = Color(0xFFA63793); // Mor (vurgu)
 
   // Arka Plan
   static const Color background = Color(0xFFFAFAFA); // Çok açık gri
