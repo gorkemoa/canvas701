@@ -1,4 +1,4 @@
-package com.example.canvas701
+package com.office701.canvas701
 
 import io.flutter.embedding.android.FlutterActivity
 
