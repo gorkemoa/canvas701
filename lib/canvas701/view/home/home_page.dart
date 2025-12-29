@@ -19,31 +19,27 @@ class HomePage extends StatelessWidget {
             floating: true,
             backgroundColor: Canvas701Colors.surface,
             elevation: 0,
-            title: const Text(
-              'CANVAS701',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 2,
-                color: Canvas701Colors.primary,
-              ),
+            title: Image.asset(  
+
+              'assets/logo.png',
+              height: 32,
             ),
             centerTitle: true,
             leading: IconButton(
-              icon: const Icon(Icons.search),
+              icon: const Icon(Icons.search, color: Canvas701Colors.primary),
               onPressed: () {
                 // TODO: Search
               },
             ),
             actions: [
               IconButton(
-                icon: const Icon(Icons.favorite_outline),
+                icon: const Icon(Icons.favorite_outline, color: Canvas701Colors.primary),
                 onPressed: () {
                   // TODO: Favorites
                 },
               ),
               IconButton(
-                icon: const Icon(Icons.shopping_bag_outlined),
+                icon: const Icon(Icons.shopping_bag_outlined, color: Canvas701Colors.primary),
                 onPressed: () {
                   // TODO: Cart
                 },
@@ -109,14 +105,9 @@ class HomePage extends StatelessWidget {
       margin: const EdgeInsets.all(Canvas701Spacing.md),
       decoration: BoxDecoration(
         borderRadius: Canvas701Radius.cardRadius,
-        color: Canvas701Colors.primary,
         image: const DecorationImage(
-          image: NetworkImage('https://picsum.photos/seed/hero/800/400'),
+          image: AssetImage('assets/hero_banner.jpg'),
           fit: BoxFit.cover,
-          colorFilter: ColorFilter.mode(
-            Colors.black26,
-            BlendMode.darken,
-          ),
         ),
       ),
       child: Stack(
@@ -131,7 +122,7 @@ class HomePage extends StatelessWidget {
                 const Text(
                   'YENİ KOLEKSİYON',
                   style: TextStyle(
-                    color: Canvas701Colors.secondary,
+                    color: Colors.white,
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 2,
@@ -141,7 +132,7 @@ class HomePage extends StatelessWidget {
                 const Text(
                   'Evinize Sanat Katın',
                   style: TextStyle(
-                    color: Canvas701Colors.secondary,
+                    color: Colors.white,
                     fontSize: 24,
                     fontWeight: FontWeight.w700,
                   ),
@@ -150,7 +141,7 @@ class HomePage extends StatelessWidget {
                 ElevatedButton(
                   onPressed: () {},
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Canvas701Colors.secondary,
+                    backgroundColor: Colors.white,
                     foregroundColor: Canvas701Colors.primary,
                     padding: const EdgeInsets.symmetric(
                       horizontal: Canvas701Spacing.lg,
@@ -236,6 +227,41 @@ class HomePage extends StatelessWidget {
   }
 
   Widget _buildCategoryItem(Category category) {
+    // Kategori ikonları
+    final categoryIcons = {
+      'Araba': Icons.directions_car,
+      'Atatürk': Icons.account_balance,
+      'Büst & Heykel': Icons.palette,
+      'Deniz Canlıları': Icons.waves,
+      'Dini': Icons.mosque,
+      'Dizi & Film & Karakterler': Icons.movie,
+      'Doğa & Hayvan': Icons.nature,
+      'Kış': Icons.ac_unit,
+      'Manzara': Icons.landscape,
+      'Marka': Icons.local_offer,
+      'Melek': Icons.auto_awesome,
+      'Minimalist': Icons.minimize,
+      'Motorsiklet': Icons.two_wheeler,
+      'Mutfak': Icons.restaurant,
+      'Neon & Yazı': Icons.lightbulb,
+      'Nu': Icons.brush,
+      'Oyun': Icons.sports_esports,
+      'Perspektif': Icons.view_in_ar,
+      'Popart': Icons.color_lens,
+      'Siyah Beyaz': Icons.contrast,
+      'Spor': Icons.sports_soccer,
+      'Sürrealist': Icons.psychology,
+      'Şehir': Icons.location_city,
+      'Tarih': Icons.history_edu,
+      'Teknoloji': Icons.computer,
+      'Türkçülük': Icons.flag,
+      'Ünlü Tablolar': Icons.museum,
+      'Ünlü Sanatçı': Icons.person,
+      'Uzay': Icons.rocket_launch,
+      'Vintage': Icons.camera_roll,
+      'Yeşilçam': Icons.video_library,
+    };
+    
     return GestureDetector(
       onTap: () {
         // TODO: Navigate to category
@@ -247,19 +273,16 @@ class HomePage extends StatelessWidget {
             height: 70,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Canvas701Colors.surfaceVariant,
+              color: Canvas701Colors.primary.withOpacity(0.1),
               border: Border.all(
-                color: Canvas701Colors.border,
-                width: 1,
+                color: Canvas701Colors.primary.withOpacity(0.3),
+                width: 2,
               ),
             ),
-            child: Center(
-              child: Text(
-                category.name.substring(0, 1),
-                style: Canvas701Typography.headlineMedium.copyWith(
-                  color: Canvas701Colors.primary,
-                ),
-              ),
+            child: Icon(
+              categoryIcons[category.name] ?? Icons.image,
+              size: 32,
+              color: Canvas701Colors.primary,
             ),
           ),
           const SizedBox(height: Canvas701Spacing.xs),
@@ -335,6 +358,8 @@ class HomePage extends StatelessWidget {
       child: SafeArea(
         child: BottomNavigationBar(
           currentIndex: 0,
+          selectedItemColor: Canvas701Colors.primary,
+          unselectedItemColor: Canvas701Colors.textTertiary,
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.home_outlined),

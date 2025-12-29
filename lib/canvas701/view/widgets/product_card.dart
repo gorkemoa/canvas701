@@ -144,13 +144,15 @@ class ProductCard extends StatelessWidget {
               ),
               decoration: BoxDecoration(
                 color: product.isNew 
-                    ? Canvas701Colors.accent 
-                    : Canvas701Colors.primary,
+                    ? Canvas701Colors.primary 
+                    : Canvas701Colors.secondary,
                 borderRadius: BorderRadius.circular(Canvas701Radius.xs),
               ),
               child: Text(
                 product.isNew ? 'YENİ' : 'ÇOK SATAN',
-                style: Canvas701Typography.badge,
+                style: Canvas701Typography.badge.copyWith(
+                  color: Colors.white,
+                ),
               ),
             ),
           ),

@@ -6,9 +6,9 @@ class Canvas701Colors {
   Canvas701Colors._();
 
   // Ana Renkler
-  static const Color primary = Color(0xFF1A1A1A); // Koyu siyah
-  static const Color secondary = Color(0xFFFFFFFF); // Beyaz
-  static const Color accent = Color(0xFFD4AF37); // Altın
+  static const Color primary = Color(0xFF79C47A); // Yeşil
+  static const Color secondary = Color(0xFF515455); // Koyu Gri
+  static const Color accent = Color(0xFF79C47A); // Yeşil (vurgu)
 
   // Arka Plan
   static const Color background = Color(0xFFFAFAFA); // Çok açık gri
@@ -16,7 +16,7 @@ class Canvas701Colors {
   static const Color surfaceVariant = Color(0xFFF5F5F5); // Açık gri
 
   // Metin
-  static const Color textPrimary = Color(0xFF1A1A1A);
+  static const Color textPrimary = Color(0xFF515455);
   static const Color textSecondary = Color(0xFF6B6B6B);
   static const Color textTertiary = Color(0xFF9E9E9E);
   static const Color textOnPrimary = Color(0xFFFFFFFF);
@@ -33,9 +33,9 @@ class Canvas701Colors {
 
   // Özel Renkler
   static const Color favorite = Color(0xFFE91E63);
-  static const Color price = Color(0xFF1A1A1A);
+  static const Color price = Color(0xFF515455);
   static const Color discount = Color(0xFFD32F2F);
-  static const Color badge = Color(0xFFD4AF37);
+  static const Color badge = Color(0xFF79C47A);
 }
 
 /// Canvas701 Tipografi
