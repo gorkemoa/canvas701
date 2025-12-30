@@ -16,6 +16,7 @@ class ProductCard extends StatelessWidget {
   final VoidCallback? onTap;
   final VoidCallback? onAddToCart;
   final VoidCallback? onFavorite;
+  final bool isFavorite;
 
   const ProductCard({
     super.key,
@@ -23,6 +24,7 @@ class ProductCard extends StatelessWidget {
     this.onTap,
     this.onAddToCart,
     this.onFavorite,
+    this.isFavorite = false,
   });
 
   @override
@@ -171,10 +173,10 @@ class ProductCard extends StatelessWidget {
                 shape: BoxShape.circle,
                 boxShadow: const [Canvas701Shadows.subtle],
               ),
-              child: const Icon(
-                Icons.favorite_outline,
+              child: Icon(
+                isFavorite ? Icons.favorite : Icons.favorite_outline,
                 size: 16,
-                color: Canvas701Colors.textSecondary,
+                color: isFavorite ? Colors.red : Canvas701Colors.textSecondary,
               ),
             ),
           ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'home/home_page.dart';
 import 'categories/categories_page.dart';
+import 'favorites/favorites_page.dart';
 import 'widgets/widgets.dart';
 import '../../core/widgets/app_mode_switcher.dart';
 import '../theme/canvas701_theme_data.dart';
@@ -26,7 +27,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     _pages = [
       const HomePage(),
       const CategoriesPage(),
-      const _PlaceholderPage(title: 'Favoriler', icon: Icons.favorite),
+      const FavoritesPage(),
       const _PlaceholderPage(title: 'Sepet', icon: Icons.shopping_bag),
       const _PlaceholderPage(title: 'Profil', icon: Icons.person),
     ];

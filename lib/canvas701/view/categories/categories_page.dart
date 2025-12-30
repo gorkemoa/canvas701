@@ -65,43 +65,33 @@ class CategoriesPage extends StatelessWidget {
   }
 
   Widget _buildSearchBar(BuildContext context) {
-    return Padding(
+    return Container(
+      color: Canvas701Colors.primary,
       padding: const EdgeInsets.fromLTRB(
         Canvas701Spacing.md,
-        Canvas701Spacing.sm,
+        5,
         Canvas701Spacing.md,
         Canvas701Spacing.md,
       ),
       child: Container(
-        height: 50,
+        height: 35,
+        padding: const EdgeInsets.symmetric(horizontal: Canvas701Spacing.md),
         decoration: BoxDecoration(
-          color: Canvas701Colors.surface,
-          borderRadius: Canvas701Radius.buttonRadius,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(19),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.search, color: Canvas701Colors.primary, size: 20),
+            const SizedBox(width: Canvas701Spacing.sm),
+            Text(
+              'Ürün, kategori veya marka ara',
+              style: Canvas701Typography.bodyMedium.copyWith(
+                color: Colors.grey.shade500,
+                fontSize: 13,
+              ),
             ),
           ],
-          border: Border.all(color: Canvas701Colors.divider),
-        ),
-        child: TextField(
-          decoration: InputDecoration(
-            hintText: 'Sanat eseri veya kategori ara...',
-            hintStyle: Canvas701Typography.bodyMedium.copyWith(
-              color: Canvas701Colors.textTertiary,
-            ),
-            prefixIcon: const Icon(
-              Icons.search_rounded,
-              color: Canvas701Colors.primary,
-              size: 22,
-            ),
-            border: InputBorder.none,
-            enabledBorder: InputBorder.none,
-            focusedBorder: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(vertical: 12),
-          ),
         ),
       ),
     );
