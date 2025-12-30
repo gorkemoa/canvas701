@@ -145,7 +145,7 @@ class _HomePageState extends State<HomePage> {
             itemCount: _banners.length,
             itemBuilder: (context, index) {
               return Container(
-                margin: const EdgeInsets.symmetric(vertical: Canvas701Spacing.md),
+                margin: const EdgeInsets.only(bottom: Canvas701Spacing.md),
                 decoration: BoxDecoration(
                   image: DecorationImage(
                     image: NetworkImage(_banners[index]),
