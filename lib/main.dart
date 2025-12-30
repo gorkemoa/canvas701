@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 import 'core/app_mode.dart';
 import 'canvas701/view/main_navigation_page.dart';
+import 'creators/view/creators_home_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,25 +36,43 @@ class Canvas701App extends StatelessWidget {
     return MaterialApp(
       title: 'Canvas701',
       debugShowCheckedModeBanner: false,
-
-      // Canvas701 teması
       theme: Canvas701Theme.lightTheme,
+      home: ValueListenableBuilder<AppMode>(
+        valueListenable: appMode.modeNotifier,
+        builder: (context, currentMode, _) {
+          return AnimatedSwitcher(
+            duration: const Duration(milliseconds: 600),
+            switchInCurve: Curves.easeInOutQuart,
+            switchOutCurve: Curves.easeInOutQuart,
+            transitionBuilder: (Widget child, Animation<double> animation) {
+              final offsetAnimation = Tween<Offset>(
+                begin: const Offset(0.0, 0.05),
+                end: Offset.zero,
+              ).animate(animation);
 
-      // Başlangıç sayfası - mod'a göre
-      home: _buildHome(appMode.currentMode),
+              return FadeTransition(
+                opacity: animation,
+                child: SlideTransition(
+                  position: offsetAnimation,
+                  child: child,
+                ),
+              );
+            },
+            child: _buildHome(currentMode),
+          );
+        },
+      ),
     );
   }
 
   Widget _buildHome(AppMode mode) {
     switch (mode) {
       case AppMode.canvas:
-        return const MainNavigationPage();
+        return const MainNavigationPage(key: ValueKey('canvas'));
       case AppMode.creators:
-        // Creators henüz aktif değil, Canvas701'e yönlendir
-        return const MainNavigationPage();
+        return const CreatorsHomePage(key: ValueKey('creators'));
       case AppMode.hybrid:
-        // İleride: TabBar ile iki modül birlikte
-        return const MainNavigationPage();
+        return const MainNavigationPage(key: ValueKey('hybrid'));
     }
   }
 }

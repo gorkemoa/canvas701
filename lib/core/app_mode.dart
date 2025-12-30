@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 /// Uygulamanın hangi modda çalıştığını belirler.
 /// MVP'de sadece canvas modu aktif olacak.
 enum AppMode {
@@ -20,14 +22,19 @@ class AppModeManager {
   /// MVP'de sadece Canvas701 aktif
   AppMode _currentMode = AppMode.canvas;
 
+  /// ValueNotifier - UI'da mod değişimini dinlemek için
+  final modeNotifier = ValueNotifier<AppMode>(AppMode.canvas);
+
   AppMode get currentMode => _currentMode;
 
   bool get isCanvas => _currentMode == AppMode.canvas;
   bool get isCreators => _currentMode == AppMode.creators;
   bool get isHybrid => _currentMode == AppMode.hybrid;
 
-  /// Mod değiştirme (ileride kullanılacak)
+  /// Mod değiştirme - UI'yı günceller
   void setMode(AppMode mode) {
     _currentMode = mode;
+    modeNotifier.value = mode;
   }
 }
+
