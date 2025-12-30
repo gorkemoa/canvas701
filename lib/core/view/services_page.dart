@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../canvas701/theme/canvas701_theme_data.dart';
+import '../../canvas701/view/main_navigation_page.dart';
 import '../widgets/app_mode_switcher.dart';
 
 class ServicesPage extends StatefulWidget {
@@ -79,6 +80,46 @@ class _ServicesPageState extends State<ServicesPage> {
     super.dispose();
   }
 
+  Future<void> _showRedirectDialog(String url) async {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            Icon(Icons.info_outline, color: Color(0xFF3AAE81)),
+            SizedBox(width: 10),
+            Text('Bilgilendirme'),
+          ],
+        ),
+        content: const Text(
+          'Web sitemize yönlendiriliyorsunuz. Devam etmek istiyor musunuz?',
+          style: TextStyle(fontSize: 16),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('İptal', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _launchUrl(url);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF3AAE81),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text('Devam Et'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _launchUrl(String url) async {
     final Uri uri = Uri.parse(url);
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
@@ -123,7 +164,7 @@ class _ServicesPageState extends State<ServicesPage> {
                           itemBuilder: (context, index) {
                             final banner = _banners[index];
                             return GestureDetector(
-                              onTap: () => _launchUrl(banner['url']!),
+                              onTap: () => _showRedirectDialog(banner['url']!),
                               child: Container(
                                 decoration: BoxDecoration(
                                   image: DecorationImage(
@@ -242,14 +283,14 @@ class _ServicesPageState extends State<ServicesPage> {
                             Expanded(
                               child: _buildLargeServiceCard(
                                 assetPath: 'assets/logos/office701.png',
-                                url: 'https://office701.com',
+                                onTap: () => _showRedirectDialog('https://office701.com'),
                               ),
                             ),
                             const SizedBox(width: Canvas701Spacing.md),
                             Expanded(
                               child: _buildLargeServiceCard(
                                 assetPath: 'assets/logos/studios701.png',
-                                url: 'https://studios701.com',
+                                onTap: () => _showRedirectDialog('https://studios701.com'),
                               ),
                             ),
                           ],
@@ -272,19 +313,27 @@ class _ServicesPageState extends State<ServicesPage> {
                           children: [
                             _buildSmallServiceCard(
                               assetPath: 'assets/logos/Canvas701-Logo.png',
-                              url: 'https://canvas701.com',
+                              onTap: () {
+                                Navigator.pushAndRemoveUntil(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const MainNavigationPage(),
+                                  ),
+                                  (route) => false,
+                                );
+                              },
                             ),
                             _buildSmallServiceCard(
                               assetPath: 'assets/logos/market701.png',
-                              url: 'https://market701.com',
+                              onTap: () => _showRedirectDialog('https://market701.com'),
                             ),
                             _buildSmallServiceCard(
                               assetPath: 'assets/logos/35webtasarımizmir.png',
-                              url: 'https://35webtasarimizmir.com',
+                              onTap: () => _showRedirectDialog('https://35webtasarimizmir.com'),
                             ),
                             _buildSmallServiceCard(
                               assetPath: 'assets/logos/webtasarımatolye.png',
-                              url: 'https://webtasarimatolye.com',
+                              onTap: () => _showRedirectDialog('https://webtasarimatolye.com'),
                             ),
                           ],
                         ),
@@ -303,10 +352,10 @@ class _ServicesPageState extends State<ServicesPage> {
 
   Widget _buildLargeServiceCard({
     required String assetPath,
-    required String url,
+    required VoidCallback onTap,
   }) {
     return GestureDetector(
-      onTap: () => _launchUrl(url),
+      onTap: onTap,
       child: Container(
         height: 150,
         padding: const EdgeInsets.all(Canvas701Spacing.lg),
@@ -332,10 +381,10 @@ class _ServicesPageState extends State<ServicesPage> {
 
   Widget _buildSmallServiceCard({
     required String assetPath,
-    required String url,
+    required VoidCallback onTap,
   }) {
     return GestureDetector(
-      onTap: () => _launchUrl(url),
+      onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(Canvas701Spacing.md),
         decoration: BoxDecoration(
