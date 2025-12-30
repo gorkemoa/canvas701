@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'home/home_page.dart';
 import 'categories/categories_page.dart';
 import 'widgets/widgets.dart';
+import '../../core/widgets/app_mode_switcher.dart';
+import '../theme/canvas701_theme_data.dart';
 
 /// Canvas701 Ana Navigasyon Sayfası
 /// Bottom navigation ile tüm ana sayfaları yönetir
@@ -65,8 +67,12 @@ class _PlaceholderPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(title),
-        centerTitle: true,
+        backgroundColor: Canvas701Colors.primary,
+        elevation: 0,
+        toolbarHeight: 45,
+        titleSpacing: 0,
+        automaticallyImplyLeading: false,
+        title: const AppModeSwitcher(),
       ),
       body: Center(
         child: Column(

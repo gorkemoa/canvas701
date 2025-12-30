@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../api/dummy_data.dart';
 import '../../model/model.dart';
+import '../../../core/widgets/app_mode_switcher.dart';
 
 /// Canvas701 Kategoriler Sayfası
 class CategoriesPage extends StatelessWidget {
@@ -51,29 +52,15 @@ class CategoriesPage extends StatelessWidget {
   }
 
   Widget _buildAppBar(BuildContext context) {
-    return SliverAppBar(
+    return const SliverAppBar(
       floating: true,
       pinned: true,
-      backgroundColor: Canvas701Colors.background,
-      surfaceTintColor: Canvas701Colors.surface,
+      backgroundColor: Canvas701Colors.primary,
       elevation: 0,
-      centerTitle: true,
-      title: Text(
-        'Kategoriler',
-        style: Canvas701Typography.titleLarge.copyWith(
-          color: Canvas701Colors.textPrimary,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 1.2,
-        ),
-      ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.notifications_none_outlined,
-              color: Canvas701Colors.textPrimary),
-          onPressed: () {},
-        ),
-        const SizedBox(width: Canvas701Spacing.xs),
-      ],
+      toolbarHeight: 45,
+      titleSpacing: 0,
+      automaticallyImplyLeading: false,
+      title: AppModeSwitcher(),
     );
   }
 

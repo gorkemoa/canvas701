@@ -19,7 +19,7 @@ class AppModeSwitcher extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 50,
+      height: 45,
       padding: const EdgeInsets.symmetric(horizontal: 10),
       color: backgroundColor,
       child: Row(
@@ -42,8 +42,8 @@ class AppModeSwitcher extends StatelessWidget {
           // Vertical Divider
           Container(
             width: 1.5,
-            height: 28,
-            margin: const EdgeInsets.symmetric(horizontal: 14),
+            height: 20,
+            margin: const EdgeInsets.symmetric(horizontal: 10),
             color: Colors.white.withOpacity(0.2),
           ),
           // Mode Switcher
@@ -56,7 +56,7 @@ class AppModeSwitcher extends StatelessWidget {
                 const double gap = 10;
 
                 return SizedBox(
-                  height: 35,
+                  height: 28,
                   child: Stack(
                     children: [
                       // Inactive Backgrounds (The track shapes)
@@ -73,7 +73,7 @@ class AppModeSwitcher extends StatelessWidget {
                         curve: Curves.easeOutQuint,
                         left: currentMode == AppMode.canvas ? 0 : canvasWidth + gap ,
                         width: currentMode == AppMode.canvas ? canvasWidth  : creatorsWidth ,
-                        height: 35,
+                        height: 28,
                         child: Container(
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.2),
@@ -87,7 +87,7 @@ class AppModeSwitcher extends StatelessWidget {
                         curve: Curves.easeInOutCubic,
                         left: currentMode == AppMode.canvas ? 0 : canvasWidth + gap,
                         width: currentMode == AppMode.canvas ? canvasWidth : creatorsWidth,
-                        height: 35,
+                        height: 28,
                         child: Container(
                           decoration: BoxDecoration(
                             color: Colors.white,
@@ -139,7 +139,7 @@ class AppModeSwitcher extends StatelessWidget {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 500),
       width: width,
-      height: 35,
+      height: 28,
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.08),
         borderRadius: BorderRadius.circular(22),
@@ -162,7 +162,7 @@ class AppModeSwitcher extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       child: SizedBox(
         width: width,
-        height: 35,
+        height: 28,
         child: Stack(
           alignment: Alignment.center,
           children: [
@@ -171,8 +171,8 @@ class AppModeSwitcher extends StatelessWidget {
               duration: const Duration(milliseconds: 500),
               opacity: isActive ? 1.0 : 0.0,
               child: Container(
-                width: 40,
-                height: 40,
+                width: 30,
+                height: 30,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   boxShadow: [
@@ -187,7 +187,7 @@ class AppModeSwitcher extends StatelessWidget {
             ),
             AnimatedScale(
               duration: const Duration(milliseconds: 500),
-              scale: isActive ? 1.15 : 0.75,
+              scale: isActive ? 1.5 : 1.3,
               curve: Curves.easeInOutQuart,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 500),
@@ -199,9 +199,9 @@ class AppModeSwitcher extends StatelessWidget {
                   opacity: isActive ? 1.0 : 0.5,
                   child: Image.asset(
                     assetPath,
-                    height: 18,
+                    height: 14,
                     fit: BoxFit.contain,
-                    color: isActive ? null : Colors.white.withOpacity(0.8),
+                    color: isActive ? null : Colors.white.withOpacity(0.9),
                     colorBlendMode: isActive ? null : BlendMode.srcIn,
                   ),
                 ),
@@ -217,8 +217,8 @@ class AppModeSwitcher extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 42,
-        height: 42,
+        width: 34,
+        height: 34,
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.15),
           shape: BoxShape.circle,
@@ -226,7 +226,7 @@ class AppModeSwitcher extends StatelessWidget {
         child: Icon(
           icon,
           color: Colors.white,
-          size: 22,
+          size: 18,
         ),
       ),
     );

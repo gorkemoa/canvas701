@@ -8,8 +8,29 @@ import '../widgets/widgets.dart';
 import '../../../core/widgets/app_mode_switcher.dart';
 
 /// Canvas701 Ana Sayfa
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final PageController _bannerController = PageController();
+  int _currentBannerIndex = 0;
+
+  final List<String> _banners = [
+    'https://picsum.photos/seed/hero1/800/400',
+    'https://picsum.photos/seed/hero2/800/400',
+    'https://picsum.photos/seed/hero3/800/400',
+    'https://picsum.photos/seed/hero4/800/400',
+  ];
+
+  @override
+  void dispose() {
+    _bannerController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,10 +44,44 @@ class HomePage extends StatelessWidget {
             pinned: true,
             backgroundColor: Canvas701Colors.primary,
             elevation: 0,
-            toolbarHeight: 70,
+            toolbarHeight: 45,
             titleSpacing: 0,
             automaticallyImplyLeading: false,
             title: const AppModeSwitcher(),
+          ),
+
+          // Search Bar
+          SliverToBoxAdapter(
+            child: Container(
+              color: Canvas701Colors.primary,
+              padding: const EdgeInsets.fromLTRB(
+                Canvas701Spacing.md,
+                5,
+                Canvas701Spacing.md,
+                Canvas701Spacing.md,
+              ),
+              child: Container(
+                height: 35,
+                padding: const EdgeInsets.symmetric(horizontal: Canvas701Spacing.md),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(19),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.search, color: Canvas701Colors.primary, size: 20),
+                    const SizedBox(width: Canvas701Spacing.sm),
+                    Text(
+                      'Ürün, kategori veya marka ara',
+                      style: Canvas701Typography.bodyMedium.copyWith(
+                        color: Colors.grey.shade500,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
 
           // Hero Banner
@@ -75,64 +130,105 @@ class HomePage extends StatelessWidget {
   }
 
   Widget _buildHeroBanner() {
-    return Container(
-      height: 200,
-      margin: const EdgeInsets.all(Canvas701Spacing.md),
-      decoration: BoxDecoration(
-        borderRadius: Canvas701Radius.cardRadius,
-        image: const DecorationImage(
-          image: NetworkImage('https://picsum.photos/seed/hero/800/400'),
-          fit: BoxFit.cover,
-        ),
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            left: Canvas701Spacing.lg,
-            bottom: Canvas701Spacing.lg,
-            right: Canvas701Spacing.lg,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'YENİ KOLEKSİYON',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 2,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black54,
-                        offset: Offset(0, 1),
-                        blurRadius: 12,
-                      ),
-                    ],
+    return Column(
+      children: [
+        SizedBox(
+          height: 250,
+          width: double.infinity,
+          child: PageView.builder(
+            controller: _bannerController,
+            onPageChanged: (index) {
+              setState(() {
+                _currentBannerIndex = index;
+              });
+            },
+            itemCount: _banners.length,
+            itemBuilder: (context, index) {
+              return Container(
+                margin: const EdgeInsets.symmetric(vertical: Canvas701Spacing.md),
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: NetworkImage(_banners[index]),
+                    fit: BoxFit.cover,
                   ),
                 ),
-                const SizedBox(height: Canvas701Spacing.xs),
-                Text(
-                  'Evinize Sanat Katın',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w700,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withOpacity(0.7),
-                        offset: const Offset(0, 2),
-                        blurRadius: 14,
+                child: Stack(
+                  children: [
+                    Positioned(
+                      left: Canvas701Spacing.lg,
+                      bottom: Canvas701Spacing.lg,
+                      right: Canvas701Spacing.lg,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Canvas701\nyine çok çekici!',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                              height: 1,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black.withOpacity(0.9),
+                                  offset: const Offset(0, 2),
+                                  blurRadius: 10,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: Canvas701Spacing.md),
+                          const Text(
+                            'Sanatın ve tasarımın buluşma noktası.\nDetaylar: canvas701.com.tr',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                                shadows: [
+                                  Shadow(
+                              
+                                    offset: Offset(0, 2),
+                                    blurRadius: 10,
+                                  ),
+                                ]
+
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              );
+            },
           ),
-        ],
-      ),
+        ),
+        // Page Indicator
+        Padding(
+          padding: const EdgeInsets.only(bottom: Canvas701Spacing.md),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(_banners.length, (index) {
+              final isSelected = _currentBannerIndex == index;
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                width: isSelected ? 24 : 8,
+                height: 8,
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(4),
+                  color: isSelected 
+                      ? Canvas701Colors.primary 
+                      : Canvas701Colors.primary.withOpacity(0.2),
+                ),
+              );
+            }),
+          ),
+        ),
+      ],
     );
   }
+
 
   Widget _buildUSPBar() {
     return Container(

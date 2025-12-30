@@ -14,7 +14,7 @@ class CreatorsHomePage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Canvas701Colors.primary,
         elevation: 0,
-        toolbarHeight: 70,
+        toolbarHeight: 45,
         titleSpacing: 0,
         automaticallyImplyLeading: false,
         title: const AppModeSwitcher(),
