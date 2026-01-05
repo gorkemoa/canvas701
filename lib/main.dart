@@ -5,8 +5,6 @@ import 'package:provider/provider.dart';
 
 import 'core/app_mode.dart';
 import 'canvas701/view/main_navigation_page.dart';
-import 'canvas701/view/login_page.dart';
-import 'canvas701/api/auth_service.dart';
 import 'canvas701/viewmodel/profile_viewmodel.dart';
 import 'canvas701/viewmodel/register_viewmodel.dart';
 import 'canvas701/viewmodel/category_viewmodel.dart';
@@ -51,14 +49,6 @@ class Canvas701App extends StatefulWidget {
 }
 
 class _Canvas701AppState extends State<Canvas701App> {
-  late Future<String?> _tokenFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _tokenFuture = AuthService().getToken();
-  }
-
   @override
   Widget build(BuildContext context) {
     final appMode = AppModeManager.instance;
@@ -77,45 +67,28 @@ class _Canvas701AppState extends State<Canvas701App> {
           child: child,
         );
       },
-      home: FutureBuilder<String?>(
-        future: _tokenFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
-          }
-          
-          final bool isLoggedIn = snapshot.hasData && snapshot.data != null;
-          
-          if (!isLoggedIn) {
-            return const LoginPage();
-          }
+      home: ValueListenableBuilder<AppMode>(
+        valueListenable: appMode.modeNotifier,
+        builder: (context, currentMode, _) {
+          return AnimatedSwitcher(
+            duration: const Duration(milliseconds: 600),
+            switchInCurve: Curves.easeInOutQuart,
+            switchOutCurve: Curves.easeInOutQuart,
+            transitionBuilder: (Widget child, Animation<double> animation) {
+              final offsetAnimation = Tween<Offset>(
+                begin: const Offset(0.0, 0.05),
+                end: Offset.zero,
+              ).animate(animation);
 
-          return ValueListenableBuilder<AppMode>(
-            valueListenable: appMode.modeNotifier,
-            builder: (context, currentMode, _) {
-              return AnimatedSwitcher(
-                duration: const Duration(milliseconds: 600),
-                switchInCurve: Curves.easeInOutQuart,
-                switchOutCurve: Curves.easeInOutQuart,
-                transitionBuilder: (Widget child, Animation<double> animation) {
-                  final offsetAnimation = Tween<Offset>(
-                    begin: const Offset(0.0, 0.05),
-                    end: Offset.zero,
-                  ).animate(animation);
-
-                  return FadeTransition(
-                    opacity: animation,
-                    child: SlideTransition(
-                      position: offsetAnimation,
-                      child: child,
-                    ),
-                  );
-                },
-                child: _buildHome(currentMode),
+              return FadeTransition(
+                opacity: animation,
+                child: SlideTransition(
+                  position: offsetAnimation,
+                  child: child,
+                ),
               );
             },
+            child: _buildHome(currentMode),
           );
         },
       ),

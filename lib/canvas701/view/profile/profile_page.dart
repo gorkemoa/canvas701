@@ -17,16 +17,41 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  bool _isCheckingAuth = true;
+  bool _isLoggedIn = false;
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ProfileViewModel>().fetchUser();
-    });
+    _checkAuthStatus();
+  }
+
+  Future<void> _checkAuthStatus() async {
+    final token = await AuthService().getToken();
+    if (mounted) {
+      setState(() {
+        _isLoggedIn = token != null;
+        _isCheckingAuth = false;
+      });
+      if (_isLoggedIn) {
+        context.read<ProfileViewModel>().fetchUser();
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isCheckingAuth) {
+      return const Scaffold(
+        backgroundColor: Canvas701Colors.background,
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (!_isLoggedIn) {
+      return _buildGuestView();
+    }
+
     return Scaffold(
       backgroundColor: Canvas701Colors.background,
       body: Consumer<ProfileViewModel>(
@@ -138,6 +163,84 @@ class _ProfilePageState extends State<ProfilePage> {
             ],
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildGuestView() {
+    return Scaffold(
+      backgroundColor: Canvas701Colors.background,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Canvas701Colors.primary.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.person_outline,
+                  size: 80,
+                  color: Canvas701Colors.primary,
+                ),
+              ),
+              const SizedBox(height: 32),
+              const Text(
+                'Profilinizi görüntülemek için giriş yapın',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Canvas701Colors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Siparişlerinizi takip etmek ve avantajlardan yararlanmak için hesabınıza giriş yapın.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Canvas701Colors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 40),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginPage()),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Canvas701Colors.primary,
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Giriş Yap',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: () {
+                  // Register sayfasına yönlendirilebilir
+                },
+                child: const Text(
+                  'Henüz hesabınız yok mu? Kayıt Ol',
+                  style: TextStyle(color: Canvas701Colors.primary),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
