@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'home/home_page.dart';
 import 'categories/categories_page.dart';
 import 'favorites/favorites_page.dart';
+import 'cart/cart_page.dart';
+import 'profile/profile_page.dart';
 import 'widgets/widgets.dart';
-import '../../core/widgets/app_mode_switcher.dart';
-import '../theme/canvas701_theme_data.dart';
 
 /// Canvas701 Ana Navigasyon Sayfası
 /// Bottom navigation ile tüm ana sayfaları yönetir
@@ -28,8 +28,8 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       const HomePage(),
       const CategoriesPage(),
       const FavoritesPage(),
-      const _PlaceholderPage(title: 'Sepet', icon: Icons.shopping_bag),
-      const _PlaceholderPage(title: 'Profil', icon: Icons.person),
+      const CartPage(),
+      const ProfilePage(),
     ];
   }
 
@@ -49,57 +49,6 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       bottomNavigationBar: Canvas701BottomNav(
         currentIndex: _currentIndex,
         onTap: _onNavTap,
-      ),
-    );
-  }
-}
-
-/// Placeholder sayfa - henüz geliştirilmemiş sayfalar için
-class _PlaceholderPage extends StatelessWidget {
-  final String title;
-  final IconData icon;
-
-  const _PlaceholderPage({
-    required this.title,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Canvas701Colors.primary,
-        elevation: 0,
-        toolbarHeight: 45,
-        titleSpacing: 0,
-        automaticallyImplyLeading: false,
-        title: const AppModeSwitcher(),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 64,
-              color: Colors.grey.shade400,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: Colors.grey.shade600,
-                  ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Yakında...',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey.shade500,
-                  ),
-            ),
-          ],
-        ),
       ),
     );
   }

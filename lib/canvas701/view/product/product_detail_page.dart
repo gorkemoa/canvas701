@@ -4,7 +4,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../model/model.dart';
 import '../../api/dummy_data.dart';
 import '../widgets/widgets.dart';
-import '../../../core/widgets/app_mode_switcher.dart';
 
 /// Canvas701 Ürün Detay Sayfası
 /// Tasarım: https://www.canvas701.com/gucci-magaza-onu-kanvas-tablo
@@ -35,20 +34,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       backgroundColor: Canvas701Colors.background,
       body: CustomScrollView(
         slivers: [
-          // App Bar
-          const SliverAppBar(
-            floating: true,
-            pinned: true,
-            backgroundColor: Canvas701Colors.primary,
-            elevation: 0,
-            toolbarHeight: 45,
-            titleSpacing: 0,
-            automaticallyImplyLeading: false,
-            title: AppModeSwitcher(isBack: true),
-          ),
-
-          // Ürün Görseli (AppBar yerine en üstte)
-          SliverToBoxAdapter(child: _buildProductImage()),
+          
+            SliverToBoxAdapter(child: _buildProductImage()),
 
           // Ürün Bilgileri
           SliverToBoxAdapter(
@@ -97,9 +84,33 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             ),
           ),
         ),
+        // Back Button
+        Positioned(
+          top: 60,
+          left: Canvas701Spacing.md,
+          child: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.9),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Canvas701Colors.textPrimary, size: 20),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+        ),
         // Floating Action Buttons
         Positioned(
-          top: 10,
+          top: 60,
           right: Canvas701Spacing.md,
           child: Row(
             children: [
