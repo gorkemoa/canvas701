@@ -29,7 +29,7 @@ class LoginViewModel extends ChangeNotifier {
         notifyListeners();
         return true;
       } else {
-        _errorMessage = response.data?.message ?? 'Giriş başarısız';
+        _errorMessage = response.errorMessage ?? response.data?.message ?? 'Giriş başarısız';
         _isLoading = false;
         notifyListeners();
         return false;

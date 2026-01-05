@@ -39,7 +39,7 @@ class ProfileViewModel extends ChangeNotifier {
         _user = response.data!.user;
         debugPrint('--- USER DATA FETCHED: ${_user?.userFullname} ---');
       } else {
-        _errorMessage = 'Kullanıcı bilgileri alınamadı';
+        _errorMessage = response.errorMessage ?? 'Kullanıcı bilgileri alınamadı';
         debugPrint('--- USER DATA FETCH FAILED: success=${response.success}, error=${response.error} ---');
       }
     } catch (e) {

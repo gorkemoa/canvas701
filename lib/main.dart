@@ -8,6 +8,7 @@ import 'canvas701/view/main_navigation_page.dart';
 import 'canvas701/view/login_page.dart';
 import 'canvas701/api/auth_service.dart';
 import 'canvas701/viewmodel/profile_viewmodel.dart';
+import 'canvas701/viewmodel/register_viewmodel.dart';
 import 'canvas701/viewmodel/category_viewmodel.dart';
 import 'creators/view/creators_home_page.dart';
 
@@ -29,6 +30,7 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ProfileViewModel()),
+        ChangeNotifierProvider(create: (_) => RegisterViewModel()),
         ChangeNotifierProvider(create: (_) => CategoryViewModel()),
       ],
       child: const Canvas701App(),
@@ -66,6 +68,15 @@ class _Canvas701AppState extends State<Canvas701App> {
       navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       theme: Canvas701Theme.lightTheme,
+      builder: (context, child) {
+        return GestureDetector(
+          onTap: () {
+            // Herhangi bir yere dokunulduğunda klavyeyi kapat
+            FocusManager.instance.primaryFocus?.unfocus();
+          },
+          child: child,
+        );
+      },
       home: FutureBuilder<String?>(
         future: _tokenFuture,
         builder: (context, snapshot) {

@@ -2,11 +2,13 @@ class UpdatePasswordResponse {
   final bool error;
   final bool success;
   final UpdatePasswordData? data;
+  final String? errorMessage;
 
   UpdatePasswordResponse({
     required this.error,
     required this.success,
     this.data,
+    this.errorMessage,
   });
 
   factory UpdatePasswordResponse.fromJson(Map<String, dynamic> json) {
@@ -14,6 +16,7 @@ class UpdatePasswordResponse {
       error: json['error'] ?? true,
       success: json['success'] ?? false,
       data: json['data'] != null ? UpdatePasswordData.fromJson(json['data']) : null,
+      errorMessage: json['error_message'],
     );
   }
 }

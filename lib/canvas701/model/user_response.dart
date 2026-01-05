@@ -2,11 +2,13 @@ class UserResponse {
   final bool error;
   final bool success;
   final UserData? data;
+  final String? errorMessage;
 
   UserResponse({
     required this.error,
     required this.success,
     this.data,
+    this.errorMessage,
   });
 
   factory UserResponse.fromJson(Map<String, dynamic> json) {
@@ -14,6 +16,7 @@ class UserResponse {
       error: json['error'] ?? true,
       success: json['success'] ?? false,
       data: json['data'] != null ? UserData.fromJson(json['data']) : null,
+      errorMessage: json['error_message'],
     );
   }
 }

@@ -5,6 +5,7 @@ import '../../../core/widgets/app_mode_switcher.dart';
 import '../../api/auth_service.dart';
 import '../../viewmodel/profile_viewmodel.dart';
 import '../login_page.dart';
+import '../code_verification_page.dart';
 import 'profile_info_page.dart';
 import 'change_password_page.dart';
 
@@ -50,8 +51,10 @@ class _ProfilePageState extends State<ProfilePage> {
               SliverToBoxAdapter(
                 child: Column(
                   children: [
+                    if (viewModel.user != null && viewModel.user!.isApproved == false)
+                      _buildVerificationBanner(context, viewModel.user!.userEmail),
                     _buildHeader(viewModel),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
                     _buildMenuSection(
                       title: 'Siparişlerim',
                       items: [
@@ -135,6 +138,63 @@ class _ProfilePageState extends State<ProfilePage> {
             ],
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildVerificationBanner(BuildContext context, String email) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      color: Canvas701Colors.error.withOpacity(0.1),
+      child: Row(
+        children: [
+          const Icon(Icons.warning_amber_rounded, color: Canvas701Colors.error, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Hesabınız Onaylanmamış',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Canvas701Colors.error,
+                    fontSize: 14,
+                  ),
+                ),
+                Text(
+                  'Lütfen e-posta adresinizi doğrulayın.',
+                  style: TextStyle(
+                    color: Canvas701Colors.error.withOpacity(0.8),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CodeVerificationPage(email: email),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Canvas701Colors.error,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
+              ),
+            ),
+            child: const Text('Doğrula', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+          ),
+        ],
       ),
     );
   }

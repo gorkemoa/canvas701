@@ -3,12 +3,14 @@ class LoginResponse {
   final bool success;
   final LoginData? data;
   final String? status200;
+  final String? errorMessage;
 
   LoginResponse({
     required this.error,
     required this.success,
     this.data,
     this.status200,
+    this.errorMessage,
   });
 
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
@@ -17,6 +19,7 @@ class LoginResponse {
       success: json['success'] ?? false,
       data: json['data'] != null ? LoginData.fromJson(json['data']) : null,
       status200: json['200'],
+      errorMessage: json['error_message'],
     );
   }
 }

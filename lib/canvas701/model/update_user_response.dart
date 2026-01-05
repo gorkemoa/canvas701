@@ -2,11 +2,13 @@ class UpdateUserResponse {
   final bool error;
   final bool success;
   final UpdateUserData? data;
+  final String? errorMessage;
 
   UpdateUserResponse({
     required this.error,
     required this.success,
     this.data,
+    this.errorMessage,
   });
 
   factory UpdateUserResponse.fromJson(Map<String, dynamic> json) {
@@ -14,6 +16,7 @@ class UpdateUserResponse {
       error: json['error'] ?? true,
       success: json['success'] ?? false,
       data: json['data'] != null ? UpdateUserData.fromJson(json['data']) : null,
+      errorMessage: json['error_message'],
     );
   }
 }
