@@ -45,5 +45,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Profil fotoğrafınızı değiştirmek için galerinize erişmemiz gerekiyor.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Profil fotoğrafınızı çekmek için kameranıza erişmemiz gerekiyor.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Video kaydı için mikrofonunuza erişmemiz gerekiyor.</string>
 </dict>
 </plist>

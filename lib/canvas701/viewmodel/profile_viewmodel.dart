@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import '../api/auth_service.dart';
 import '../model/user_response.dart';
+import '../model/update_user_request.dart';
+import '../model/update_user_response.dart';
+import '../model/update_password_request.dart';
+import '../model/update_password_response.dart';
 
 class ProfileViewModel extends ChangeNotifier {
   static final ProfileViewModel _instance = ProfileViewModel._internal();
@@ -45,6 +49,59 @@ class ProfileViewModel extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
       debugPrint('--- ProfileViewModel.fetchUser() FINISHED ---');
+    }
+  }
+
+  Future<UpdateUserResponse> updateUser(UpdateUserRequest request) async {
+    if (_user == null) {
+      return UpdateUserResponse(
+        error: true,
+        success: false,
+        data: UpdateUserData(status: 'error', message: 'Kullanıcı bulunamadı'),
+      );
+    }
+
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await _authService.updateUser(_user!.userID, request);
+      if (response.success) {
+        await fetchUser(); // Refresh user data after update
+      }
+      return response;
+    } catch (e) {
+      _errorMessage = e.toString();
+      return UpdateUserResponse(
+        error: true,
+        success: false,
+        data: UpdateUserData(status: 'error', message: e.toString()),
+      );
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<UpdatePasswordResponse> updatePassword(UpdatePasswordRequest request) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await _authService.updatePassword(request);
+      return response;
+    } catch (e) {
+      _errorMessage = e.toString();
+      return UpdatePasswordResponse(
+        error: true,
+        success: false,
+        data: UpdatePasswordData(status: 'error', message: e.toString()),
+      );
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 }

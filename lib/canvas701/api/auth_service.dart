@@ -10,6 +10,10 @@ import '../../main.dart';
 import '../model/login_request.dart';
 import '../model/login_response.dart';
 import '../model/user_response.dart';
+import '../model/update_user_request.dart';
+import '../model/update_user_response.dart';
+import '../model/update_password_request.dart';
+import '../model/update_password_response.dart';
 import '../view/login_page.dart';
 
 class AuthService {
@@ -120,6 +124,80 @@ class AuthService {
     } catch (e) {
       debugPrint('--- GET USER EXCEPTION: $e ---');
       return UserResponse(error: true, success: false);
+    }
+  }
+
+  Future<UpdateUserResponse> updateUser(int userId, UpdateUserRequest request) async {
+    final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.updateUser(userId)}');
+    
+    _logRequest('PUT', url.toString(), request.toJson());
+
+    try {
+      final response = await http.put(
+        url,
+        headers: _getHeaders(),
+        body: jsonEncode(request.toJson()),
+      );
+
+      _logResponse(response.statusCode, response.body);
+
+      if (response.statusCode == 403) {
+        await logout();
+        _redirectToLogin();
+        return UpdateUserResponse(
+          error: true,
+          success: false,
+          data: UpdateUserData(status: 'error', message: 'Oturum süresi doldu (403)'),
+        );
+      }
+
+      final responseData = jsonDecode(response.body);
+      final updateResponse = UpdateUserResponse.fromJson(responseData);
+
+      return updateResponse;
+    } catch (e) {
+      return UpdateUserResponse(
+        error: true,
+        success: false,
+        data: UpdateUserData(status: 'error', message: e.toString()),
+      );
+    }
+  }
+
+  Future<UpdatePasswordResponse> updatePassword(UpdatePasswordRequest request) async {
+    final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.updatePassword}');
+    
+    _logRequest('PUT', url.toString(), request.toJson());
+
+    try {
+      final response = await http.put(
+        url,
+        headers: _getHeaders(),
+        body: jsonEncode(request.toJson()),
+      );
+
+      _logResponse(response.statusCode, response.body);
+
+      if (response.statusCode == 403) {
+        await logout();
+        _redirectToLogin();
+        return UpdatePasswordResponse(
+          error: true,
+          success: false,
+          data: UpdatePasswordData(status: 'error', message: 'Oturum süresi doldu (403)'),
+        );
+      }
+
+      final responseData = jsonDecode(response.body);
+      final updateResponse = UpdatePasswordResponse.fromJson(responseData);
+
+      return updateResponse;
+    } catch (e) {
+      return UpdatePasswordResponse(
+        error: true,
+        success: false,
+        data: UpdatePasswordData(status: 'error', message: e.toString()),
+      );
     }
   }
 

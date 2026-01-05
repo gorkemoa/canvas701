@@ -5,6 +5,8 @@ import '../../../core/widgets/app_mode_switcher.dart';
 import '../../api/auth_service.dart';
 import '../../viewmodel/profile_viewmodel.dart';
 import '../login_page.dart';
+import 'profile_info_page.dart';
+import 'change_password_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -62,7 +64,26 @@ class _ProfilePageState extends State<ProfilePage> {
                     _buildMenuSection(
                       title: 'Hesabım',
                       items: [
-                        _MenuItem(icon: Icons.person_outline, title: 'Kişisel Bilgilerim', onTap: () {}),
+                        _MenuItem(
+                          icon: Icons.person_outline,
+                          title: 'Kişisel Bilgilerim',
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const ProfileInfoPage()),
+                            );
+                          },
+                        ),
+                        _MenuItem(
+                          icon: Icons.lock_outline,
+                          title: 'Şifre Değiştir',
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const ChangePasswordPage()),
+                            );
+                          },
+                        ),
                         _MenuItem(icon: Icons.location_on_outlined, title: 'Adres Bilgilerim', onTap: () {}),
                         _MenuItem(icon: Icons.payment_outlined, title: 'Kayıtlı Kartlarım', onTap: () {}),
                         _MenuItem(icon: Icons.notifications_none_outlined, title: 'Duyuru Tercihlerim', onTap: () {}),
@@ -92,7 +113,12 @@ class _ProfilePageState extends State<ProfilePage> {
                         },
                         style: TextButton.styleFrom(
                           foregroundColor: Canvas701Colors.error,
+                          backgroundColor: Canvas701Colors.surface,
                           minimumSize: const Size(double.infinity, 50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            side: const BorderSide(color: Canvas701Colors.divider),
+                          ),
                         ),
                         child: const Text('Çıkış Yap', style: TextStyle(fontWeight: FontWeight.w600)),
                       ),
@@ -157,9 +183,21 @@ class _ProfilePageState extends State<ProfilePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  user?.userFullname ?? '',
-                  style: Canvas701Typography.headlineSmall,
+                Row(
+                  children: [
+                    Text(
+                      user?.userFullname ?? '',
+                      style: Canvas701Typography.headlineSmall,
+                    ),
+                    if (user?.isApproved == true) ...[
+                      const SizedBox(width: 6),
+                      const Icon(
+                        Icons.verified,
+                        color: Canvas701Colors.info,
+                        size: 18,
+                      ),
+                    ],
+                  ],
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -170,7 +208,12 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ProfileInfoPage()),
+              );
+            },
             icon: const Icon(Icons.edit_outlined, color: Canvas701Colors.textTertiary),
           ),
         ],
@@ -195,7 +238,15 @@ class _ProfilePageState extends State<ProfilePage> {
             border: Border.symmetric(horizontal: BorderSide(color: Canvas701Colors.divider)),
           ),
           child: Column(
-            children: items,
+            children: List.generate(items.length, (index) {
+              return Column(
+                children: [
+                  items[index],
+                  if (index < items.length - 1)
+                    const Divider(height: 1, color: Canvas701Colors.divider, indent: 64),
+                ],
+              );
+            }),
           ),
         ),
       ],

@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'home/home_page.dart';
 import 'categories/categories_page.dart';
 import 'favorites/favorites_page.dart';
 import 'cart/cart_page.dart';
 import 'profile/profile_page.dart';
-import '../viewmodel/profile_viewmodel.dart';
-import '../viewmodel/category_viewmodel.dart';
 import 'widgets/widgets.dart';
 
 /// Canvas701 Ana Navigasyon Sayfası
@@ -44,20 +41,14 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider.value(value: ProfileViewModel()),
-        ChangeNotifierProvider.value(value: CategoryViewModel()),
-      ],
-      child: Scaffold(
-        body: IndexedStack(
-          index: _currentIndex,
-          children: _pages,
-        ),
-        bottomNavigationBar: Canvas701BottomNav(
-          currentIndex: _currentIndex,
-          onTap: _onNavTap,
-        ),
+    return Scaffold(
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _pages,
+      ),
+      bottomNavigationBar: Canvas701BottomNav(
+        currentIndex: _currentIndex,
+        onTap: _onNavTap,
       ),
     );
   }
