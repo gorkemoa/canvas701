@@ -2,8 +2,11 @@ import 'package:canvas701/canvas701/theme/canvas701_theme_data.dart';
 import 'package:canvas701/canvas701/view/product/product_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:provider/provider.dart';
 import '../../api/dummy_data.dart';
 import '../../model/model.dart';
+import '../../model/category_response.dart';
+import '../../viewmodel/category_viewmodel.dart';
 import '../widgets/widgets.dart';
 import '../../../core/widgets/app_mode_switcher.dart';
 
@@ -25,6 +28,14 @@ class _HomePageState extends State<HomePage> {
     'https://picsum.photos/seed/hero3/800/400',
     'https://picsum.photos/seed/hero4/800/400',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<CategoryViewModel>().fetchCategories();
+    });
+  }
 
   @override
   void dispose() {
@@ -274,25 +285,39 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildCategoriesGrid() {
-    // Canvas701.com'dan gerçek kategoriler
-    final displayCategories = Canvas701Data.categories.take(8).toList();
+    return Consumer<CategoryViewModel>(
+      builder: (context, viewModel, child) {
+        if (viewModel.isLoading && viewModel.categories.isEmpty) {
+          return const SizedBox(
+            height: 100,
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
 
-    return SizedBox(
-      height: 100,
-      child: ListView.separated(
-        padding: const EdgeInsets.symmetric(horizontal: Canvas701Spacing.md),
-        scrollDirection: Axis.horizontal,
-        itemCount: displayCategories.length,
-        separatorBuilder: (_, __) => const SizedBox(width: Canvas701Spacing.sm),
-        itemBuilder: (context, index) {
-          final category = displayCategories[index];
-          return _buildCategoryItem(category);
-        },
-      ),
+        if (viewModel.categories.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        final displayCategories = viewModel.categories.take(8).toList();
+
+        return SizedBox(
+          height: 100,
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: Canvas701Spacing.md),
+            scrollDirection: Axis.horizontal,
+            itemCount: displayCategories.length,
+            separatorBuilder: (_, __) => const SizedBox(width: Canvas701Spacing.sm),
+            itemBuilder: (context, index) {
+              final category = displayCategories[index];
+              return _buildCategoryItem(category);
+            },
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildCategoryItem(Category category) {
+  Widget _buildCategoryItem(ApiCategory category) {
     return GestureDetector(
       onTap: () {
         // TODO: Navigate to category
@@ -314,7 +339,7 @@ class _HomePageState extends State<HomePage> {
             ),
             child: ClipOval(
               child: CachedNetworkImage(
-                imageUrl: category.imageUrl ?? '',
+                imageUrl: category.catThumbImage1,
                 fit: BoxFit.cover,
                 placeholder: (context, url) => Container(
                   color: Canvas701Colors.surfaceVariant,
@@ -347,7 +372,7 @@ class _HomePageState extends State<HomePage> {
           SizedBox(
             width: 70,
             child: Text(
-              category.name,
+              category.catName,
               style: Canvas701Typography.labelSmall,
               textAlign: TextAlign.center,
               maxLines: 1,

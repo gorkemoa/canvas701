@@ -1,8 +1,9 @@
 import 'package:canvas701/canvas701/theme/canvas701_theme_data.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../api/dummy_data.dart';
-import '../../model/model.dart';
+import 'package:provider/provider.dart';
+import '../../viewmodel/category_viewmodel.dart';
+import '../../model/category_response.dart';
 import '../../../core/widgets/app_mode_switcher.dart';
 
 /// Canvas701 Kategoriler Sayfası
@@ -116,70 +117,101 @@ class CategoriesPage extends StatelessWidget {
   }
 
   Widget _buildPopularCategories() {
-    final populars = Canvas701Data.categories.take(5).toList();
-    return SizedBox(
-      height: 120,
-      child: ListView.separated(
-        padding: const EdgeInsets.symmetric(horizontal: Canvas701Spacing.md),
-        scrollDirection: Axis.horizontal,
-        itemCount: populars.length,
-        separatorBuilder: (_, __) => const SizedBox(width: Canvas701Spacing.md),
-        itemBuilder: (context, index) {
-          final category = populars[index];
-          return Column(
-            children: [
-              Container(
-                width: 75,
-                height: 75,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Canvas701Colors.primary, width: 2),
-                  image: DecorationImage(
-                    image: NetworkImage(category.imageUrl ?? ''),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                category.name,
-                style: Canvas701Typography.labelSmall.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: Canvas701Colors.textSecondary,
-                ),
-              ),
-            ],
+    return Consumer<CategoryViewModel>(
+      builder: (context, viewModel, child) {
+        if (viewModel.isLoading && viewModel.categories.isEmpty) {
+          return const SizedBox(
+            height: 120,
+            child: Center(child: CircularProgressIndicator()),
           );
-        },
-      ),
+        }
+
+        final populars = viewModel.categories.take(5).toList();
+        if (populars.isEmpty) return const SizedBox.shrink();
+
+        return SizedBox(
+          height: 120,
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: Canvas701Spacing.md),
+            scrollDirection: Axis.horizontal,
+            itemCount: populars.length,
+            separatorBuilder: (_, __) => const SizedBox(width: Canvas701Spacing.md),
+            itemBuilder: (context, index) {
+              final category = populars[index];
+              return Column(
+                children: [
+                  Container(
+                    width: 75,
+                    height: 75,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Canvas701Colors.primary, width: 2),
+                    ),
+                    child: ClipOval(
+                      child: CachedNetworkImage(
+                        imageUrl: category.catThumbImage1,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(color: Canvas701Colors.surfaceVariant),
+                        errorWidget: (context, url, error) => const Icon(Icons.image_not_supported),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    category.catName,
+                    style: Canvas701Typography.labelSmall.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: Canvas701Colors.textSecondary,
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        );
+      },
     );
   }
 
   Widget _buildCategoriesGrid(BuildContext context) {
-    return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: Canvas701Spacing.md),
-      sliver: SliverGrid(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisSpacing: Canvas701Spacing.md,
-          crossAxisSpacing: Canvas701Spacing.md,
-          childAspectRatio: 0.8,
-        ),
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            final category = Canvas701Data.categories[index];
-            return _CategoryCard(category: category);
-          },
-          childCount: Canvas701Data.categories.length,
-        ),
-      ),
+    return Consumer<CategoryViewModel>(
+      builder: (context, viewModel, child) {
+        if (viewModel.isLoading && viewModel.categories.isEmpty) {
+          return const SliverToBoxAdapter(
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (viewModel.categories.isEmpty) {
+          return const SliverToBoxAdapter(child: SizedBox.shrink());
+        }
+
+        return SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: Canvas701Spacing.md),
+          sliver: SliverGrid(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: Canvas701Spacing.md,
+              crossAxisSpacing: Canvas701Spacing.md,
+              childAspectRatio: 0.8,
+            ),
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final category = viewModel.categories[index];
+                return _CategoryCard(category: category);
+              },
+              childCount: viewModel.categories.length,
+            ),
+          ),
+        );
+      },
     );
   }
 }
 
 /// Premium Kategori Kartı
 class _CategoryCard extends StatelessWidget {
-  final Category category;
+  final ApiCategory category;
 
   const _CategoryCard({required this.category});
 
@@ -207,9 +239,10 @@ class _CategoryCard extends StatelessWidget {
           children: [
             // Görsel
             CachedNetworkImage(
-              imageUrl: category.imageUrl ?? '',
+              imageUrl: category.catThumbImage1,
               fit: BoxFit.cover,
               placeholder: (context, url) => Container(color: Canvas701Colors.surfaceVariant),
+              errorWidget: (context, url, error) => const Icon(Icons.image_not_supported),
             ),
 
             // Overlay
@@ -235,7 +268,7 @@ class _CategoryCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    category.name,
+                    category.catName,
                     style: Canvas701Typography.titleSmall.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
@@ -243,7 +276,7 @@ class _CategoryCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '${category.productCount} Ürün',
+                    'Kategoriyi Gör',
                     style: Canvas701Typography.labelSmall.copyWith(
                       color: Colors.white.withOpacity(0.8),
                       fontSize: 10,

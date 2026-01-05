@@ -34,31 +34,46 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       backgroundColor: Canvas701Colors.background,
       body: CustomScrollView(
         slivers: [
-          
-            SliverToBoxAdapter(child: _buildProductImage()),
-
+          SliverToBoxAdapter(child: _buildProductImage()),
           // Ürün Bilgileri
           SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(Canvas701Spacing.md),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildBreadcrumbs(),
-                  const SizedBox(height: Canvas701Spacing.sm),
-                  _buildTitleAndPrice(),
-                  const SizedBox(height: Canvas701Spacing.lg),
-                  _buildSizeSelection(),
-                  const SizedBox(height: Canvas701Spacing.lg),
-                  _buildQuantityAndAdd(),
-                  const SizedBox(height: Canvas701Spacing.xl),
-                  _buildProductFeatures(),
-                  const SizedBox(height: Canvas701Spacing.xl),
-                  _buildDescription(),
-                  const SizedBox(height: Canvas701Spacing.xl),
-                  _buildRelatedProducts(),
-                  const SizedBox(height: Canvas701Spacing.xxl),
+            child: Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(32),
+                  topRight: Radius.circular(32),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0x0D000000),
+                    blurRadius: 10,
+                    offset: Offset(0, -5),
+                  ),
                 ],
+              ),
+              transform: Matrix4.translationValues(0, -30, 0),
+              child: Padding(
+                padding: const EdgeInsets.all(Canvas701Spacing.md),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildBreadcrumbs(),
+                    const SizedBox(height: Canvas701Spacing.sm),
+                    _buildTitleAndPrice(),
+                    const SizedBox(height: Canvas701Spacing.lg),
+                    _buildSizeSelection(),
+                    const SizedBox(height: Canvas701Spacing.lg),
+                    _buildQuantityAndAdd(),
+                    const SizedBox(height: Canvas701Spacing.xl),
+                    _buildProductFeatures(),
+                    const SizedBox(height: Canvas701Spacing.xl),
+                    _buildDescription(),
+                    const SizedBox(height: Canvas701Spacing.xl),
+                    _buildRelatedProducts(),
+                    const SizedBox(height: Canvas701Spacing.xxl),
+                  ],
+                ),
               ),
             ),
           ),
@@ -71,16 +86,18 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return Stack(
       children: [
         Container(
-          color: Colors.white,
           width: double.infinity,
           height: 400,
+          color: Colors.white,
           child: Hero(
             tag: 'product_${widget.product.id}',
             child: CachedNetworkImage(
               imageUrl: widget.product.images.first,
               fit: BoxFit.contain,
-              placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
-              errorWidget: (context, url, error) => const Icon(Icons.image_outlined, size: 100),
+              placeholder: (context, url) =>
+                  const Center(child: CircularProgressIndicator()),
+              errorWidget: (context, url, error) =>
+                  const Icon(Icons.image_outlined, size: 100),
             ),
           ),
         ),
@@ -103,7 +120,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               ],
             ),
             child: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Canvas701Colors.textPrimary, size: 20),
+              icon: const Icon(
+                Icons.arrow_back,
+                color: Canvas701Colors.textPrimary,
+                size: 20,
+              ),
               onPressed: () => Navigator.pop(context),
             ),
           ),
@@ -115,8 +136,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           child: Row(
             children: [
               Container(
-                 width: 40,
-            height: 40,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.9),
                   shape: BoxShape.circle,
@@ -131,7 +152,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 child: IconButton(
                   icon: Icon(
                     _isFavorite ? Icons.favorite : Icons.favorite_outline,
-                    color: _isFavorite ? Colors.red : Canvas701Colors.textPrimary, size: 20
+                    color: _isFavorite
+                        ? Colors.red
+                        : Canvas701Colors.textPrimary,
+                    size: 20,
                   ),
                   onPressed: () {
                     setState(() {
@@ -139,7 +163,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     });
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(_isFavorite ? 'Favorilere eklendi!' : 'Favorilerden çıkarıldı!'),
+                        content: Text(
+                          _isFavorite
+                              ? 'Favorilere eklendi!'
+                              : 'Favorilerden çıkarıldı!',
+                        ),
                         duration: const Duration(seconds: 1),
                       ),
                     );
@@ -148,8 +176,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               ),
               const SizedBox(width: Canvas701Spacing.sm),
               Container(
-                 width: 40,
-            height: 40,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.9),
                   shape: BoxShape.circle,
@@ -162,10 +190,16 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   ],
                 ),
                 child: IconButton(
-                  icon: const Icon(Icons.share_outlined, color: Canvas701Colors.textPrimary, size: 20),
+                  icon: const Icon(
+                    Icons.share_outlined,
+                    color: Canvas701Colors.textPrimary,
+                    size: 20,
+                  ),
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Paylaşma özelliği yakında eklenecek!')),
+                      const SnackBar(
+                        content: Text('Paylaşma özelliği yakında eklenecek!'),
+                      ),
                     );
                   },
                 ),
@@ -181,13 +215,23 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return Row(
       children: [
         Text('Anasayfa', style: Canvas701Typography.labelSmall),
-        const Icon(Icons.chevron_right, size: 12, color: Canvas701Colors.textTertiary),
+        const Icon(
+          Icons.chevron_right,
+          size: 12,
+          color: Canvas701Colors.textTertiary,
+        ),
         Text('Kanvas Tablolar', style: Canvas701Typography.labelSmall),
-        const Icon(Icons.chevron_right, size: 12, color: Canvas701Colors.textTertiary),
+        const Icon(
+          Icons.chevron_right,
+          size: 12,
+          color: Canvas701Colors.textTertiary,
+        ),
         Expanded(
           child: Text(
             widget.product.name,
-            style: Canvas701Typography.labelSmall.copyWith(color: Canvas701Colors.textTertiary),
+            style: Canvas701Typography.labelSmall.copyWith(
+              color: Canvas701Colors.textTertiary,
+            ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -215,15 +259,28 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         const SizedBox(height: Canvas701Spacing.md),
         Row(
           children: [
-            Text('Kategori: ', style: Canvas701Typography.labelSmall.copyWith(fontWeight: FontWeight.w700)),
+            Text(
+              'Kategori: ',
+              style: Canvas701Typography.labelSmall.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
             Text('Kanvas Tablolar', style: Canvas701Typography.labelSmall),
           ],
         ),
         const SizedBox(height: 4),
         Row(
           children: [
-            Text('Etiketler: ', style: Canvas701Typography.labelSmall.copyWith(fontWeight: FontWeight.w700)),
-            Text('Dekorasyon, Sanat, Modern', style: Canvas701Typography.labelSmall),
+            Text(
+              'Etiketler: ',
+              style: Canvas701Typography.labelSmall.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            Text(
+              'Dekorasyon, Sanat, Modern',
+              style: Canvas701Typography.labelSmall,
+            ),
           ],
         ),
         const SizedBox(height: Canvas701Spacing.md),
@@ -274,13 +331,17 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   color: isSelected ? Canvas701Colors.primary : Colors.white,
                   borderRadius: Canvas701Radius.buttonRadius,
                   border: Border.all(
-                    color: isSelected ? Canvas701Colors.primary : Canvas701Colors.divider,
+                    color: isSelected
+                        ? Canvas701Colors.primary
+                        : Canvas701Colors.divider,
                   ),
                 ),
                 child: Text(
                   size.name,
                   style: Canvas701Typography.labelMedium.copyWith(
-                    color: isSelected ? Colors.white : Canvas701Colors.textPrimary,
+                    color: isSelected
+                        ? Colors.white
+                        : Canvas701Colors.textPrimary,
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
                   ),
                 ),
@@ -307,12 +368,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.remove, size: 18),
-                    onPressed: _quantity > 1 ? () => setState(() => _quantity--) : null,
+                    onPressed: _quantity > 1
+                        ? () => setState(() => _quantity--)
+                        : null,
                   ),
-                  Text(
-                    '$_quantity',
-                    style: Canvas701Typography.titleMedium,
-                  ),
+                  Text('$_quantity', style: Canvas701Typography.titleMedium),
                   IconButton(
                     icon: const Icon(Icons.add, size: 18),
                     onPressed: () => setState(() => _quantity++),
@@ -327,7 +387,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 child: ElevatedButton(
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('${widget.product.name} sepete eklendi!')),
+                      SnackBar(
+                        content: Text('${widget.product.name} sepete eklendi!'),
+                      ),
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -338,7 +400,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   ),
                   child: const Text(
                     'SEPETE EKLE',
-                    style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: 1.2),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.2,
+                    ),
                   ),
                 ),
               ),
@@ -352,7 +417,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           child: OutlinedButton(
             onPressed: () {},
             style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: Canvas701Colors.secondary, width: 1.5),
+              side: const BorderSide(
+                color: Canvas701Colors.secondary,
+                width: 1.5,
+              ),
               shape: RoundedRectangleBorder(
                 borderRadius: Canvas701Radius.buttonRadius,
               ),
@@ -380,15 +448,27 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       ),
       child: Column(
         children: [
-          _buildFeatureItem(Icons.check_circle_outline, 'Yüksek Çözünürlüklü Baskı'),
+          _buildFeatureItem(
+            Icons.check_circle_outline,
+            'Yüksek Çözünürlüklü Baskı',
+          ),
           const Divider(height: 24),
           _buildFeatureItem(Icons.check_circle_outline, 'Pamuklu Kanvas Kumaş'),
           const Divider(height: 24),
-          _buildFeatureItem(Icons.check_circle_outline, 'Fırınlanmış Ahşap Şase'),
+          _buildFeatureItem(
+            Icons.check_circle_outline,
+            'Fırınlanmış Ahşap Şase',
+          ),
           const Divider(height: 24),
-          _buildFeatureItem(Icons.local_shipping_outlined, 'Ücretsiz ve Hızlı Kargo'),
+          _buildFeatureItem(
+            Icons.local_shipping_outlined,
+            'Ücretsiz ve Hızlı Kargo',
+          ),
           const Divider(height: 24),
-          _buildFeatureItem(Icons.security_outlined, '256 Bit SSL Güvenli Ödeme'),
+          _buildFeatureItem(
+            Icons.security_outlined,
+            '256 Bit SSL Güvenli Ödeme',
+          ),
         ],
       ),
     );
@@ -443,7 +523,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         child: Text(
           title,
           style: TextStyle(
-            color: isActive ? Canvas701Colors.primary : Canvas701Colors.textTertiary,
+            color: isActive
+                ? Canvas701Colors.primary
+                : Canvas701Colors.textTertiary,
             fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
             fontSize: 13,
           ),
@@ -477,9 +559,16 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.local_shipping_outlined, color: Canvas701Colors.primary, size: 20),
+                const Icon(
+                  Icons.local_shipping_outlined,
+                  color: Canvas701Colors.primary,
+                  size: 20,
+                ),
                 const SizedBox(width: Canvas701Spacing.sm),
-                Text('Hızlı ve Güvenli Teslimat', style: Canvas701Typography.titleSmall),
+                Text(
+                  'Hızlı ve Güvenli Teslimat',
+                  style: Canvas701Typography.titleSmall,
+                ),
               ],
             ),
             const SizedBox(height: Canvas701Spacing.sm),
@@ -497,9 +586,16 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.assignment_return_outlined, color: Canvas701Colors.primary, size: 20),
+                const Icon(
+                  Icons.assignment_return_outlined,
+                  color: Canvas701Colors.primary,
+                  size: 20,
+                ),
                 const SizedBox(width: Canvas701Spacing.sm),
-                Text('Kolay İade Süreci', style: Canvas701Typography.titleSmall),
+                Text(
+                  'Kolay İade Süreci',
+                  style: Canvas701Typography.titleSmall,
+                ),
               ],
             ),
             const SizedBox(height: Canvas701Spacing.sm),
@@ -527,9 +623,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             child: Icon(Icons.circle, size: 6, color: Canvas701Colors.primary),
           ),
           const SizedBox(width: Canvas701Spacing.sm),
-          Flexible(
-            child: Text(text, style: Canvas701Typography.bodyMedium),
-          ),
+          Flexible(child: Text(text, style: Canvas701Typography.bodyMedium)),
         ],
       ),
     );
@@ -543,11 +637,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         Text('Benzer Ürünler', style: Canvas701Typography.titleLarge),
         const SizedBox(height: Canvas701Spacing.md),
         SizedBox(
-          height: 360, // Ürün kartı yüksekliği için yeterli alan (347px + padding)
+          height:
+              360, // Ürün kartı yüksekliği için yeterli alan (347px + padding)
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: related.length,
-            separatorBuilder: (_, __) => const SizedBox(width: Canvas701Spacing.md),
+            separatorBuilder: (_, __) =>
+                const SizedBox(width: Canvas701Spacing.md),
             itemBuilder: (context, index) {
               return SizedBox(
                 width: 180,
@@ -557,7 +653,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ProductDetailPage(product: related[index]),
+                        builder: (context) =>
+                            ProductDetailPage(product: related[index]),
                       ),
                     );
                   },
