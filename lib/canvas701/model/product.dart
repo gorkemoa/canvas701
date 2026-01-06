@@ -1,3 +1,5 @@
+import 'product_list_response.dart';
+
 /// Canvas701 Ürün Modeli
 class Product {
   final String id;
@@ -33,6 +35,37 @@ class Product {
     this.isAvailable = true,
     required this.createdAt,
   });
+
+  factory Product.fromApi(ApiProduct apiProduct) {
+    double parsePrice(String price) {
+      return double.tryParse(price.replaceAll('.', '').replaceAll(',', '.')) ?? 0.0;
+    }
+
+    return Product(
+      id: apiProduct.productID.toString(),
+      code: apiProduct.productCode,
+      name: apiProduct.productName,
+      description: '', // Listede açıklama gelmiyor
+      price: parsePrice(apiProduct.productPriceOriginal),
+      discountPrice: apiProduct.isDiscount ? parsePrice(apiProduct.productPrice) : null,
+      images: [apiProduct.productImage],
+      thumbnailUrl: apiProduct.productImage,
+      collectionId: '',
+      categoryIds: [],
+      availableSizes: [
+        ProductSize(
+          id: 'default',
+          name: '50x70 cm',
+          width: 50,
+          height: 70,
+          price: parsePrice(apiProduct.productPrice),
+        ),
+      ],
+      isBestseller: false,
+      isNew: false,
+      createdAt: DateTime.now(),
+    );
+  }
 
   /// İndirimli mi?
   bool get hasDiscount => discountPrice != null && discountPrice! < price;

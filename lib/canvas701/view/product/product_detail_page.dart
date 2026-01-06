@@ -1,8 +1,9 @@
 import 'package:canvas701/canvas701/theme/canvas701_theme_data.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:provider/provider.dart';
 import '../../model/model.dart';
-import '../../api/dummy_data.dart';
+import '../../viewmodel/product_viewmodel.dart';
 import '../widgets/widgets.dart';
 
 /// Canvas701 Ürün Detay Sayfası
@@ -630,40 +631,53 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   Widget _buildRelatedProducts() {
-    final related = Canvas701Data.bestsellers.take(4).toList();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Benzer Ürünler', style: Canvas701Typography.titleLarge),
-        const SizedBox(height: Canvas701Spacing.md),
-        SizedBox(
-          height:
-              360, // Ürün kartı yüksekliği için yeterli alan (347px + padding)
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: related.length,
-            separatorBuilder: (_, __) =>
-                const SizedBox(width: Canvas701Spacing.md),
-            itemBuilder: (context, index) {
-              return SizedBox(
-                width: 180,
-                child: ProductCard(
-                  product: related[index],
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            ProductDetailPage(product: related[index]),
-                      ),
-                    );
-                  },
-                ),
-              );
-            },
-          ),
-        ),
-      ],
+    return Consumer<ProductViewModel>(
+      builder: (context, viewModel, child) {
+        if (viewModel.products.isEmpty) return const SizedBox.shrink();
+
+        final related = viewModel.products
+            .where((p) => p.productID.toString() != widget.product.id)
+            .take(4)
+            .map((p) => Product.fromApi(p))
+            .toList();
+
+        if (related.isEmpty) return const SizedBox.shrink();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Benzer Ürünler', style: Canvas701Typography.titleLarge),
+            const SizedBox(height: Canvas701Spacing.md),
+            SizedBox(
+              height:
+                  360, // Ürün kartı yüksekliği için yeterli alan (347px + padding)
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: related.length,
+                separatorBuilder: (_, __) =>
+                    const SizedBox(width: Canvas701Spacing.md),
+                itemBuilder: (context, index) {
+                  return SizedBox(
+                    width: 180,
+                    child: ProductCard(
+                      product: related[index],
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                ProductDetailPage(product: related[index]),
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

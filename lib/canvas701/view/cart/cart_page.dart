@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/canvas701_theme_data.dart';
 import '../../model/cart.dart';
-import '../../api/dummy_data.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({super.key});
@@ -21,24 +20,7 @@ class _CartPageState extends State<CartPage> {
   }
 
   void _initializeCart() {
-    // Dummy verilerden ilk iki ürünü sepete ekleyelim
-    final products = Canvas701Data.bestsellers.take(2).toList();
-
-    final items = products.map((product) {
-      final size = product.availableSizes.first;
-      return CartItem(
-        productId: product.id,
-        productCode: product.code,
-        productName: product.name,
-        productImage: product.images.first,
-        sizeId: size.id,
-        sizeName: size.name,
-        unitPrice: size.price,
-        quantity: 1,
-      );
-    }).toList();
-
-    _cart = Cart(items: items);
+    _cart = const Cart(items: []);
   }
 
   void _updateQuantity(CartItem item, int delta) {

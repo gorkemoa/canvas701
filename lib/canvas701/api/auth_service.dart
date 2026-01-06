@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import '../../core/constants/api_constants.dart';
+import 'api_constants.dart';
 import '../../main.dart';
 import '../model/login_request.dart';
 import '../model/login_response.dart';

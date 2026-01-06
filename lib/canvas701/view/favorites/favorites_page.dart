@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../theme/canvas701_theme_data.dart';
-import '../../api/dummy_data.dart';
 import '../../model/model.dart';
 import '../widgets/widgets.dart';
 import '../../../core/widgets/app_mode_switcher.dart';
@@ -21,9 +20,9 @@ class _FavoritesPageState extends State<FavoritesPage> {
   @override
   void initState() {
     super.initState();
-    // Dummy favori verileri - Gerçek uygulamada bir state manager veya local storage'dan gelir
-    _favoriteProducts = Canvas701Data.allProducts.take(5).toList();
-    _filteredProducts = List.from(_favoriteProducts);
+    // Başlangıçta boş
+    _favoriteProducts = [];
+    _filteredProducts = [];
   }
 
   void _onSearch(String query) {

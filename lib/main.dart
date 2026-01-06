@@ -8,6 +8,7 @@ import 'canvas701/view/main_navigation_page.dart';
 import 'canvas701/viewmodel/profile_viewmodel.dart';
 import 'canvas701/viewmodel/register_viewmodel.dart';
 import 'canvas701/viewmodel/category_viewmodel.dart';
+import 'canvas701/viewmodel/product_viewmodel.dart';
 import 'creators/view/creators_home_page.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -30,6 +31,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => ProfileViewModel()),
         ChangeNotifierProvider(create: (_) => RegisterViewModel()),
         ChangeNotifierProvider(create: (_) => CategoryViewModel()),
+        ChangeNotifierProvider(create: (_) => ProductViewModel()),
       ],
       child: const Canvas701App(),
     ),

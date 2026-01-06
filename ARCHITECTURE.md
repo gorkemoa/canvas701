@@ -76,7 +76,7 @@ lib/
 
 ### 1. API Endpoints
 - **Base URL**: \`https://api.canvas701.com/c701/v1.0.0/\`
-- **Tüm endpoint'ler** \`lib/core/constants/api_constants.dart\` içinde tanımlanır.
+- **Tüm endpoint'ler** `lib/canvas701/api/api_constants.dart` içinde tanımlanır.
 - Asla view veya service içinde hardcode endpoint yazmayın.
 
 ### 2. Models

@@ -1,12 +1,13 @@
+import 'package:canvas701/canvas701/model/product_list_response.dart';
 import 'package:canvas701/canvas701/theme/canvas701_theme_data.dart';
 import 'package:canvas701/canvas701/view/product/product_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
-import '../../api/dummy_data.dart';
 import '../../model/model.dart';
 import '../../model/category_response.dart';
 import '../../viewmodel/category_viewmodel.dart';
+import '../../viewmodel/product_viewmodel.dart';
 import '../widgets/widgets.dart';
 import '../../../core/widgets/app_mode_switcher.dart';
 
@@ -34,6 +35,11 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<CategoryViewModel>().fetchCategories();
+      final productViewModel = context.read<ProductViewModel>();
+      productViewModel.fetchFilters();
+      productViewModel.fetchBestsellers();
+      productViewModel.fetchNewArrivals();
+      productViewModel.fetchAllProducts(refresh: true);
     });
   }
 
@@ -109,26 +115,64 @@ class _HomePageState extends State<HomePage> {
 
           // Bestsellers Section
           SliverToBoxAdapter(
-            child: _buildSectionHeader('Çok Satanlar', onSeeAll: () {}),
-          ),
-          SliverToBoxAdapter(
-            child: _buildProductsRow(Canvas701Data.bestsellers),
+            child: Consumer<ProductViewModel>(
+              builder: (context, viewModel, _) {
+                if (viewModel.isBestsellersLoading && viewModel.bestsellers.isEmpty) {
+                  return const SizedBox.shrink();
+                }
+                if (viewModel.bestsellers.isEmpty) return const SizedBox.shrink();
+
+                return Column(
+                  children: [
+                    _buildSectionHeader('Çok Satanlar', onSeeAll: () {}),
+                    _buildProductsRow(viewModel.bestsellers),
+                  ],
+                );
+              },
+            ),
           ),
 
           // New Arrivals Section
           SliverToBoxAdapter(
-            child: _buildSectionHeader('Son Eklenenler', onSeeAll: () {}),
-          ),
-          SliverToBoxAdapter(
-            child: _buildProductsRow(Canvas701Data.newArrivals),
+            child: Consumer<ProductViewModel>(
+              builder: (context, viewModel, _) {
+                if (viewModel.isNewArrivalsLoading && viewModel.newArrivals.isEmpty) {
+                  return const SizedBox.shrink();
+                }
+                if (viewModel.newArrivals.isEmpty) return const SizedBox.shrink();
+
+                return Column(
+                  children: [
+                    _buildSectionHeader('Son Eklenenler', onSeeAll: () {}),
+                    _buildProductsRow(viewModel.newArrivals),
+                  ],
+                );
+              },
+            ),
           ),
 
-          // Luxury Section
+          // All Products Section
           SliverToBoxAdapter(
-            child: _buildSectionHeader('Marka & Lüks', onSeeAll: () {}),
+            child: _buildSectionHeader('Tüm Ürünler', onSeeAll: () {}),
           ),
           SliverToBoxAdapter(
-            child: _buildProductsRow(Canvas701Data.luxuryProducts),
+            child: Consumer<ProductViewModel>(
+              builder: (context, viewModel, _) {
+                if (viewModel.isLoading && viewModel.products.isEmpty) {
+                  return const SizedBox(
+                    height: 200,
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+                if (viewModel.products.isEmpty) {
+                  return const SizedBox(
+                    height: 100,
+                    child: Center(child: Text('Ürün bulunamadı')),
+                  );
+                }
+                return _buildProductsRow(viewModel.products);
+              },
+            ),
           ),
 
           // Bottom spacing
@@ -384,7 +428,8 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildProductsRow(List<Product> products) {
+  Widget _buildProductsRow(List<ApiProduct> apiProducts) {
+    final products = apiProducts.map((p) => Product.fromApi(p)).toList();
     return SizedBox(
       height: 350,
       child: ListView.separated(
