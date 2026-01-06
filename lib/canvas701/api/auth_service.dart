@@ -9,6 +9,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../../main.dart';
 import '../model/login_models.dart';
 import '../model/user_models.dart';
+import '../model/address_models.dart';
 import '../view/login_page.dart';
 
 class AuthService {
@@ -333,6 +334,95 @@ class AuthService {
         error: true,
         success: false,
         data: UpdatePasswordData(status: 'error', message: e.toString()),
+      );
+    }
+  }
+
+  Future<AddAddressResponse> addAddress(AddAddressRequest request) async {
+    final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.addAddress}');
+
+    _logRequest('POST', url.toString(), request.toJson());
+
+    try {
+      final response = await http.post(
+        url,
+        headers: _getHeaders(),
+        body: jsonEncode(request.toJson()),
+      );
+
+      _logResponse(response.statusCode, response.body);
+
+      if (response.statusCode == 403) {
+        await logout();
+        _redirectToLogin();
+        return AddAddressResponse(
+          error: true,
+          success: false,
+          data: AddAddressData(
+            status: 'error',
+            message: 'Oturum süresi doldu (403)',
+          ),
+        );
+      }
+
+      final responseData = jsonDecode(response.body);
+      return AddAddressResponse.fromJson(responseData);
+    } catch (e) {
+      return AddAddressResponse(
+        error: true,
+        success: false,
+        data: AddAddressData(status: 'error', message: e.toString()),
+      );
+    }
+  }
+
+  Future<UserAddressesResponse> getUserAddresses() async {
+    final token = await getToken();
+    if (token == null) {
+      return UserAddressesResponse(
+        error: true,
+        success: false,
+        addresses: [],
+        errorMessage: 'Oturum bilgisi bulunamadı',
+        totalItems: 0,
+        emptyMessage: '',
+      );
+    }
+
+    final url = Uri.parse(
+      '${ApiConstants.baseUrl}${ApiConstants.getUserAddresses}?userToken=$token',
+    );
+
+    _logRequest('GET', url.toString(), null);
+
+    try {
+      final response = await http.get(url, headers: _getHeaders());
+
+      _logResponse(response.statusCode, response.body);
+
+      if (response.statusCode == 403) {
+        await logout();
+        _redirectToLogin();
+        return UserAddressesResponse(
+          error: true,
+          success: false,
+          addresses: [],
+          errorMessage: 'Oturum süresi doldu (403)',
+          totalItems: 0,
+          emptyMessage: '',
+        );
+      }
+
+      final responseData = jsonDecode(response.body);
+      return UserAddressesResponse.fromJson(responseData);
+    } catch (e) {
+      return UserAddressesResponse(
+        error: true,
+        success: false,
+        addresses: [],
+        errorMessage: e.toString(),
+        totalItems: 0,
+        emptyMessage: '',
       );
     }
   }

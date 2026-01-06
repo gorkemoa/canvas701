@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/cupertino.dart';
 import '../../theme/canvas701_theme_data.dart';
 import '../../viewmodel/profile_viewmodel.dart';
 import '../../model/user_models.dart';
@@ -37,7 +38,13 @@ class _ProfileInfoPageState extends State<ProfileInfoPage> {
     _phoneController = TextEditingController(text: user?.userPhone);
     _birthdayController = TextEditingController(text: user?.userBirthday);
     _addressController = TextEditingController(text: '');
-    _selectedGender = user?.userGender ?? 'Belirtilmemiş';
+    final userGender = user?.userGender;
+    if (userGender != null &&
+        ['Erkek', 'Kadın', 'Belirtilmemiş'].contains(userGender)) {
+      _selectedGender = userGender;
+    } else {
+      _selectedGender = 'Belirtilmemiş';
+    }
   }
 
   @override
@@ -303,13 +310,21 @@ class _ProfileInfoPageState extends State<ProfileInfoPage> {
                     keyboardType: TextInputType.phone,
                   ),
                   const SizedBox(height: 16),
-                  _buildTextField(
-                    controller: _birthdayController,
+                  _buildPickerField(
                     label: 'Doğum Tarihi',
-                    hint: 'GG.AA.YYYY',
+                    value: _birthdayController.text.isEmpty
+                        ? 'GG.AA.YYYY'
+                        : _birthdayController.text,
+                    onTap: _showBirthdayPicker,
+                    icon: Icons.calendar_today_outlined,
                   ),
                   const SizedBox(height: 16),
-                  _buildGenderDropdown(),
+                  _buildPickerField(
+                    label: 'Cinsiyet',
+                    value: _selectedGender,
+                    onTap: _showGenderPicker,
+                    icon: Icons.person_outline,
+                  ),
                   const SizedBox(height: 16),
                   _buildTextField(
                     controller: _addressController,
@@ -384,43 +399,288 @@ class _ProfileInfoPageState extends State<ProfileInfoPage> {
     );
   }
 
-  Widget _buildGenderDropdown() {
+  Widget _buildPickerField({
+    required String label,
+    required String value,
+    required VoidCallback onTap,
+    required IconData icon,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Cinsiyet',
+          label,
           style: Canvas701Typography.bodySmall.copyWith(
             color: Canvas701Colors.textSecondary,
           ),
         ),
         const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            color: Canvas701Colors.surface,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Canvas701Colors.divider),
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: _selectedGender,
-              isExpanded: true,
-              items: ['Erkek', 'Kadın', 'Belirtilmemiş'].map((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value, style: Canvas701Typography.bodyLarge),
-                );
-              }).toList(),
-              onChanged: (newValue) {
-                setState(() {
-                  _selectedGender = newValue!;
-                });
-              },
+        InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Canvas701Colors.surface,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Canvas701Colors.divider),
+            ),
+            child: Row(
+              children: [
+                Icon(icon, size: 20, color: Canvas701Colors.textSecondary),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    value,
+                    style: Canvas701Typography.bodyLarge.copyWith(
+                      color: value.contains('.') || !value.contains('G')
+                          ? Canvas701Colors.textPrimary
+                          : Canvas701Colors.textTertiary,
+                    ),
+                  ),
+                ),
+                const Icon(
+                  Icons.keyboard_arrow_down,
+                  size: 20,
+                  color: Canvas701Colors.textTertiary,
+                ),
+              ],
             ),
           ),
         ),
       ],
+    );
+  }
+
+  Future<void> _showGenderPicker() async {
+    final List<String> genders = ['Erkek', 'Kadın', 'Belirtilmemiş'];
+    int selectedIndex = genders.indexOf(_selectedGender);
+    if (selectedIndex == -1) selectedIndex = 2;
+
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: 300,
+        decoration: const BoxDecoration(
+          color: Canvas701Colors.surface,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          children: [
+            _buildPickerHeader(
+              title: 'Cinsiyet Seçin',
+              onDone: () => Navigator.pop(context),
+            ),
+            Expanded(
+              child: CupertinoPicker(
+                itemExtent: 40,
+                scrollController: FixedExtentScrollController(
+                  initialItem: selectedIndex,
+                ),
+                onSelectedItemChanged: (index) {
+                  setState(() {
+                    _selectedGender = genders[index];
+                  });
+                },
+                children: genders
+                    .map(
+                      (g) => Center(
+                        child: Text(g, style: Canvas701Typography.bodyLarge),
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showBirthdayPicker() async {
+    final List<String> turkishMonths = [
+      'Ocak',
+      'Şubat',
+      'Mart',
+      'Nisan',
+      'Mayıs',
+      'Haziran',
+      'Temmuz',
+      'Ağustos',
+      'Eylül',
+      'Ekim',
+      'Kasım',
+      'Aralık',
+    ];
+
+    int selectedDay = 1;
+    int selectedMonth = 1;
+    int selectedYear = DateTime.now().year - 20;
+
+    try {
+      if (_birthdayController.text.isNotEmpty) {
+        final parts = _birthdayController.text.split('.');
+        if (parts.length == 3) {
+          selectedDay = int.parse(parts[0]);
+          selectedMonth = int.parse(parts[1]);
+          selectedYear = int.parse(parts[2]);
+        }
+      }
+    } catch (_) {}
+
+    final int currentYear = DateTime.now().year;
+    final List<int> years = List.generate(
+      currentYear - 1900 + 1,
+      (i) => 1900 + i,
+    );
+
+    int getDaysInMonth(int month, int year) {
+      return DateTime(year, month + 1, 0).day;
+    }
+
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final daysInMonth = getDaysInMonth(selectedMonth, selectedYear);
+            if (selectedDay > daysInMonth) {
+              selectedDay = daysInMonth;
+            }
+
+            return Container(
+              height: 350,
+              decoration: const BoxDecoration(
+                color: Canvas701Colors.surface,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: Column(
+                children: [
+                  _buildPickerHeader(
+                    title: 'Doğum Tarihi Seçin',
+                    onDone: () {
+                      setState(() {
+                        _birthdayController.text =
+                            "${selectedDay.toString().padLeft(2, '0')}.${selectedMonth.toString().padLeft(2, '0')}.$selectedYear";
+                      });
+                      Navigator.pop(context);
+                    },
+                  ),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        // Day picker
+                        Expanded(
+                          child: CupertinoPicker(
+                            itemExtent: 40,
+                            scrollController: FixedExtentScrollController(
+                              initialItem: selectedDay - 1,
+                            ),
+                            onSelectedItemChanged: (index) {
+                              setModalState(() {
+                                selectedDay = index + 1;
+                              });
+                            },
+                            children: List.generate(
+                              daysInMonth,
+                              (i) => Center(
+                                child: Text(
+                                  '${i + 1}',
+                                  style: Canvas701Typography.bodyLarge,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        // Month picker (Turkish)
+                        Expanded(
+                          flex: 1,
+                          child: CupertinoPicker(
+                            itemExtent: 40,
+                            scrollController: FixedExtentScrollController(
+                              initialItem: selectedMonth - 1,
+                            ),
+                            onSelectedItemChanged: (index) {
+                              setModalState(() {
+                                selectedMonth = index + 1;
+                              });
+                            },
+                            children: turkishMonths
+                                .map(
+                                  (m) => Center(
+                                    child: Text(
+                                      m,
+                                      style: Canvas701Typography.bodyLarge,
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                        ),
+                        // Year picker
+                        Expanded(
+                          flex: 1,
+                          child: CupertinoPicker(
+                            itemExtent: 40,
+                            scrollController: FixedExtentScrollController(
+                              initialItem: years.indexOf(selectedYear),
+                            ),
+                            onSelectedItemChanged: (index) {
+                              setModalState(() {
+                                selectedYear = years[index];
+                              });
+                            },
+                            children: years
+                                .map(
+                                  (y) => Center(
+                                    child: Text(
+                                      '$y',
+                                      style: Canvas701Typography.bodyLarge,
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildPickerHeader({
+    required String title,
+    required VoidCallback onDone,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: Canvas701Colors.divider)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title, style: Canvas701Typography.titleMedium),
+          CupertinoButton(
+            onPressed: onDone,
+            child: const Text(
+              'Bitti',
+              style: TextStyle(
+                color: Canvas701Colors.primary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -8,6 +8,7 @@ import '../login_page.dart';
 import '../code_verification_page.dart';
 import 'profile_info_page.dart';
 import 'change_password_page.dart';
+import 'address_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -56,7 +57,9 @@ class _ProfilePageState extends State<ProfilePage> {
       backgroundColor: Canvas701Colors.background,
       body: Consumer<ProfileViewModel>(
         builder: (context, viewModel, child) {
-          debugPrint('--- ProfilePage BUILD: isLoading=${viewModel.isLoading}, hasUser=${viewModel.user != null}, error=${viewModel.errorMessage} ---');
+          debugPrint(
+            '--- ProfilePage BUILD: isLoading=${viewModel.isLoading}, hasUser=${viewModel.user != null}, error=${viewModel.errorMessage} ---',
+          );
           if (viewModel.isLoading && viewModel.user == null) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -76,16 +79,32 @@ class _ProfilePageState extends State<ProfilePage> {
               SliverToBoxAdapter(
                 child: Column(
                   children: [
-                    if (viewModel.user != null && viewModel.user!.isApproved == false)
-                      _buildVerificationBanner(context, viewModel.user!.userEmail),
+                    if (viewModel.user != null &&
+                        viewModel.user!.isApproved == false)
+                      _buildVerificationBanner(
+                        context,
+                        viewModel.user!.userEmail,
+                      ),
                     _buildHeader(viewModel),
                     const SizedBox(height: 10),
                     _buildMenuSection(
                       title: 'Siparişlerim',
                       items: [
-                        _MenuItem(icon: Icons.shopping_bag_outlined, title: 'Tüm Siparişlerim', onTap: () {}),
-                        _MenuItem(icon: Icons.local_shipping_outlined, title: 'Kargom Nerede?', onTap: () {}),
-                        _MenuItem(icon: Icons.assignment_return_outlined, title: 'İade Taleplerim', onTap: () {}),
+                        _MenuItem(
+                          icon: Icons.shopping_bag_outlined,
+                          title: 'Tüm Siparişlerim',
+                          onTap: () {},
+                        ),
+                        _MenuItem(
+                          icon: Icons.local_shipping_outlined,
+                          title: 'Kargom Nerede?',
+                          onTap: () {},
+                        ),
+                        _MenuItem(
+                          icon: Icons.assignment_return_outlined,
+                          title: 'İade Taleplerim',
+                          onTap: () {},
+                        ),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -98,7 +117,9 @@ class _ProfilePageState extends State<ProfilePage> {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => const ProfileInfoPage()),
+                              MaterialPageRoute(
+                                builder: (context) => const ProfileInfoPage(),
+                              ),
                             );
                           },
                         ),
@@ -108,22 +129,56 @@ class _ProfilePageState extends State<ProfilePage> {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => const ChangePasswordPage()),
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const ChangePasswordPage(),
+                              ),
                             );
                           },
                         ),
-                        _MenuItem(icon: Icons.location_on_outlined, title: 'Adres Bilgilerim', onTap: () {}),
-                        _MenuItem(icon: Icons.payment_outlined, title: 'Kayıtlı Kartlarım', onTap: () {}),
-                        _MenuItem(icon: Icons.notifications_none_outlined, title: 'Duyuru Tercihlerim', onTap: () {}),
+                        _MenuItem(
+                          icon: Icons.location_on_outlined,
+                          title: 'Adres Bilgilerim',
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const AddressPage(),
+                              ),
+                            );
+                          },
+                        ),
+                        _MenuItem(
+                          icon: Icons.payment_outlined,
+                          title: 'Kayıtlı Kartlarım',
+                          onTap: () {},
+                        ),
+                        _MenuItem(
+                          icon: Icons.notifications_none_outlined,
+                          title: 'Duyuru Tercihlerim',
+                          onTap: () {},
+                        ),
                       ],
                     ),
                     const SizedBox(height: 12),
                     _buildMenuSection(
                       title: 'Destek',
                       items: [
-                        _MenuItem(icon: Icons.help_outline, title: 'Yardım Merkezi', onTap: () {}),
-                        _MenuItem(icon: Icons.chat_bubble_outline, title: 'Canlı Destek', onTap: () {}),
-                        _MenuItem(icon: Icons.info_outline, title: 'Hakkımızda', onTap: () {}),
+                        _MenuItem(
+                          icon: Icons.help_outline,
+                          title: 'Yardım Merkezi',
+                          onTap: () {},
+                        ),
+                        _MenuItem(
+                          icon: Icons.chat_bubble_outline,
+                          title: 'Canlı Destek',
+                          onTap: () {},
+                        ),
+                        _MenuItem(
+                          icon: Icons.info_outline,
+                          title: 'Hakkımızda',
+                          onTap: () {},
+                        ),
                       ],
                     ),
                     const SizedBox(height: 24),
@@ -134,7 +189,9 @@ class _ProfilePageState extends State<ProfilePage> {
                           await AuthService().logout();
                           if (context.mounted) {
                             Navigator.of(context).pushAndRemoveUntil(
-                              MaterialPageRoute(builder: (context) => const LoginPage()),
+                              MaterialPageRoute(
+                                builder: (context) => const LoginPage(),
+                              ),
                               (route) => false,
                             );
                           }
@@ -145,16 +202,23 @@ class _ProfilePageState extends State<ProfilePage> {
                           minimumSize: const Size(double.infinity, 50),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
-                            side: const BorderSide(color: Canvas701Colors.divider),
+                            side: const BorderSide(
+                              color: Canvas701Colors.divider,
+                            ),
                           ),
                         ),
-                        child: const Text('Çıkış Yap', style: TextStyle(fontWeight: FontWeight.w600)),
+                        child: const Text(
+                          'Çıkış Yap',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 40),
                     Text(
                       'Versiyon 1.0.0',
-                      style: Canvas701Typography.bodySmall.copyWith(color: Canvas701Colors.textTertiary),
+                      style: Canvas701Typography.bodySmall.copyWith(
+                        color: Canvas701Colors.textTertiary,
+                      ),
                     ),
                     const SizedBox(height: 40),
                   ],
@@ -252,7 +316,11 @@ class _ProfilePageState extends State<ProfilePage> {
       color: Canvas701Colors.error.withOpacity(0.1),
       child: Row(
         children: [
-          const Icon(Icons.warning_amber_rounded, color: Canvas701Colors.error, size: 20),
+          const Icon(
+            Icons.warning_amber_rounded,
+            color: Canvas701Colors.error,
+            size: 20,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -295,7 +363,10 @@ class _ProfilePageState extends State<ProfilePage> {
                 borderRadius: BorderRadius.circular(6),
               ),
             ),
-            child: const Text('Doğrula', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Doğrula',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -304,7 +375,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildHeader(ProfileViewModel viewModel) {
     final user = viewModel.user;
-    
+
     if (!viewModel.isLoading && user == null) {
       return Container(
         padding: const EdgeInsets.all(24),
@@ -338,8 +409,14 @@ class _ProfilePageState extends State<ProfilePage> {
               shape: BoxShape.circle,
             ),
             child: user?.profilePhoto.isNotEmpty == true
-                ? ClipOval(child: Image.network(user!.profilePhoto, fit: BoxFit.cover))
-                : const Icon(Icons.person, size: 40, color: Canvas701Colors.primary),
+                ? ClipOval(
+                    child: Image.network(user!.profilePhoto, fit: BoxFit.cover),
+                  )
+                : const Icon(
+                    Icons.person,
+                    size: 40,
+                    color: Canvas701Colors.primary,
+                  ),
           ),
           const SizedBox(width: 20),
           Expanded(
@@ -365,7 +442,9 @@ class _ProfilePageState extends State<ProfilePage> {
                 const SizedBox(height: 4),
                 Text(
                   user?.userEmail ?? '',
-                  style: Canvas701Typography.bodyMedium.copyWith(color: Canvas701Colors.textSecondary),
+                  style: Canvas701Typography.bodyMedium.copyWith(
+                    color: Canvas701Colors.textSecondary,
+                  ),
                 ),
               ],
             ),
@@ -374,17 +453,25 @@ class _ProfilePageState extends State<ProfilePage> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const ProfileInfoPage()),
+                MaterialPageRoute(
+                  builder: (context) => const ProfileInfoPage(),
+                ),
               );
             },
-            icon: const Icon(Icons.edit_outlined, color: Canvas701Colors.textTertiary),
+            icon: const Icon(
+              Icons.edit_outlined,
+              color: Canvas701Colors.textTertiary,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildMenuSection({required String title, required List<_MenuItem> items}) {
+  Widget _buildMenuSection({
+    required String title,
+    required List<_MenuItem> items,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -392,13 +479,17 @@ class _ProfilePageState extends State<ProfilePage> {
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
           child: Text(
             title,
-            style: Canvas701Typography.titleMedium.copyWith(color: Canvas701Colors.textSecondary),
+            style: Canvas701Typography.titleMedium.copyWith(
+              color: Canvas701Colors.textSecondary,
+            ),
           ),
         ),
         Container(
           decoration: const BoxDecoration(
             color: Canvas701Colors.surface,
-            border: Border.symmetric(horizontal: BorderSide(color: Canvas701Colors.divider)),
+            border: Border.symmetric(
+              horizontal: BorderSide(color: Canvas701Colors.divider),
+            ),
           ),
           child: Column(
             children: List.generate(items.length, (index) {
@@ -406,7 +497,11 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: [
                   items[index],
                   if (index < items.length - 1)
-                    const Divider(height: 1, color: Canvas701Colors.divider, indent: 64),
+                    const Divider(
+                      height: 1,
+                      color: Canvas701Colors.divider,
+                      indent: 64,
+                    ),
                 ],
               );
             }),
@@ -434,7 +529,11 @@ class _MenuItem extends StatelessWidget {
       onTap: onTap,
       leading: Icon(icon, color: Canvas701Colors.textPrimary, size: 22),
       title: Text(title, style: Canvas701Typography.bodyLarge),
-      trailing: const Icon(Icons.chevron_right, color: Canvas701Colors.textTertiary, size: 20),
+      trailing: const Icon(
+        Icons.chevron_right,
+        color: Canvas701Colors.textTertiary,
+        size: 20,
+      ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 24),
       dense: true,
     );

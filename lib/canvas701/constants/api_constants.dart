@@ -1,6 +1,6 @@
 class ApiConstants {
   static const String baseUrl = 'https://api.canvas701.com/c701/v1.0.0/';
-  
+
   // Basic Auth
   static const String apiUsername = 'C71VAhHsnC8HJN8nlvp9K5ycPoyMJM';
   static const String apiPassword = 'pRPa7vCAqHxtRsI17I1FBpPH57Edl0';
@@ -20,8 +20,17 @@ class ApiConstants {
   static const String getCategories = 'service/products/category/list/0';
   static const String allProducts = 'service/products/product/list/all';
   static const String filterList = 'service/products/product/list/filterList';
-  static String getProductDetail(int productId) => 'service/products/product/detail/$productId';
+  static String getProductDetail(int productId) =>
+      'service/products/product/detail/$productId';
+
+  // Address
+  static const String addAddress = 'service/user/account/address/add';
+  static const String getUserAddresses = 'service/user/account/address/list';
+  static const String getCities = 'service/general/general/cities/all';
+  static String getDistrictsByCity(int cityId) =>
+      'service/general/general/$cityId/districts';
 
   // General
-  static const String kvkkAgreement = 'service/general/general/contracts/kvkkAgreement';
+  static const String kvkkAgreement =
+      'service/general/general/contracts/kvkkAgreement';
 }
