@@ -18,4 +18,7 @@ class ApiConstants {
 
   // Products
   static const String getCategories = 'service/products/category/list/0';
+
+  // General
+  static const String kvkkAgreement = 'service/general/general/contracts/kvkkAgreement';
 }

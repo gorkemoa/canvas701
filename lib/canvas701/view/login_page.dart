@@ -94,9 +94,9 @@ class _LoginPageState extends State<LoginPage> {
                       // Email Field
                       TextField(
                         controller: _emailController,
+                        style: const TextStyle(color: Colors.black),
                         decoration: InputDecoration(
-                          labelText: 'E-posta',
-                          hintText: 'ornek@mail.com',
+                          hintText: 'E-posta adresiniz',
                           filled: true,
                           fillColor: Colors.white.withOpacity(0.9),
                           prefixIcon: const Icon(Icons.email_outlined),
@@ -112,9 +112,9 @@ class _LoginPageState extends State<LoginPage> {
                       // Password Field
                       TextField(
                         controller: _passwordController,
+                        style: const TextStyle(color: Colors.black),
                         decoration: InputDecoration(
-                          labelText: 'Şifre',
-                          hintText: '••••••••',
+                          hintText: 'Şifreniz',
                           filled: true,
                           fillColor: Colors.white.withOpacity(0.9),
                           prefixIcon: const Icon(Icons.lock_outline),

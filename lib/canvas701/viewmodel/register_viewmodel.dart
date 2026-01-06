@@ -2,12 +2,15 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../api/auth_service.dart';
+import '../api/general_service.dart';
 import '../model/register_request.dart';
 import '../model/code_check_request.dart';
 import '../model/resend_code_request.dart';
+import '../model/kvkk_response.dart';
 
 class RegisterViewModel extends ChangeNotifier {
   final AuthService _authService = AuthService();
+  final GeneralService _generalService = GeneralService();
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -23,6 +26,21 @@ class RegisterViewModel extends ChangeNotifier {
 
   String? _codeToken;
   String? get codeToken => _codeToken;
+
+  KvkkData? _kvkkData;
+  KvkkData? get kvkkData => _kvkkData;
+
+  Future<void> fetchKvkkPolicy() async {
+    try {
+      final response = await _generalService.getKvkkPolicy();
+      if (response.success && response.data != null) {
+        _kvkkData = response.data;
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Error fetching KVKK: $e');
+    }
+  }
 
   Future<bool> register({
     required String firstName,

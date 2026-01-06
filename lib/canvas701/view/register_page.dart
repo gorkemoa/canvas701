@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodel/register_viewmodel.dart';
 import '../theme/canvas701_theme_data.dart';
+import '../model/kvkk_response.dart';
 import 'code_verification_page.dart';
 import 'login_page.dart';
 
@@ -21,6 +22,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _confirmPasswordController = TextEditingController();
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
+  bool _isKvkkAccepted = false;
 
   // Arka plan görselleri listesi
   final List<String> _backgroundImages = [
@@ -44,6 +46,10 @@ class _RegisterPageState extends State<RegisterPage> {
         });
       }
     });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<RegisterViewModel>().fetchKvkkPolicy();
+    });
   }
 
   @override
@@ -55,6 +61,43 @@ class _RegisterPageState extends State<RegisterPage> {
     _confirmPasswordController.dispose();
     _timer?.cancel();
     super.dispose();
+  }
+
+  void _showKvkkDialog(KvkkData? data) {
+    if (data == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('KVKK metni yükleniyor, lütfen bekleyin...')),
+      );
+      return;
+    }
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(data.postTitle),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: SelectableText(
+              data.postContent
+                  .replaceAll(RegExp(r'<[^>]*>'), '')
+                  .replaceAll('&nbsp;', ' ')
+                  .replaceAll('&quot;', '"')
+                  .replaceAll('&amp;', '&')
+                  .replaceAll('&lt;', '<')
+                  .replaceAll('&gt;', '>')
+                  .trim(),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Kapat'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -113,8 +156,8 @@ class _RegisterPageState extends State<RegisterPage> {
                           Expanded(
                             child: TextField(
                               controller: _firstNameController,
+                              style: const TextStyle(color: Colors.black),
                               decoration: InputDecoration(
-                                labelText: 'Ad',
                                 hintText: 'Adınız',
                                 filled: true,
                                 fillColor: Colors.white.withOpacity(0.9),
@@ -132,8 +175,8 @@ class _RegisterPageState extends State<RegisterPage> {
                           Expanded(
                             child: TextField(
                               controller: _lastNameController,
+                              style: const TextStyle(color: Colors.black),
                               decoration: InputDecoration(
-                                labelText: 'Soyad',
                                 hintText: 'Soyadınız',
                                 filled: true,
                                 fillColor: Colors.white.withOpacity(0.9),
@@ -152,9 +195,9 @@ class _RegisterPageState extends State<RegisterPage> {
                       // Email Field
                       TextField(
                         controller: _emailController,
+                        style: const TextStyle(color: Colors.black),
                         decoration: InputDecoration(
-                          labelText: 'E-posta',
-                          hintText: 'ornek@mail.com',
+                          hintText: 'E-posta adresiniz',
                           filled: true,
                           fillColor: Colors.white.withOpacity(0.9),
                           prefixIcon: const Icon(Icons.email_outlined),
@@ -170,9 +213,9 @@ class _RegisterPageState extends State<RegisterPage> {
                       // Password Field
                       TextField(
                         controller: _passwordController,
+                        style: const TextStyle(color: Colors.black),
                         decoration: InputDecoration(
-                          labelText: 'Şifre',
-                          hintText: '••••••••',
+                          hintText: 'Şifreniz',
                           filled: true,
                           fillColor: Colors.white.withOpacity(0.9),
                           prefixIcon: const Icon(Icons.lock_outline),
@@ -199,9 +242,9 @@ class _RegisterPageState extends State<RegisterPage> {
                       // Confirm Password Field
                       TextField(
                         controller: _confirmPasswordController,
+                        style: const TextStyle(color: Colors.black),
                         decoration: InputDecoration(
-                          labelText: 'Şifre Tekrar',
-                          hintText: '••••••••',
+                          hintText: 'Şifre Tekrarı',
                           filled: true,
                           fillColor: Colors.white.withOpacity(0.9),
                           prefixIcon: const Icon(Icons.lock_outline),
@@ -224,7 +267,51 @@ class _RegisterPageState extends State<RegisterPage> {
                         obscureText: !_isConfirmPasswordVisible,
                         textInputAction: TextInputAction.done,
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
+                      // KVKK Checkbox
+                      Row(
+                        children: [
+                          Theme(
+                            data: ThemeData(unselectedWidgetColor: Colors.white),
+                            child: Checkbox(
+                              value: _isKvkkAccepted,
+                              onChanged: (value) {
+                                setState(() {
+                                  _isKvkkAccepted = value ?? false;
+                                });
+                              },
+                              side: const BorderSide(color: Colors.white),
+                              checkColor: Canvas701Colors.primary,
+                              activeColor: Colors.white,
+                            ),
+                          ),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => _showKvkkDialog(viewModel.kvkkData),
+                              child: const Text.rich(
+                                TextSpan(
+                                  text: 'KVKK Aydınlatma Metni',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    decoration: TextDecoration.underline,
+                                    shadows: [Shadow(color: Colors.black, blurRadius: 2)],
+                                  ),
+                                  children: [
+                                    TextSpan(
+                                      text: '\'ni okudum ve kabul ediyorum.',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        decoration: TextDecoration.none,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
                       // Error Message
                       if (viewModel.errorMessage != null)
                         Padding(
@@ -258,6 +345,13 @@ class _RegisterPageState extends State<RegisterPage> {
                                 if (_passwordController.text != _confirmPasswordController.text) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(content: Text('Şifreler eşleşmiyor')),
+                                  );
+                                  return;
+                                }
+
+                                if (!_isKvkkAccepted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Lütfen KVKK Aydınlatma Metnini onaylayın')),
                                   );
                                   return;
                                 }
