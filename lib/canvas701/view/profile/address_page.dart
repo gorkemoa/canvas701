@@ -31,9 +31,17 @@ class _AddressViewState extends State<_AddressView> {
     return Scaffold(
       backgroundColor: Canvas701Colors.background,
       appBar: AppBar(
-        title: const Text('Adreslerim', style: Canvas701Typography.titleLarge),
-        backgroundColor: Canvas701Colors.surface,
-        foregroundColor: Canvas701Colors.textPrimary,
+        title: const Text(
+          'Adreslerim',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: Canvas701Colors.primary,
+        foregroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
         centerTitle: true,
       ),

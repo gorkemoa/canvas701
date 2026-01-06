@@ -126,10 +126,17 @@ class _AddAddressViewState extends State<_AddAddressView> {
       appBar: AppBar(
         title: const Text(
           'Yeni Adres Ekle',
-          style: Canvas701Typography.titleLarge,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
         ),
-        backgroundColor: Canvas701Colors.surface,
-        foregroundColor: Canvas701Colors.textPrimary,
+        backgroundColor: Canvas701Colors.primary,
+        foregroundColor: Colors.white, // geri ikon + title
+        iconTheme: const IconThemeData(
+          color: Colors.white, // geri ikon kesin beyaz
+        ),
         elevation: 0,
         centerTitle: true,
       ),
