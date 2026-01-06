@@ -376,6 +376,46 @@ class AuthService {
     }
   }
 
+  Future<AddAddressResponse> updateAddress(UpdateAddressRequest request) async {
+    final url = Uri.parse(
+      '${ApiConstants.baseUrl}${ApiConstants.updateAddress}',
+    );
+
+    _logRequest('PUT', url.toString(), request.toJson());
+
+    try {
+      final response = await http.put(
+        url,
+        headers: _getHeaders(),
+        body: jsonEncode(request.toJson()),
+      );
+
+      _logResponse(response.statusCode, response.body);
+
+      if (response.statusCode == 403) {
+        await logout();
+        _redirectToLogin();
+        return AddAddressResponse(
+          error: true,
+          success: false,
+          data: AddAddressData(
+            status: 'error',
+            message: 'Oturum süresi doldu (403)',
+          ),
+        );
+      }
+
+      final responseData = jsonDecode(response.body);
+      return AddAddressResponse.fromJson(responseData);
+    } catch (e) {
+      return AddAddressResponse(
+        error: true,
+        success: false,
+        data: AddAddressData(status: 'error', message: e.toString()),
+      );
+    }
+  }
+
   Future<UserAddressesResponse> getUserAddresses() async {
     final token = await getToken();
     if (token == null) {

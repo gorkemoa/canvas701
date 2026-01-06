@@ -14,8 +14,10 @@ class AddAddressViewModel extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
 
   // Form State
+  int? _addressId;
   int _addressType = 1; // 1: Bireysel, 2: Kurumsal
   int get addressType => _addressType;
+  bool get isEditMode => _addressId != null;
 
   // Dropdown Selections
   int? _selectedCityId;
@@ -42,6 +44,20 @@ class AddAddressViewModel extends ChangeNotifier {
     _fetchCities();
   }
 
+  void initialize(UserAddress? address) {
+    if (address == null) return;
+
+    _addressId = address.addressId;
+    _addressType = address.addressTypeId;
+    _selectedCityId = address.cityId;
+    _selectedDistrictId = address.districtId;
+
+    if (_selectedCityId != null) {
+      _fetchDistricts(_selectedCityId!);
+    }
+    notifyListeners();
+  }
+
   Future<void> _fetchCities() async {
     _isCitiesLoading = true;
     notifyListeners();
@@ -64,7 +80,10 @@ class AddAddressViewModel extends ChangeNotifier {
   Future<void> _fetchDistricts(int cityId) async {
     _isDistrictsLoading = true;
     _districts = [];
-    _selectedDistrictId = null;
+    // Reset district if we are changing city, but NOT if we are initializing
+    if (!_isCitiesLoading && !isEditMode) {
+      _selectedDistrictId = null;
+    }
     notifyListeners();
 
     try {
@@ -141,33 +160,61 @@ class AddAddressViewModel extends ChangeNotifier {
             '(${cleanPhone.substring(0, 3)}) ${cleanPhone.substring(3, 6)} ${cleanPhone.substring(6, 8)} ${cleanPhone.substring(8, 10)}';
       }
 
-      final request = AddAddressRequest(
-        userToken: token,
-        addressTitle: title,
-        userFirstName: firstName,
-        userLastName: lastName,
-        addressPhone: formattedPhone,
-        addressEmail: email,
-        address: addressDetail,
-        addressCityID: _selectedCityId ?? 0,
-        addressDistrictID: _selectedDistrictId ?? 0,
-        addressType: _addressType,
-        invoiceAddress:
-            invoiceAddress ?? addressDetail, // Fallback to main address
-        realCompanyName: companyName,
-        taxNumber: taxNumber,
-        taxAdministration: taxOffice,
-        postalCode: postalCode,
-        identityNumber: _addressType == 1 ? identityNumber : null,
-      );
+      if (isEditMode) {
+        final request = UpdateAddressRequest(
+          addressID: _addressId!,
+          userToken: token,
+          addressTitle: title,
+          userFirstName: firstName,
+          userLastName: lastName,
+          addressPhone: formattedPhone,
+          addressEmail: email,
+          address: addressDetail,
+          addressCityID: _selectedCityId ?? 0,
+          addressDistrictID: _selectedDistrictId ?? 0,
+          addressType: _addressType,
+          invoiceAddress:
+              invoiceAddress ?? addressDetail, // Fallback to main address
+          realCompanyName: companyName,
+          taxNumber: taxNumber,
+          taxAdministration: taxOffice,
+          postalCode: postalCode,
+          identityNumber: _addressType == 1 ? identityNumber : null,
+        );
+        final response = await _authService.updateAddress(request);
+        if (!response.success) {
+          _errorMessage = response.errorMessage ?? response.data?.message;
+        }
+        return response;
+      } else {
+        final request = AddAddressRequest(
+          userToken: token,
+          addressTitle: title,
+          userFirstName: firstName,
+          userLastName: lastName,
+          addressPhone: formattedPhone,
+          addressEmail: email,
+          address: addressDetail,
+          addressCityID: _selectedCityId ?? 0,
+          addressDistrictID: _selectedDistrictId ?? 0,
+          addressType: _addressType,
+          invoiceAddress:
+              invoiceAddress ?? addressDetail, // Fallback to main address
+          realCompanyName: companyName,
+          taxNumber: taxNumber,
+          taxAdministration: taxOffice,
+          postalCode: postalCode,
+          identityNumber: _addressType == 1 ? identityNumber : null,
+        );
 
-      final response = await _authService.addAddress(request);
+        final response = await _authService.addAddress(request);
 
-      if (!response.success) {
-        _errorMessage = response.errorMessage ?? response.data?.message;
+        if (!response.success) {
+          _errorMessage = response.errorMessage ?? response.data?.message;
+        }
+
+        return response;
       }
-
-      return response;
     } catch (e) {
       _errorMessage = e.toString();
       return AddAddressResponse(

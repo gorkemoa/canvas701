@@ -127,9 +127,45 @@ class _AddressViewState extends State<_AddressView> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  address.addressTitle,
-                                  style: Canvas701Typography.titleMedium,
+                                Row(
+                                  children: [
+                                    Text(
+                                      address.addressTitle,
+                                      style: Canvas701Typography.titleMedium,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    GestureDetector(
+                                      onTap: () async {
+                                        await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                AddAddressPage(
+                                                  initialAddress: address,
+                                                ),
+                                          ),
+                                        );
+                                        if (context.mounted) {
+                                          context
+                                              .read<AddressViewModel>()
+                                              .fetchAddresses();
+                                        }
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          color: Canvas701Colors.primary
+                                              .withOpacity(0.1),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(
+                                          Icons.edit,
+                                          size: 14,
+                                          color: Canvas701Colors.primary,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                                 Text(
                                   address.addressType,

@@ -6,19 +6,21 @@ import '../../viewmodel/add_address_viewmodel.dart';
 import '../../model/address_models.dart';
 
 class AddAddressPage extends StatelessWidget {
-  const AddAddressPage({super.key});
+  final UserAddress? initialAddress;
+  const AddAddressPage({super.key, this.initialAddress});
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => AddAddressViewModel(),
-      child: const _AddAddressView(),
+      create: (_) => AddAddressViewModel()..initialize(initialAddress),
+      child: _AddAddressView(initialAddress: initialAddress),
     );
   }
 }
 
 class _AddAddressView extends StatefulWidget {
-  const _AddAddressView();
+  final UserAddress? initialAddress;
+  const _AddAddressView({this.initialAddress});
 
   @override
   State<_AddAddressView> createState() => _AddAddressViewState();
@@ -28,18 +30,48 @@ class _AddAddressViewState extends State<_AddAddressView> {
   final _formKey = GlobalKey<FormState>();
 
   // Controllers
-  final _titleController = TextEditingController();
-  final _firstNameController = TextEditingController();
-  final _lastNameController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _addressDetailController = TextEditingController();
-  final _postalCodeController = TextEditingController();
-  final _companyNameController = TextEditingController();
-  final _taxNumberController = TextEditingController();
-  final _taxOfficeController = TextEditingController();
-  final _invoiceAddressController = TextEditingController();
-  final _identityNumberController = TextEditingController();
+  late final TextEditingController _titleController;
+  late final TextEditingController _firstNameController;
+  late final TextEditingController _lastNameController;
+  late final TextEditingController _phoneController;
+  late final TextEditingController _emailController;
+  late final TextEditingController _addressDetailController;
+  late final TextEditingController _postalCodeController;
+  late final TextEditingController _companyNameController;
+  late final TextEditingController _taxNumberController;
+  late final TextEditingController _taxOfficeController;
+  late final TextEditingController _invoiceAddressController;
+  late final TextEditingController _identityNumberController;
+
+  @override
+  void initState() {
+    super.initState();
+    final addr = widget.initialAddress;
+    _titleController = TextEditingController(text: addr?.addressTitle ?? '');
+    _firstNameController = TextEditingController(
+      text: addr?.addressFirstName ?? '',
+    );
+    _lastNameController = TextEditingController(
+      text: addr?.addressLastName ?? '',
+    );
+    _phoneController = TextEditingController(text: addr?.addressPhone ?? '');
+    _emailController = TextEditingController(text: addr?.addressEmail ?? '');
+    _addressDetailController = TextEditingController(text: addr?.address ?? '');
+    _postalCodeController = TextEditingController(text: addr?.postalCode ?? '');
+    _companyNameController = TextEditingController(
+      text: addr?.realCompanyName ?? '',
+    );
+    _taxNumberController = TextEditingController(text: addr?.taxNumber ?? '');
+    _taxOfficeController = TextEditingController(
+      text: addr?.taxAdministration ?? '',
+    );
+    _invoiceAddressController = TextEditingController(
+      text: addr?.invoiceAddress ?? '',
+    );
+    _identityNumberController = TextEditingController(
+      text: addr?.identityNumber ?? '',
+    );
+  }
 
   @override
   void dispose() {
@@ -96,8 +128,12 @@ class _AddAddressViewState extends State<_AddAddressView> {
     if (context.mounted) {
       if (response.success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Adres başarıyla eklendi.'),
+          SnackBar(
+            content: Text(
+              viewModel.isEditMode
+                  ? 'Adres başarıyla güncellendi.'
+                  : 'Adres başarıyla eklendi.',
+            ),
             backgroundColor: Canvas701Colors.success,
           ),
         );
@@ -124,9 +160,9 @@ class _AddAddressViewState extends State<_AddAddressView> {
     return Scaffold(
       backgroundColor: Canvas701Colors.background,
       appBar: AppBar(
-        title: const Text(
-          'Yeni Adres Ekle',
-          style: TextStyle(
+        title: Text(
+          viewModel.isEditMode ? 'Adresi Düzenle' : 'Yeni Adres Ekle',
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
             color: Colors.white,

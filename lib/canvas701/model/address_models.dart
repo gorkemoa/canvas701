@@ -57,6 +57,37 @@ class AddAddressRequest {
   }
 }
 
+class UpdateAddressRequest extends AddAddressRequest {
+  final int addressID;
+
+  UpdateAddressRequest({
+    required this.addressID,
+    required super.userToken,
+    required super.addressTitle,
+    required super.userFirstName,
+    required super.userLastName,
+    required super.addressPhone,
+    required super.addressEmail,
+    required super.address,
+    required super.addressCityID,
+    required super.addressDistrictID,
+    required super.addressType,
+    required super.invoiceAddress,
+    super.identityNumber,
+    super.realCompanyName,
+    super.taxNumber,
+    super.taxAdministration,
+    required super.postalCode,
+  });
+
+  @override
+  Map<String, dynamic> toJson() {
+    final json = super.toJson();
+    json['addressID'] = addressID;
+    return json;
+  }
+}
+
 class AddAddressResponse {
   final bool error;
   final bool success;

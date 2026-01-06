@@ -25,6 +25,7 @@ class ApiConstants {
 
   // Address
   static const String addAddress = 'service/user/account/address/add';
+  static const String updateAddress = 'service/user/account/address/update';
   static const String getUserAddresses = 'service/user/account/address/list';
   static const String getCities = 'service/general/general/cities/all';
   static String getDistrictsByCity(int cityId) =>
