@@ -37,4 +37,26 @@ class AddressViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<bool> deleteAddress(int addressID) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final response = await _authService.deleteAddress(addressID);
+      if (response.success) {
+        await fetchAddresses();
+        return true;
+      } else {
+        _errorMessage = response.errorMessage ?? 'Adres silinemedi';
+        return false;
+      }
+    } catch (e) {
+      _errorMessage = 'Silme hatası: $e';
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 }

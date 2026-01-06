@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../theme/canvas701_theme_data.dart';
 import '../../viewmodel/address_viewmodel.dart';
+import '../../model/address_models.dart';
 import 'add_address_page.dart';
 
 class AddressPage extends StatelessWidget {
@@ -96,207 +97,239 @@ class _AddressViewState extends State<_AddressView> {
               ),
             )
           : ListView.separated(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 130),
               itemCount: viewModel.addresses.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 12),
+              separatorBuilder: (context, index) => const SizedBox(height: 16),
               itemBuilder: (context, index) {
                 final address = viewModel.addresses[index];
                 return Container(
-                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Canvas701Colors.surface,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Canvas701Colors.divider),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Canvas701Colors.divider.withOpacity(0.5),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.02),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          SizedBox(
-                            child: Icon(
-                              address.addressTypeId == 2
-                                  ? Icons.business
-                                  : Icons.home,
-                              color: Canvas701Colors.primary,
-                              size: 20,
+                      // Header Section
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 8, 12),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Icon Box
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: Canvas701Colors.primary.withOpacity(
+                                  0.08,
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                address.addressTypeId == 2
+                                    ? Icons.business_rounded
+                                    : Icons.home_rounded,
+                                color: Canvas701Colors.primary,
+                                size: 24,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Text(
-                                      address.addressTitle,
-                                      style: Canvas701Typography.titleMedium,
+                            const SizedBox(width: 16),
+                            // Title & Type
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    address.addressTitle,
+                                    style: Canvas701Typography.titleMedium
+                                        .copyWith(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 16,
+                                        ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 2,
                                     ),
-                                    const SizedBox(width: 8),
-                                    GestureDetector(
-                                      onTap: () async {
-                                        await Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                AddAddressPage(
-                                                  initialAddress: address,
-                                                ),
-                                          ),
-                                        );
-                                        if (context.mounted) {
-                                          context
-                                              .read<AddressViewModel>()
-                                              .fetchAddresses();
-                                        }
-                                      },
-                                      child: Container(
-                                        padding: const EdgeInsets.all(4),
-                                        decoration: BoxDecoration(
-                                          color: Canvas701Colors.primary
-                                              .withOpacity(0.1),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: const Icon(
-                                          Icons.edit,
-                                          size: 14,
-                                          color: Canvas701Colors.primary,
-                                        ),
+                                    decoration: BoxDecoration(
+                                      color: Canvas701Colors.background,
+                                      borderRadius: BorderRadius.circular(4),
+                                      border: Border.all(
+                                        color: Canvas701Colors.divider,
                                       ),
                                     ),
-                                  ],
+                                    child: Text(
+                                      address.addressType,
+                                      style: Canvas701Typography.labelSmall
+                                          .copyWith(
+                                            color:
+                                                Canvas701Colors.textSecondary,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // Menu
+                            PopupMenuButton<String>(
+                              padding: EdgeInsets.zero,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              onSelected: (value) async {
+                                if (value == 'edit') {
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AddAddressPage(
+                                        initialAddress: address,
+                                      ),
+                                    ),
+                                  );
+                                  if (context.mounted) {
+                                    context
+                                        .read<AddressViewModel>()
+                                        .fetchAddresses();
+                                  }
+                                } else if (value == 'delete') {
+                                  _showDeleteConfirmation(context, address);
+                                }
+                              },
+                              icon: const Icon(
+                                Icons.more_vert,
+                                color: Canvas701Colors.textTertiary,
+                              ),
+                              itemBuilder: (context) => [
+                                const PopupMenuItem(
+                                  value: 'edit',
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.edit_outlined,
+                                        size: 20,
+                                        color: Canvas701Colors.textPrimary,
+                                      ),
+                                      SizedBox(width: 12),
+                                      Text('Düzenle'),
+                                    ],
+                                  ),
                                 ),
-                                Text(
-                                  address.addressType,
-                                  style: Canvas701Typography.bodySmall.copyWith(
-                                    color: Canvas701Colors.textTertiary,
+                                const PopupMenuItem(
+                                  value: 'delete',
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.delete_outline,
+                                        size: 20,
+                                        color: Canvas701Colors.error,
+                                      ),
+                                      SizedBox(width: 12),
+                                      Text(
+                                        'Sil',
+                                        style: TextStyle(
+                                          color: Canvas701Colors.error,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
                             ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Canvas701Colors.background,
-                              borderRadius: BorderRadius.circular(4),
-                              border: Border.all(
-                                color: Canvas701Colors.divider,
-                              ),
-                            ),
-                            child: Text(
+                          ],
+                        ),
+                      ),
+                      const Divider(height: 1, thickness: 0.5),
+                      // Info Section
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            _buildInfoRow(
+                              Icons.person_outline_rounded,
                               '${address.addressFirstName} ${address.addressLastName}',
-                              style: Canvas701Typography.bodySmall.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Canvas701Colors.primary,
+                            ),
+                            const SizedBox(height: 8),
+                            _buildInfoRow(
+                              Icons.phone_outlined,
+                              address.addressPhone,
+                            ),
+                            const SizedBox(height: 8),
+                            _buildInfoRow(
+                              Icons.mail_outline_rounded,
+                              address.addressEmail,
+                            ),
+                            if (address.addressTypeId == 1 &&
+                                address.identityNumber.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              _buildInfoRow(
+                                Icons.badge_outlined,
+                                'TC: ${address.identityNumber}',
                               ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const Divider(height: 24),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.phone_outlined,
-                            size: 16,
-                            color: Canvas701Colors.textTertiary,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            address.addressPhone,
-                            style: Canvas701Typography.bodyMedium,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.mail_outline,
-                            size: 16,
-                            color: Canvas701Colors.textTertiary,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            address.addressEmail,
-                            style: Canvas701Typography.bodyMedium,
-                          ),
-                        ],
-                      ),
-                      if (address.addressTypeId == 1 &&
-                          address.identityNumber.isNotEmpty) ...[
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.badge_outlined,
-                              size: 16,
-                              color: Canvas701Colors.textTertiary,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'TC: ${address.identityNumber}',
-                              style: Canvas701Typography.bodyMedium,
-                            ),
-                          ],
-                        ),
-                      ],
-                      if (address.addressTypeId == 2) ...[
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.business_outlined,
-                              size: 16,
-                              color: Canvas701Colors.textTertiary,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
+                            ],
+                            if (address.addressTypeId == 2) ...[
+                              const SizedBox(height: 8),
+                              _buildInfoRow(
+                                Icons.business_center_outlined,
                                 address.realCompanyName,
-                                style: Canvas701Typography.bodyMedium,
                               ),
-                            ),
+                              const SizedBox(height: 8),
+                              _buildInfoRow(
+                                Icons.receipt_long_outlined,
+                                '${address.taxAdministration} / ${address.taxNumber}',
+                              ),
+                            ],
                           ],
                         ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            const SizedBox(width: 24),
-                            Text(
-                              '${address.taxAdministration} / ${address.taxNumber}',
-                              style: Canvas701Typography.bodySmall,
-                            ),
-                          ],
-                        ),
-                      ],
-                      const SizedBox(height: 12),
+                      ),
+                      // Address Box
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(12),
+                        margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                        padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: Canvas701Colors.background,
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Canvas701Colors.divider.withOpacity(0.5),
+                          ),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  '${address.addressDistrict} / ${address.addressCity}',
-                                  style: Canvas701Typography.bodyMedium
-                                      .copyWith(fontWeight: FontWeight.bold),
+                                const Icon(
+                                  Icons.location_on_outlined,
+                                  size: 20,
+                                  color: Canvas701Colors.primary,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    '${address.addressDistrict} / ${address.addressCity}',
+                                    style: Canvas701Typography.bodyMedium
+                                        .copyWith(
+                                          fontWeight: FontWeight.w600,
+                                          color: Canvas701Colors.textPrimary,
+                                        ),
+                                  ),
                                 ),
                                 Container(
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
+                                    horizontal: 8,
                                     vertical: 2,
                                   ),
                                   decoration: BoxDecoration(
@@ -308,7 +341,7 @@ class _AddressViewState extends State<_AddressView> {
                                   ),
                                   child: Text(
                                     address.postalCode,
-                                    style: Canvas701Typography.bodySmall
+                                    style: Canvas701Typography.labelSmall
                                         .copyWith(
                                           fontWeight: FontWeight.bold,
                                           color: Canvas701Colors.textSecondary,
@@ -317,26 +350,45 @@ class _AddressViewState extends State<_AddressView> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              address.address,
-                              style: Canvas701Typography.bodyMedium.copyWith(
-                                color: Canvas701Colors.textSecondary,
+                            const SizedBox(height: 8),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 28),
+                              child: Text(
+                                address.address,
+                                style: Canvas701Typography.bodyMedium.copyWith(
+                                  color: Canvas701Colors.textSecondary,
+                                  height: 1.4,
+                                ),
                               ),
                             ),
                             if (address.invoiceAddress.isNotEmpty &&
                                 address.invoiceAddress != address.address) ...[
-                              const Divider(height: 16),
-                              Text(
-                                'Fatura Adresi:',
-                                style: Canvas701Typography.bodySmall.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Text(
-                                address.invoiceAddress,
-                                style: Canvas701Typography.bodySmall.copyWith(
-                                  color: Canvas701Colors.textSecondary,
+                              Padding(
+                                padding: const EdgeInsets.only(left: 28),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const SizedBox(height: 12),
+                                    const Divider(),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Fatura Adresi:',
+                                      style: Canvas701Typography.labelSmall
+                                          .copyWith(
+                                            fontWeight: FontWeight.w700,
+                                            color: Canvas701Colors.textPrimary,
+                                          ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      address.invoiceAddress,
+                                      style: Canvas701Typography.bodySmall
+                                          .copyWith(
+                                            color:
+                                                Canvas701Colors.textSecondary,
+                                          ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
@@ -348,6 +400,74 @@ class _AddressViewState extends State<_AddressView> {
                 );
               },
             ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: Canvas701Colors.textTertiary),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            text,
+            style: Canvas701Typography.bodyMedium.copyWith(
+              color: Canvas701Colors.textSecondary,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showDeleteConfirmation(BuildContext context, UserAddress address) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Adresi Sil'),
+        content: Text(
+          '${address.addressTitle} başlıklı adresi silmek istediğinize emin misiniz?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('İptal'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context); // Close dialog
+              final success = await context
+                  .read<AddressViewModel>()
+                  .deleteAddress(address.addressId);
+
+              if (context.mounted) {
+                if (success) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Adres başarıyla silindi.'),
+                      backgroundColor: Canvas701Colors.success,
+                    ),
+                  );
+                } else {
+                  final error = context.read<AddressViewModel>().errorMessage;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(error ?? 'Adres silinirken hata oluştu.'),
+                      backgroundColor: Canvas701Colors.error,
+                    ),
+                  );
+                }
+              }
+            },
+            child: const Text(
+              'Sil',
+              style: TextStyle(color: Canvas701Colors.error),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -416,6 +416,57 @@ class AuthService {
     }
   }
 
+  Future<AddAddressResponse> deleteAddress(int addressID) async {
+    final token = await getToken();
+    if (token == null) {
+      return AddAddressResponse(
+        error: true,
+        success: false,
+        errorMessage: 'Oturum bilgisi bulunamadı',
+      );
+    }
+
+    final url = Uri.parse(
+      '${ApiConstants.baseUrl}${ApiConstants.deleteAddress}',
+    );
+
+    final body = {'userToken': token, 'addressID': addressID};
+
+    _logRequest('POST', url.toString(), body);
+
+    try {
+      final response = await http.post(
+        url,
+        headers: _getHeaders(),
+        body: jsonEncode(body),
+      );
+
+      _logResponse(response.statusCode, response.body);
+
+      if (response.statusCode == 403) {
+        await logout();
+        _redirectToLogin();
+        return AddAddressResponse(
+          error: true,
+          success: false,
+          data: AddAddressData(
+            status: 'error',
+            message: 'Oturum süresi doldu (403)',
+          ),
+        );
+      }
+
+      final responseData = jsonDecode(response.body);
+      return AddAddressResponse.fromJson(responseData);
+    } catch (e) {
+      return AddAddressResponse(
+        error: true,
+        success: false,
+        data: AddAddressData(status: 'error', message: e.toString()),
+      );
+    }
+  }
+
   Future<UserAddressesResponse> getUserAddresses() async {
     final token = await getToken();
     if (token == null) {
