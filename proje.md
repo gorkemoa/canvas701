@@ -189,9 +189,9 @@ Canvas701 ve Creators ayrı API’ler
 
 UI tasarım
 
-dummy / static data
+API entegrasyonu (Canvas701 API)
 
-gerçek API düşünülerek modelleme
+Gerçek veriler kullanılıyor
 
 Kavramsal modeller
 

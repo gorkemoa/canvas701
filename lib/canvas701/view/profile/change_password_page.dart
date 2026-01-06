@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../theme/canvas701_theme_data.dart';
 import '../../viewmodel/profile_viewmodel.dart';
-import '../../model/update_password_request.dart';
+import '../../model/user_models.dart';
 
 class ChangePasswordPage extends StatefulWidget {
   const ChangePasswordPage({super.key});
@@ -47,8 +47,13 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(response.data?.message ?? (response.success ? 'Şifreniz güncellendi' : 'Hata oluştu')),
-          backgroundColor: response.success ? Canvas701Colors.success : Canvas701Colors.error,
+          content: Text(
+            response.data?.message ??
+                (response.success ? 'Şifreniz güncellendi' : 'Hata oluştu'),
+          ),
+          backgroundColor: response.success
+              ? Canvas701Colors.success
+              : Canvas701Colors.error,
         ),
       );
       if (response.success) {
@@ -62,7 +67,10 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     return Scaffold(
       backgroundColor: Canvas701Colors.background,
       appBar: AppBar(
-        title: const Text('Şifre Değiştir', style: Canvas701Typography.titleLarge),
+        title: const Text(
+          'Şifre Değiştir',
+          style: Canvas701Typography.titleLarge,
+        ),
         backgroundColor: Canvas701Colors.surface,
         foregroundColor: Canvas701Colors.textPrimary,
         elevation: 0,
@@ -82,7 +90,8 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                     label: 'Mevcut Şifre',
                     hint: 'Mevcut şifrenizi giriniz',
                     obscureText: _obscureCurrent,
-                    onToggle: () => setState(() => _obscureCurrent = !_obscureCurrent),
+                    onToggle: () =>
+                        setState(() => _obscureCurrent = !_obscureCurrent),
                   ),
                   const SizedBox(height: 20),
                   _buildPasswordField(
@@ -98,7 +107,8 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                     label: 'Yeni Şifre (Tekrar)',
                     hint: 'Yeni şifrenizi tekrar giriniz',
                     obscureText: _obscureNewAgain,
-                    onToggle: () => setState(() => _obscureNewAgain = !_obscureNewAgain),
+                    onToggle: () =>
+                        setState(() => _obscureNewAgain = !_obscureNewAgain),
                     validator: (value) {
                       if (value != _newPasswordController.text) {
                         return 'Şifreler uyuşmuyor';
@@ -115,16 +125,24 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Canvas701Colors.primary,
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                         elevation: 0,
                       ),
                       child: viewModel.isLoading
                           ? const SizedBox(
                               height: 20,
                               width: 20,
-                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
                             )
-                          : const Text('Şifreyi Güncelle', style: TextStyle(fontWeight: FontWeight.w600)),
+                          : const Text(
+                              'Şifreyi Güncelle',
+                              style: TextStyle(fontWeight: FontWeight.w600),
+                            ),
                     ),
                   ),
                 ],
@@ -147,25 +165,38 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: Canvas701Typography.bodySmall.copyWith(color: Canvas701Colors.textSecondary)),
+        Text(
+          label,
+          style: Canvas701Typography.bodySmall.copyWith(
+            color: Canvas701Colors.textSecondary,
+          ),
+        ),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
           obscureText: obscureText,
           style: Canvas701Typography.bodyLarge,
-          validator: validator ?? (value) {
-            if (value == null || value.isEmpty) {
-              return 'Bu alan boş bırakılamaz';
-            }
-            return null;
-          },
+          validator:
+              validator ??
+              (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Bu alan boş bırakılamaz';
+                }
+                return null;
+              },
           decoration: InputDecoration(
             hintText: hint,
             filled: true,
             fillColor: Canvas701Colors.surface,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
             suffixIcon: IconButton(
-              icon: Icon(obscureText ? Icons.visibility_off : Icons.visibility, color: Canvas701Colors.textTertiary),
+              icon: Icon(
+                obscureText ? Icons.visibility_off : Icons.visibility,
+                color: Canvas701Colors.textTertiary,
+              ),
               onPressed: onToggle,
             ),
             border: OutlineInputBorder(

@@ -20,6 +20,7 @@ class ApiConstants {
   static const String getCategories = 'service/products/category/list/0';
   static const String allProducts = 'service/products/product/list/all';
   static const String filterList = 'service/products/product/list/filterList';
+  static String getProductDetail(int productId) => 'service/products/product/detail/$productId';
 
   // General
   static const String kvkkAgreement = 'service/general/general/contracts/kvkkAgreement';

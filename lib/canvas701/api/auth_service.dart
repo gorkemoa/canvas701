@@ -1,25 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:canvas701/canvas701/constants/api_constants.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'api_constants.dart';
 import '../../main.dart';
-import '../model/login_request.dart';
-import '../model/login_response.dart';
-import '../model/register_request.dart';
-import '../model/register_response.dart';
-import '../model/code_check_request.dart';
-import '../model/code_check_response.dart';
-import '../model/resend_code_request.dart';
-import '../model/resend_code_response.dart';
-import '../model/user_response.dart';
-import '../model/update_user_request.dart';
-import '../model/update_user_response.dart';
-import '../model/update_password_request.dart';
-import '../model/update_password_response.dart';
+import '../model/login_models.dart';
+import '../model/user_models.dart';
 import '../view/login_page.dart';
 
 class AuthService {
@@ -29,7 +18,7 @@ class AuthService {
 
   Future<LoginResponse> login(LoginRequest request) async {
     final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.login}');
-    
+
     _logRequest('POST', url.toString(), request.toJson());
 
     try {
@@ -47,7 +36,10 @@ class AuthService {
         return LoginResponse(
           error: true,
           success: false,
-          data: LoginData(status: 'error', message: 'Oturum süresi doldu (403)'),
+          data: LoginData(
+            status: 'error',
+            message: 'Oturum süresi doldu (403)',
+          ),
         );
       }
 
@@ -68,7 +60,7 @@ class AuthService {
           }
         }
       }
-      
+
       return loginResponse;
     } catch (e) {
       return LoginResponse(
@@ -81,7 +73,7 @@ class AuthService {
 
   Future<RegisterResponse> register(RegisterRequest request) async {
     final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.register}');
-    
+
     _logRequest('POST', url.toString(), request.toJson());
 
     try {
@@ -121,7 +113,7 @@ class AuthService {
 
   Future<CodeCheckResponse> checkCode(CodeCheckRequest request) async {
     final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.checkCode}');
-    
+
     _logRequest('POST', url.toString(), request.toJson());
 
     try {
@@ -157,8 +149,10 @@ class AuthService {
   }
 
   Future<ResendCodeResponse> resendCode(ResendCodeRequest request) async {
-    final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.authSendCode}');
-    
+    final url = Uri.parse(
+      '${ApiConstants.baseUrl}${ApiConstants.authSendCode}',
+    );
+
     _logRequest('POST', url.toString(), request.toJson());
 
     try {
@@ -176,7 +170,9 @@ class AuthService {
       if (response.statusCode == 200 && resendResponse.success) {
         if (resendResponse.data?.codeToken != null) {
           await _saveCodeToken(resendResponse.data!.codeToken!);
-          debugPrint('--- NEW CODE TOKEN SAVED: ${resendResponse.data!.codeToken} ---');
+          debugPrint(
+            '--- NEW CODE TOKEN SAVED: ${resendResponse.data!.codeToken} ---',
+          );
         }
       }
 
@@ -196,18 +192,24 @@ class AuthService {
     final userId = prefs.getInt('user_id');
     final token = prefs.getString('auth_token');
 
-    debugPrint('--- STORAGE CHECK: userId=$userId, token=${token != null ? "EXISTS" : "NULL"} ---');
+    debugPrint(
+      '--- STORAGE CHECK: userId=$userId, token=${token != null ? "EXISTS" : "NULL"} ---',
+    );
 
     if (userId == null || token == null) {
-      debugPrint('--- GET USER ABORTED: userId or token is missing in SharedPreferences ---');
+      debugPrint(
+        '--- GET USER ABORTED: userId or token is missing in SharedPreferences ---',
+      );
       return UserResponse(error: true, success: false);
     }
 
-    final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.getUser(userId)}');
+    final url = Uri.parse(
+      '${ApiConstants.baseUrl}${ApiConstants.getUser(userId)}',
+    );
     debugPrint('--- TARGET URL: $url ---');
-    
+
     final packageInfo = await PackageInfo.fromPlatform();
-    
+
     final body = {
       'userToken': token,
       'version': packageInfo.version,
@@ -234,9 +236,11 @@ class AuthService {
 
       final responseData = jsonDecode(response.body);
       final userResponse = UserResponse.fromJson(responseData);
-      
-      debugPrint('--- PARSED RESPONSE: success=${userResponse.success}, hasData=${userResponse.data != null} ---');
-      
+
+      debugPrint(
+        '--- PARSED RESPONSE: success=${userResponse.success}, hasData=${userResponse.data != null} ---',
+      );
+
       return userResponse;
     } catch (e) {
       debugPrint('--- GET USER EXCEPTION: $e ---');
@@ -244,9 +248,14 @@ class AuthService {
     }
   }
 
-  Future<UpdateUserResponse> updateUser(int userId, UpdateUserRequest request) async {
-    final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.updateUser(userId)}');
-    
+  Future<UpdateUserResponse> updateUser(
+    int userId,
+    UpdateUserRequest request,
+  ) async {
+    final url = Uri.parse(
+      '${ApiConstants.baseUrl}${ApiConstants.updateUser(userId)}',
+    );
+
     _logRequest('PUT', url.toString(), request.toJson());
 
     try {
@@ -264,7 +273,10 @@ class AuthService {
         return UpdateUserResponse(
           error: true,
           success: false,
-          data: UpdateUserData(status: 'error', message: 'Oturum süresi doldu (403)'),
+          data: UpdateUserData(
+            status: 'error',
+            message: 'Oturum süresi doldu (403)',
+          ),
         );
       }
 
@@ -281,9 +293,13 @@ class AuthService {
     }
   }
 
-  Future<UpdatePasswordResponse> updatePassword(UpdatePasswordRequest request) async {
-    final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.updatePassword}');
-    
+  Future<UpdatePasswordResponse> updatePassword(
+    UpdatePasswordRequest request,
+  ) async {
+    final url = Uri.parse(
+      '${ApiConstants.baseUrl}${ApiConstants.updatePassword}',
+    );
+
     _logRequest('PUT', url.toString(), request.toJson());
 
     try {
@@ -301,7 +317,10 @@ class AuthService {
         return UpdatePasswordResponse(
           error: true,
           success: false,
-          data: UpdatePasswordData(status: 'error', message: 'Oturum süresi doldu (403)'),
+          data: UpdatePasswordData(
+            status: 'error',
+            message: 'Oturum süresi doldu (403)',
+          ),
         );
       }
 
@@ -345,18 +364,22 @@ class AuthService {
     final prefs = await SharedPreferences.getInstance();
     final authToken = prefs.getString('auth_token');
     final userToken = prefs.getString('user_token');
-    
+
     // Eğer giriş yapılmışsa (auth_token varsa) onu kullan, yoksa kayıt aşamasındaki user_token'ı kullan
     final currentToken = authToken ?? userToken;
-    
-    debugPrint('--- AuthService.getUserToken() auth_token: ${authToken != null ? "EXISTS" : "NULL"}, user_token: ${userToken != null ? "EXISTS" : "NULL"} -> Using: ${currentToken != null ? "TOKEN FOUND" : "NULL"} ---');
+
+    debugPrint(
+      '--- AuthService.getUserToken() auth_token: ${authToken != null ? "EXISTS" : "NULL"}, user_token: ${userToken != null ? "EXISTS" : "NULL"} -> Using: ${currentToken != null ? "TOKEN FOUND" : "NULL"} ---',
+    );
     return currentToken;
   }
 
   Future<String?> getCodeToken() async {
     final prefs = await SharedPreferences.getInstance();
     final codeToken = prefs.getString('code_token');
-    debugPrint('--- AuthService.getCodeToken() code_token: ${codeToken != null ? "EXISTS" : "NULL"} ---');
+    debugPrint(
+      '--- AuthService.getCodeToken() code_token: ${codeToken != null ? "EXISTS" : "NULL"} ---',
+    );
     return codeToken;
   }
 
@@ -388,11 +411,9 @@ class AuthService {
   }
 
   Map<String, String> _getHeaders() {
-    final String basicAuth = 'Basic ${base64Encode(utf8.encode('${ApiConstants.apiUsername}:${ApiConstants.apiPassword}'))}';
-    return {
-      'Content-Type': 'application/json',
-      'Authorization': basicAuth,
-    };
+    final String basicAuth =
+        'Basic ${base64Encode(utf8.encode('${ApiConstants.apiUsername}:${ApiConstants.apiPassword}'))}';
+    return {'Content-Type': 'application/json', 'Authorization': basicAuth};
   }
 
   void _logRequest(String method, String url, dynamic body) {

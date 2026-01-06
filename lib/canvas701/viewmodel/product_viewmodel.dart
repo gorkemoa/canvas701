@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../api/product_service.dart';
-import '../model/product_list_response.dart';
+import '../model/product_models.dart';
 import '../model/filter_list_response.dart';
 
 class ProductViewModel extends ChangeNotifier {
@@ -22,6 +22,12 @@ class ProductViewModel extends ChangeNotifier {
   FilterListData? _filters;
   FilterListData? get filters => _filters;
 
+  ApiProductDetail? _selectedProduct;
+  ApiProductDetail? get selectedProduct => _selectedProduct;
+
+  List<ApiProduct> _similarProducts = [];
+  List<ApiProduct> get similarProducts => _similarProducts;
+
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
@@ -30,6 +36,9 @@ class ProductViewModel extends ChangeNotifier {
 
   bool _isNewArrivalsLoading = false;
   bool get isNewArrivalsLoading => _isNewArrivalsLoading;
+
+  bool _isDetailLoading = false;
+  bool get isDetailLoading => _isDetailLoading;
 
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
@@ -133,6 +142,30 @@ class ProductViewModel extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Fetch Filters Error: $e');
+    }
+  }
+
+  Future<void> fetchProductDetail(int productId) async {
+    _isDetailLoading = true;
+    _errorMessage = null;
+    _selectedProduct = null;
+    _similarProducts = [];
+    notifyListeners();
+
+    try {
+      final response = await _productService.getProductDetail(productId);
+
+      if (response.success && response.data != null) {
+        _selectedProduct = response.data!.product;
+        _similarProducts = response.data!.similarProducts;
+      } else {
+        _errorMessage = 'Ürün detayı yüklenemedi';
+      }
+    } catch (e) {
+      _errorMessage = e.toString();
+    } finally {
+      _isDetailLoading = false;
+      notifyListeners();
     }
   }
 }

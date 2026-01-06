@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../api/auth_service.dart';
-import '../model/login_request.dart';
+import '../model/login_models.dart';
 import 'profile_viewmodel.dart';
 
 class LoginViewModel extends ChangeNotifier {
@@ -24,12 +24,15 @@ class LoginViewModel extends ChangeNotifier {
       if (response.success) {
         // Giriş başarılı olduktan sonra kullanıcı bilgilerini çek
         await ProfileViewModel().fetchUser();
-        
+
         _isLoading = false;
         notifyListeners();
         return true;
       } else {
-        _errorMessage = response.errorMessage ?? response.data?.message ?? 'Giriş başarısız';
+        _errorMessage =
+            response.errorMessage ??
+            response.data?.message ??
+            'Giriş başarısız';
         _isLoading = false;
         notifyListeners();
         return false;

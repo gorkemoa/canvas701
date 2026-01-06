@@ -6,7 +6,7 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:provider/provider.dart';
 import '../../theme/canvas701_theme_data.dart';
 import '../../viewmodel/profile_viewmodel.dart';
-import '../../model/update_user_request.dart';
+import '../../model/user_models.dart';
 
 class ProfileInfoPage extends StatefulWidget {
   const ProfileInfoPage({super.key});
@@ -63,7 +63,10 @@ class _ProfileInfoPageState extends State<ProfileInfoPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.photo_library, color: Canvas701Colors.primary),
+              leading: const Icon(
+                Icons.photo_library,
+                color: Canvas701Colors.primary,
+              ),
               title: const Text('Galeriden Seç'),
               onTap: () {
                 Navigator.pop(context);
@@ -71,7 +74,10 @@ class _ProfileInfoPageState extends State<ProfileInfoPage> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.camera_alt, color: Canvas701Colors.primary),
+              leading: const Icon(
+                Icons.camera_alt,
+                color: Canvas701Colors.primary,
+              ),
               title: const Text('Fotoğraf Çek'),
               onTap: () {
                 Navigator.pop(context);
@@ -156,8 +162,13 @@ class _ProfileInfoPageState extends State<ProfileInfoPage> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(response.data?.message ?? (response.success ? 'Profil güncellendi' : 'Hata oluştu')),
-          backgroundColor: response.success ? Canvas701Colors.success : Canvas701Colors.error,
+          content: Text(
+            response.data?.message ??
+                (response.success ? 'Profil güncellendi' : 'Hata oluştu'),
+          ),
+          backgroundColor: response.success
+              ? Canvas701Colors.success
+              : Canvas701Colors.error,
         ),
       );
       if (response.success) {
@@ -171,7 +182,10 @@ class _ProfileInfoPageState extends State<ProfileInfoPage> {
     return Scaffold(
       backgroundColor: Canvas701Colors.background,
       appBar: AppBar(
-        title: const Text('Kişisel Bilgilerim', style: Canvas701Typography.titleLarge),
+        title: const Text(
+          'Kişisel Bilgilerim',
+          style: Canvas701Typography.titleLarge,
+        ),
         backgroundColor: Canvas701Colors.surface,
         foregroundColor: Canvas701Colors.textPrimary,
         elevation: 0,
@@ -179,7 +193,13 @@ class _ProfileInfoPageState extends State<ProfileInfoPage> {
         actions: [
           TextButton(
             onPressed: _saveProfile,
-            child: const Text('Kaydet', style: TextStyle(color: Canvas701Colors.primary, fontWeight: FontWeight.w600)),
+            child: const Text(
+              'Kaydet',
+              style: TextStyle(
+                color: Canvas701Colors.primary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),
@@ -205,13 +225,30 @@ class _ProfileInfoPageState extends State<ProfileInfoPage> {
                           decoration: BoxDecoration(
                             color: Canvas701Colors.primary.withOpacity(0.1),
                             shape: BoxShape.circle,
-                            border: Border.all(color: Canvas701Colors.divider, width: 2),
+                            border: Border.all(
+                              color: Canvas701Colors.divider,
+                              width: 2,
+                            ),
                           ),
                           child: _selectedImage != null
-                              ? ClipOval(child: Image.file(_selectedImage!, fit: BoxFit.cover))
+                              ? ClipOval(
+                                  child: Image.file(
+                                    _selectedImage!,
+                                    fit: BoxFit.cover,
+                                  ),
+                                )
                               : (viewModel.user?.profilePhoto.isNotEmpty == true
-                                  ? ClipOval(child: Image.network(viewModel.user!.profilePhoto, fit: BoxFit.cover))
-                                  : const Icon(Icons.person, size: 60, color: Canvas701Colors.primary)),
+                                    ? ClipOval(
+                                        child: Image.network(
+                                          viewModel.user!.profilePhoto,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      )
+                                    : const Icon(
+                                        Icons.person,
+                                        size: 60,
+                                        color: Canvas701Colors.primary,
+                                      )),
                         ),
                         Positioned(
                           bottom: 0,
@@ -224,7 +261,11 @@ class _ProfileInfoPageState extends State<ProfileInfoPage> {
                                 color: Canvas701Colors.primary,
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.camera_alt, size: 20, color: Colors.white),
+                              child: const Icon(
+                                Icons.camera_alt,
+                                size: 20,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),
@@ -289,7 +330,9 @@ class _ProfileInfoPageState extends State<ProfileInfoPage> {
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      style: Canvas701Typography.titleMedium.copyWith(color: Canvas701Colors.textSecondary),
+      style: Canvas701Typography.titleMedium.copyWith(
+        color: Canvas701Colors.textSecondary,
+      ),
     );
   }
 
@@ -303,7 +346,12 @@ class _ProfileInfoPageState extends State<ProfileInfoPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: Canvas701Typography.bodySmall.copyWith(color: Canvas701Colors.textSecondary)),
+        Text(
+          label,
+          style: Canvas701Typography.bodySmall.copyWith(
+            color: Canvas701Colors.textSecondary,
+          ),
+        ),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
@@ -314,7 +362,10 @@ class _ProfileInfoPageState extends State<ProfileInfoPage> {
             hintText: hint,
             filled: true,
             fillColor: Canvas701Colors.surface,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: Canvas701Colors.divider),
@@ -337,7 +388,12 @@ class _ProfileInfoPageState extends State<ProfileInfoPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Cinsiyet', style: Canvas701Typography.bodySmall.copyWith(color: Canvas701Colors.textSecondary)),
+        Text(
+          'Cinsiyet',
+          style: Canvas701Typography.bodySmall.copyWith(
+            color: Canvas701Colors.textSecondary,
+          ),
+        ),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),

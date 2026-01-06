@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import '../api/auth_service.dart';
-import '../model/user_response.dart';
-import '../model/update_user_request.dart';
-import '../model/update_user_response.dart';
-import '../model/update_password_request.dart';
-import '../model/update_password_response.dart';
+import '../model/user_models.dart';
 
 class ProfileViewModel extends ChangeNotifier {
   static final ProfileViewModel _instance = ProfileViewModel._internal();
@@ -24,10 +20,12 @@ class ProfileViewModel extends ChangeNotifier {
 
   Future<void> fetchUser() async {
     if (_isLoading) {
-      debugPrint('--- ProfileViewModel.fetchUser() ALREADY LOADING, SKIPPING ---');
+      debugPrint(
+        '--- ProfileViewModel.fetchUser() ALREADY LOADING, SKIPPING ---',
+      );
       return;
     }
-    
+
     debugPrint('--- ProfileViewModel.fetchUser() STARTED ---');
     _isLoading = true;
     _errorMessage = null;
@@ -39,8 +37,11 @@ class ProfileViewModel extends ChangeNotifier {
         _user = response.data!.user;
         debugPrint('--- USER DATA FETCHED: ${_user?.userFullname} ---');
       } else {
-        _errorMessage = response.errorMessage ?? 'Kullanıcı bilgileri alınamadı';
-        debugPrint('--- USER DATA FETCH FAILED: success=${response.success}, error=${response.error} ---');
+        _errorMessage =
+            response.errorMessage ?? 'Kullanıcı bilgileri alınamadı';
+        debugPrint(
+          '--- USER DATA FETCH FAILED: success=${response.success}, error=${response.error} ---',
+        );
       }
     } catch (e) {
       _errorMessage = e.toString();
@@ -84,7 +85,9 @@ class ProfileViewModel extends ChangeNotifier {
     }
   }
 
-  Future<UpdatePasswordResponse> updatePassword(UpdatePasswordRequest request) async {
+  Future<UpdatePasswordResponse> updatePassword(
+    UpdatePasswordRequest request,
+  ) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();

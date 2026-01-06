@@ -1,10 +1,9 @@
 import 'dart:convert';
+import 'package:canvas701/canvas701/constants/api_constants.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'api_constants.dart';
 import '../model/category_response.dart';
-import '../model/product_list_request.dart';
-import '../model/product_list_response.dart';
+import '../model/product_models.dart';
 import '../model/filter_list_response.dart';
 import 'auth_service.dart';
 
@@ -14,29 +13,34 @@ class ProductService {
   ProductService._internal();
 
   Map<String, String> _getHeaders() {
-    final String basicAuth = 'Basic ${base64Encode(utf8.encode('${ApiConstants.apiUsername}:${ApiConstants.apiPassword}'))}';
-    return {
-      'Content-Type': 'application/json',
-      'Authorization': basicAuth,
-    };
+    final String basicAuth =
+        'Basic ${base64Encode(utf8.encode('${ApiConstants.apiUsername}:${ApiConstants.apiPassword}'))}';
+    return {'Content-Type': 'application/json', 'Authorization': basicAuth};
   }
 
   Future<CategoryResponse> getCategories() async {
-    final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.getCategories}');
-    
+    final url = Uri.parse(
+      '${ApiConstants.baseUrl}${ApiConstants.getCategories}',
+    );
+
     debugPrint('--- GET CATEGORIES REQUEST ---');
     debugPrint('URL: $url');
 
     try {
-      final response = await http.get(
-        url,
-        headers: _getHeaders(),
-      );
+      final response = await http.get(url, headers: _getHeaders());
 
       debugPrint('--- GET CATEGORIES RESPONSE ---');
       debugPrint('Status Code: ${response.statusCode}');
 
-      final responseData = jsonDecode(response.body);
+      final body = response.body;
+      if (body.trim().startsWith('<')) {
+        debugPrint(
+          '--- GET CATEGORIES ERROR: Received HTML instead of JSON ---',
+        );
+        return CategoryResponse(error: true, success: false);
+      }
+
+      final responseData = jsonDecode(body);
       return CategoryResponse.fromJson(responseData);
     } catch (e) {
       debugPrint('--- GET CATEGORIES ERROR: $e ---');
@@ -53,7 +57,7 @@ class ProductService {
   }) async {
     final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.allProducts}');
     final userToken = await AuthService().getUserToken();
-    
+
     final request = ProductListRequest(
       userToken: userToken,
       catID: catID,
@@ -82,7 +86,15 @@ class ProductService {
         await AuthService().logout();
       }
 
-      final responseData = jsonDecode(response.body);
+      final body = response.body;
+      if (body.trim().startsWith('<')) {
+        debugPrint(
+          '--- GET ALL PRODUCTS ERROR: Received HTML instead of JSON ---',
+        );
+        return ProductListResponse(error: true, success: false);
+      }
+
+      final responseData = jsonDecode(body);
       return ProductListResponse.fromJson(responseData);
     } catch (e) {
       debugPrint('--- GET ALL PRODUCTS ERROR: $e ---');
@@ -92,24 +104,72 @@ class ProductService {
 
   Future<FilterListResponse> getFilterList() async {
     final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.filterList}');
-    
+
     debugPrint('--- GET FILTER LIST REQUEST ---');
     debugPrint('URL: $url');
 
     try {
-      final response = await http.get(
-        url,
-        headers: _getHeaders(),
-      );
+      final response = await http.get(url, headers: _getHeaders());
 
       debugPrint('--- GET FILTER LIST RESPONSE ---');
       debugPrint('Status Code: ${response.statusCode}');
 
-      final responseData = jsonDecode(response.body);
+      final body = response.body;
+      if (body.trim().startsWith('<')) {
+        debugPrint(
+          '--- GET FILTER LIST ERROR: Received HTML instead of JSON ---',
+        );
+        return FilterListResponse(error: true, success: false);
+      }
+
+      final responseData = jsonDecode(body);
       return FilterListResponse.fromJson(responseData);
     } catch (e) {
       debugPrint('--- GET FILTER LIST ERROR: $e ---');
       return FilterListResponse(error: true, success: false);
+    }
+  }
+
+  Future<ProductDetailResponse> getProductDetail(int productId) async {
+    final userToken = await AuthService().getUserToken();
+    String urlString =
+        '${ApiConstants.baseUrl}${ApiConstants.getProductDetail(productId)}';
+
+    if (userToken != null && userToken.isNotEmpty) {
+      urlString += '?userToken=$userToken';
+    }
+
+    final url = Uri.parse(urlString);
+
+    debugPrint('--- GET PRODUCT DETAIL REQUEST ---');
+    debugPrint('URL: $url');
+
+    try {
+      final response = await http.get(url, headers: _getHeaders());
+
+      debugPrint('--- GET PRODUCT DETAIL RESPONSE ---');
+      debugPrint('Status Code: ${response.statusCode}');
+
+      if (response.statusCode == 403) {
+        await AuthService().logout();
+      }
+
+      final body = response.body;
+      if (body.trim().startsWith('<')) {
+        debugPrint(
+          '--- GET PRODUCT DETAIL ERROR: Received HTML instead of JSON ---',
+        );
+        debugPrint(
+          'Response Body Overview: ${body.length > 200 ? body.substring(0, 200) : body}',
+        );
+        return ProductDetailResponse(error: true, success: false);
+      }
+
+      final responseData = jsonDecode(body);
+      return ProductDetailResponse.fromJson(responseData);
+    } catch (e) {
+      debugPrint('--- GET PRODUCT DETAIL ERROR: $e ---');
+      return ProductDetailResponse(error: true, success: false);
     }
   }
 }

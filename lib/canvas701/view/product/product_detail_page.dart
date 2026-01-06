@@ -1,6 +1,6 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:canvas701/canvas701/theme/canvas701_theme_data.dart';
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 import '../../model/model.dart';
 import '../../viewmodel/product_viewmodel.dart';
@@ -18,201 +18,125 @@ class ProductDetailPage extends StatefulWidget {
 }
 
 class _ProductDetailPageState extends State<ProductDetailPage> {
-  late ProductSize _selectedSize;
+  Object? _selectedSize;
   int _quantity = 1;
   bool _isFavorite = false;
-  int _activeTabIndex = 0;
 
   @override
   void initState() {
     super.initState();
     _selectedSize = widget.product.availableSizes.first;
+    _isFavorite = widget.product.isFavorite;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ProductViewModel>().fetchProductDetail(
+        int.parse(widget.product.id),
+      );
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Canvas701Colors.background,
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(child: _buildProductImage()),
-          // Ürün Bilgileri
-          SliverToBoxAdapter(
-            child: Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(32),
-                  topRight: Radius.circular(32),
+    return Consumer<ProductViewModel>(
+      builder: (context, viewModel, child) {
+        final productDetail = viewModel.selectedProduct;
+        final images =
+            productDetail?.galleries.map((g) => g.img).toList() ??
+            widget.product.images;
+
+        return Scaffold(
+          backgroundColor: Colors.white,
+          body: CustomScrollView(
+            slivers: [
+              // Modern AppBar with Gallery
+              SliverAppBar(
+                expandedHeight: 340,
+                pinned: true,
+                backgroundColor: Colors.white,
+                elevation: 0,
+                leading: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: CircleAvatar(
+                    backgroundColor: Colors.white.withOpacity(0.9),
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.arrow_back,
+                        color: Colors.black,
+                        size: 20,
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Color(0x0D000000),
-                    blurRadius: 10,
-                    offset: Offset(0, -5),
+                actions: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: CircleAvatar(
+                      backgroundColor: Colors.white.withOpacity(0.9),
+                      child: IconButton(
+                        icon: Icon(
+                          _isFavorite ? Icons.favorite : Icons.favorite_outline,
+                          color: _isFavorite ? Colors.red : Colors.black,
+                          size: 20,
+                        ),
+                        onPressed: () =>
+                            setState(() => _isFavorite = !_isFavorite),
+                      ),
+                    ),
                   ),
                 ],
-              ),
-              transform: Matrix4.translationValues(0, -30, 0),
-              child: Padding(
-                padding: const EdgeInsets.all(Canvas701Spacing.md),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildBreadcrumbs(),
-                    const SizedBox(height: Canvas701Spacing.sm),
-                    _buildTitleAndPrice(),
-                    const SizedBox(height: Canvas701Spacing.lg),
-                    _buildSizeSelection(),
-                    const SizedBox(height: Canvas701Spacing.lg),
-                    _buildQuantityAndAdd(),
-                    const SizedBox(height: Canvas701Spacing.xl),
-                    _buildProductFeatures(),
-                    const SizedBox(height: Canvas701Spacing.xl),
-                    _buildDescription(),
-                    const SizedBox(height: Canvas701Spacing.xl),
-                    _buildRelatedProducts(),
-                    const SizedBox(height: Canvas701Spacing.xxl),
-                  ],
+                flexibleSpace: FlexibleSpaceBar(
+                  background: ProductImageGallery(
+                    images: images,
+                    heroTag: 'product_${widget.product.id}',
+                    hasDiscount:
+                        productDetail != null &&
+                        productDetail.productPriceDiscount != '0,00 TL',
+                  ),
                 ),
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
-  Widget _buildProductImage() {
-    return Stack(
-      children: [
-        Container(
-          width: double.infinity,
-          height: 400,
-          color: Colors.white,
-          child: Hero(
-            tag: 'product_${widget.product.id}',
-            child: CachedNetworkImage(
-              imageUrl: widget.product.images.first,
-              fit: BoxFit.contain,
-              placeholder: (context, url) =>
-                  const Center(child: CircularProgressIndicator()),
-              errorWidget: (context, url, error) =>
-                  const Icon(Icons.image_outlined, size: 100),
-            ),
-          ),
-        ),
-        // Back Button
-        Positioned(
-          top: 60,
-          left: Canvas701Spacing.md,
-          child: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.9),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: IconButton(
-              icon: const Icon(
-                Icons.arrow_back,
-                color: Canvas701Colors.textPrimary,
-                size: 20,
-              ),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ),
-        ),
-        // Floating Action Buttons
-        Positioned(
-          top: 60,
-          right: Canvas701Spacing.md,
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.9),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: IconButton(
-                  icon: Icon(
-                    _isFavorite ? Icons.favorite : Icons.favorite_outline,
-                    color: _isFavorite
-                        ? Colors.red
-                        : Canvas701Colors.textPrimary,
-                    size: 20,
+              // Content
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20.0,
+                    vertical: 24.0,
                   ),
-                  onPressed: () {
-                    setState(() {
-                      _isFavorite = !_isFavorite;
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          _isFavorite
-                              ? 'Favorilere eklendi!'
-                              : 'Favorilerden çıkarıldı!',
-                        ),
-                        duration: const Duration(seconds: 1),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildBreadcrumbs(productDetail),
+                      const SizedBox(height: 16),
+                      ProductInfoSection(
+                        productDetail: productDetail,
+                        selectedSize: _selectedSize,
+                        fallbackName: widget.product.name,
+                        fallbackCode: widget.product.code,
                       ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(width: Canvas701Spacing.sm),
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.9),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: IconButton(
-                  icon: const Icon(
-                    Icons.share_outlined,
-                    color: Canvas701Colors.textPrimary,
-                    size: 20,
+                      const SizedBox(height: 32),
+                      _buildSizeSelection(productDetail),
+                      const SizedBox(height: 32),
+                      ProductDescriptionTabs(
+                        productDetail: productDetail,
+                        fallbackDescription: widget.product.description,
+                      ),
+                      const SizedBox(height: 32),
+                      _buildRelatedProducts(viewModel),
+                      const SizedBox(height: 100), // Space for bottom bar
+                    ],
                   ),
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Paylaşma özelliği yakında eklenecek!'),
-                      ),
-                    );
-                  },
                 ),
               ),
             ],
           ),
-        ),
-      ],
+          bottomSheet: _buildBottomActionSheet(productDetail),
+        );
+      },
     );
   }
 
-  Widget _buildBreadcrumbs() {
+  Widget _buildBreadcrumbs(ApiProductDetail? productDetail) {
     return Row(
       children: [
         Text('Anasayfa', style: Canvas701Typography.labelSmall),
@@ -221,149 +145,115 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           size: 12,
           color: Canvas701Colors.textTertiary,
         ),
-        Text('Kanvas Tablolar', style: Canvas701Typography.labelSmall),
-        const Icon(
-          Icons.chevron_right,
-          size: 12,
-          color: Canvas701Colors.textTertiary,
-        ),
-        Expanded(
-          child: Text(
-            widget.product.name,
-            style: Canvas701Typography.labelSmall.copyWith(
-              color: Canvas701Colors.textTertiary,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTitleAndPrice() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
         Text(
-          widget.product.name,
-          style: Canvas701Typography.displaySmall.copyWith(
-            fontWeight: FontWeight.w700,
-            fontSize: 22,
-          ),
-        ),
-        const SizedBox(height: Canvas701Spacing.xs),
-        Text(
-          'Ürün Kodu: ${widget.product.code}',
+          productDetail?.categories?.name ?? 'Kanvas Tablolar',
           style: Canvas701Typography.labelSmall,
         ),
-        const SizedBox(height: Canvas701Spacing.md),
-        Row(
-          children: [
-            Text(
-              'Kategori: ',
-              style: Canvas701Typography.labelSmall.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            Text('Kanvas Tablolar', style: Canvas701Typography.labelSmall),
-          ],
-        ),
-        const SizedBox(height: 4),
-        Row(
-          children: [
-            Text(
-              'Etiketler: ',
-              style: Canvas701Typography.labelSmall.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            Text(
-              'Dekorasyon, Sanat, Modern',
-              style: Canvas701Typography.labelSmall,
-            ),
-          ],
-        ),
-        const SizedBox(height: Canvas701Spacing.md),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              '${_selectedSize.price.toStringAsFixed(2)} TL',
-              style: Canvas701Typography.displaySmall.copyWith(
-                color: Canvas701Colors.primary,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(width: Canvas701Spacing.sm),
-            if (widget.product.hasDiscount)
-              Text(
-                '${widget.product.price.toStringAsFixed(2)} TL',
-                style: Canvas701Typography.bodyMedium.copyWith(
-                  color: Canvas701Colors.textTertiary,
-                  decoration: TextDecoration.lineThrough,
-                ),
-              ),
-          ],
-        ),
       ],
     );
   }
 
-  Widget _buildSizeSelection() {
+  Widget _buildSizeSelection(ApiProductDetail? productDetail) {
+    final List<dynamic> sizes =
+        productDetail?.sizes ?? widget.product.availableSizes;
+
+    if (sizes.isEmpty) return const SizedBox.shrink();
+
+    // Otomatik seçim: Hiç seçim yoksa veya detay verisi gelmişse
+    // ama se&ccedil;ili olan hala eski modelden gelen veri ise ilkini seç.
+    if (_selectedSize == null ||
+        (productDetail != null && _selectedSize is! ApiProductSize)) {
+      _selectedSize = sizes.first;
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Ölçü Seçimi', style: Canvas701Typography.titleMedium),
-        const SizedBox(height: Canvas701Spacing.sm),
-        Wrap(
-          spacing: Canvas701Spacing.sm,
-          runSpacing: Canvas701Spacing.sm,
-          children: widget.product.availableSizes.map((size) {
-            final isSelected = _selectedSize.id == size.id;
-            return GestureDetector(
-              onTap: () => setState(() => _selectedSize = size),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: Canvas701Spacing.md,
-                  vertical: Canvas701Spacing.sm,
-                ),
-                decoration: BoxDecoration(
-                  color: isSelected ? Canvas701Colors.primary : Colors.white,
-                  borderRadius: Canvas701Radius.buttonRadius,
-                  border: Border.all(
+        Text(
+          'Ölçü Seçimi',
+          style: Canvas701Typography.titleMedium.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          height: 45,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: sizes.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            itemBuilder: (context, index) {
+              final size = sizes[index];
+              bool isSelected = false;
+              String name = '';
+
+              if (size is ApiProductSize) {
+                isSelected =
+                    _selectedSize is ApiProductSize &&
+                    (_selectedSize as ApiProductSize).sizeID == size.sizeID;
+                name = size.sizeName;
+              } else if (size is ProductSize) {
+                isSelected =
+                    _selectedSize is ProductSize &&
+                    (_selectedSize as ProductSize).id == size.id;
+                name = size.name;
+              }
+
+              return GestureDetector(
+                onTap: () => setState(() => _selectedSize = size),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  decoration: BoxDecoration(
                     color: isSelected
                         ? Canvas701Colors.primary
-                        : Canvas701Colors.divider,
+                        : Colors.grey[50],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isSelected
+                          ? Canvas701Colors.primary
+                          : Colors.grey[200]!,
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    name,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : Colors.black,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                    ),
                   ),
                 ),
-                child: Text(
-                  size.name,
-                  style: Canvas701Typography.labelMedium.copyWith(
-                    color: isSelected
-                        ? Colors.white
-                        : Canvas701Colors.textPrimary,
-                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
+              );
+            },
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildQuantityAndAdd() {
-    return Column(
-      children: [
-        Row(
+  Widget _buildBottomActionSheet(ApiProductDetail? productDetail) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Row(
           children: [
             Container(
-              height: 50,
               decoration: BoxDecoration(
-                border: Border.all(color: Canvas701Colors.divider),
-                borderRadius: Canvas701Radius.buttonRadius,
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 children: [
@@ -373,7 +263,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         ? () => setState(() => _quantity--)
                         : null,
                   ),
-                  Text('$_quantity', style: Canvas701Typography.titleMedium),
+                  Text(
+                    '$_quantity',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   IconButton(
                     icon: const Icon(Icons.add, size: 18),
                     onPressed: () => setState(() => _quantity++),
@@ -381,125 +274,460 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 ],
               ),
             ),
-            const SizedBox(width: Canvas701Spacing.md),
+            const SizedBox(width: 16),
             Expanded(
-              child: SizedBox(
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('${widget.product.name} sepete eklendi!'),
+              child: ElevatedButton(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        '${productDetail?.productName ?? widget.product.name} sepete eklendi!',
                       ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Canvas701Colors.primary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: Canvas701Radius.buttonRadius,
                     ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Canvas701Colors.primary,
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(double.infinity, 54),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Text(
-                    'SEPETE EKLE',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
+                  elevation: 0,
+                ),
+                child: const Text(
+                  'SEPETE EKLE',
+                  style: TextStyle(fontWeight: FontWeight.w800),
                 ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: Canvas701Spacing.md),
+      ),
+    );
+  }
+
+  Widget _buildRelatedProducts(ProductViewModel viewModel) {
+    if (viewModel.isDetailLoading && viewModel.similarProducts.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    final relatedItems = viewModel.similarProducts;
+    if (relatedItems.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Benzer Ürünler',
+          style: Canvas701Typography.titleLarge.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 16),
         SizedBox(
-          width: double.infinity,
-          height: 50,
-          child: OutlinedButton(
-            onPressed: () {},
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(
-                color: Canvas701Colors.secondary,
-                width: 1.5,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: Canvas701Radius.buttonRadius,
-              ),
-            ),
-            child: const Text(
-              'HEMEN AL',
-              style: TextStyle(
-                color: Canvas701Colors.secondary,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.2,
-              ),
-            ),
+          height: 360,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: relatedItems.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 16),
+            itemBuilder: (context, index) {
+              final product = Product.fromApi(relatedItems[index]);
+              return SizedBox(
+                width: 180, // Card original width is 180
+                child: ProductCard(
+                  product: product,
+                  isFavorite: product.isFavorite,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            ProductDetailPage(product: product),
+                      ),
+                    );
+                  },
+                  onFavorite: () {
+                    // Favori işlemleri eklenebilir
+                  },
+                  onAddToCart: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('${product.name} sepete eklendi!'),
+                      ),
+                    );
+                  },
+                ),
+              );
+            },
           ),
         ),
       ],
     );
   }
+}
 
-  Widget _buildProductFeatures() {
-    return Container(
-      padding: const EdgeInsets.all(Canvas701Spacing.md),
-      decoration: BoxDecoration(
-        color: Canvas701Colors.surfaceVariant,
-        borderRadius: Canvas701Radius.cardRadius,
-      ),
-      child: Column(
-        children: [
-          _buildFeatureItem(
-            Icons.check_circle_outline,
-            'Yüksek Çözünürlüklü Baskı',
-          ),
-          const Divider(height: 24),
-          _buildFeatureItem(Icons.check_circle_outline, 'Pamuklu Kanvas Kumaş'),
-          const Divider(height: 24),
-          _buildFeatureItem(
-            Icons.check_circle_outline,
-            'Fırınlanmış Ahşap Şase',
-          ),
-          const Divider(height: 24),
-          _buildFeatureItem(
-            Icons.local_shipping_outlined,
-            'Ücretsiz ve Hızlı Kargo',
-          ),
-          const Divider(height: 24),
-          _buildFeatureItem(
-            Icons.security_outlined,
-            '256 Bit SSL Güvenli Ödeme',
-          ),
-        ],
-      ),
-    );
-  }
+// --- Product Widgets ---
 
-  Widget _buildFeatureItem(IconData icon, String text) {
-    return Row(
+class ProductImageGallery extends StatefulWidget {
+  final List<String> images;
+  final String heroTag;
+  final bool hasDiscount;
+
+  const ProductImageGallery({
+    super.key,
+    required this.images,
+    required this.heroTag,
+    this.hasDiscount = false,
+  });
+
+  @override
+  State<ProductImageGallery> createState() => _ProductImageGalleryState();
+}
+
+class _ProductImageGalleryState extends State<ProductImageGallery> {
+  int _currentIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.images.isEmpty) {
+      return Container(
+        height: 400,
+        color: Colors.grey[100],
+        child: const Icon(Icons.image_outlined, size: 100, color: Colors.grey),
+      );
+    }
+
+    return Stack(
       children: [
-        Icon(icon, size: 20, color: Canvas701Colors.primary),
-        const SizedBox(width: Canvas701Spacing.sm),
-        Text(text, style: Canvas701Typography.bodyMedium),
+        Hero(
+          tag: widget.heroTag,
+          child: PageView.builder(
+            itemCount: widget.images.length,
+            onPageChanged: (index) => setState(() => _currentIndex = index),
+            itemBuilder: (context, index) {
+              return GestureDetector(
+                onTap: () => FullScreenImageViewer.open(
+                  context,
+                  widget.images,
+                  index: index,
+                ),
+                child: CachedNetworkImage(
+                  imageUrl: widget.images[index],
+                  fit: BoxFit.contain,
+                  placeholder: (context, url) =>
+                      const Center(child: CircularProgressIndicator()),
+                  errorWidget: (context, url, error) =>
+                      const Icon(Icons.image_outlined, size: 100),
+                ),
+              );
+            },
+          ),
+        ),
+        if (widget.hasDiscount)
+          Positioned(
+            top: 100,
+            left: 0,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: const BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.only(
+                  topRight: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
+                ),
+              ),
+              child: const Text(
+                'İNDİRİM',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ),
+        // Indicator
+        if (widget.images.length > 1)
+          Positioned(
+            bottom: 20,
+            left: 0,
+            right: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: widget.images.asMap().entries.map((entry) {
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  width: _currentIndex == entry.key ? 24 : 8,
+                  height: 8,
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(4),
+                    color: _currentIndex == entry.key
+                        ? Canvas701Colors.primary
+                        : Canvas701Colors.primary.withOpacity(0.2),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
       ],
     );
   }
+}
 
-  Widget _buildDescription() {
+class ProductInfoSection extends StatelessWidget {
+  final ApiProductDetail? productDetail;
+  final dynamic selectedSize;
+  final String fallbackName;
+  final String fallbackCode;
+
+  const ProductInfoSection({
+    super.key,
+    this.productDetail,
+    this.selectedSize,
+    required this.fallbackName,
+    required this.fallbackCode,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    String currentPrice = '';
+    String? oldPrice;
+
+    if (selectedSize != null) {
+      if (selectedSize is ApiProductSize) {
+        final size = selectedSize as ApiProductSize;
+        currentPrice = size.sizePriceDiscount != '0,00 TL'
+            ? size.sizePriceDiscount
+            : size.sizePrice;
+        oldPrice = size.sizePriceDiscount != '0,00 TL' ? size.sizePrice : null;
+      } else if (selectedSize is ProductSize) {
+        // Fallback for ProductSize model
+        final size = selectedSize as ProductSize;
+        currentPrice =
+            '${size.price.toStringAsFixed(2).replaceAll('.', ',')} TL';
+      }
+    } else if (productDetail != null) {
+      currentPrice = productDetail!.productPriceDiscount != '0,00 TL'
+          ? productDetail!.productPriceDiscount
+          : productDetail!.productPrice;
+      oldPrice = productDetail!.productPriceDiscount != '0,00 TL'
+          ? productDetail!.productPrice
+          : null;
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (productDetail != null && productDetail!.totalComments > 0) ...[
+          Row(
+            children: [
+              const Icon(Icons.star, color: Colors.amber, size: 18),
+              const SizedBox(width: 4),
+              Text(
+                '${productDetail!.rating} (${productDetail!.totalComments} Değerlendirme)',
+                style: Canvas701Typography.labelSmall.copyWith(
+                  color: Canvas701Colors.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: Canvas701Spacing.sm),
+        ],
+        Text(
+          productDetail?.productName ?? fallbackName,
+          style: Canvas701Typography.displaySmall.copyWith(
+            fontWeight: FontWeight.w800,
+            fontSize: 24,
+            height: 1.2,
+          ),
+        ),
+        const SizedBox(height: Canvas701Spacing.xs),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Ürün Kodu: ${productDetail?.productID ?? fallbackCode}',
+                  style: Canvas701Typography.labelSmall.copyWith(
+                    color: Canvas701Colors.textTertiary,
+                  ),
+                ),
+                if (productDetail != null &&
+                    productDetail!.productDiscount.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4.0),
+                    child: Row(
+                      children: [
+                        if (productDetail!.productDiscountIcon.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 4.0),
+                            child: Image.network(
+                              productDetail!.productDiscountIcon,
+                              width: 14,
+                              height: 14,
+                            ),
+                          ),
+                        Text(
+                          productDetail!.productDiscount,
+                          style: Canvas701Typography.labelSmall.copyWith(
+                            color: Colors.red,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+            if (productDetail != null)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: productDetail!.productStock > 0
+                      ? Colors.green.withOpacity(0.1)
+                      : Colors.red.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      productDetail!.productStock > 0
+                          ? Icons.check_circle
+                          : Icons.error,
+                      size: 12,
+                      color: productDetail!.productStock > 0
+                          ? Colors.green
+                          : Colors.red,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      productDetail!.productStock > 0
+                          ? 'Stokta Var'
+                          : 'Stokta Yok',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: productDetail!.productStock > 0
+                            ? Colors.green
+                            : Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: Canvas701Spacing.lg),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: [
+            Text(
+              currentPrice,
+              style: Canvas701Typography.displaySmall.copyWith(
+                color: Canvas701Colors.primary,
+                fontWeight: FontWeight.w900,
+                fontSize: 28,
+              ),
+            ),
+            if (oldPrice != null) ...[
+              const SizedBox(width: Canvas701Spacing.sm),
+              Text(
+                oldPrice,
+                style: Canvas701Typography.bodyMedium.copyWith(
+                  color: Canvas701Colors.textTertiary,
+                  decoration: TextDecoration.lineThrough,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ],
+        ),
+        if (productDetail != null && productDetail!.cargoInfo.isNotEmpty) ...[
+          const SizedBox(height: Canvas701Spacing.md),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.orange.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.orange.withOpacity(0.1)),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.local_shipping_outlined,
+                  color: Colors.orange,
+                  size: 18,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        productDetail!.cargoInfo,
+                        style: Canvas701Typography.labelSmall.copyWith(
+                          color: Colors.orange[800],
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (productDetail!.cargoDetail.isNotEmpty)
+                        Text(
+                          productDetail!.cargoDetail,
+                          style: Canvas701Typography.labelSmall.copyWith(
+                            color: Colors.orange[700],
+                            fontSize: 10,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class ProductDescriptionTabs extends StatefulWidget {
+  final ApiProductDetail? productDetail;
+  final String fallbackDescription;
+
+  const ProductDescriptionTabs({
+    super.key,
+    this.productDetail,
+    required this.fallbackDescription,
+  });
+
+  @override
+  State<ProductDescriptionTabs> createState() => _ProductDescriptionTabsState();
+}
+
+class _ProductDescriptionTabsState extends State<ProductDescriptionTabs> {
+  int _activeTabIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildTabItem(0, 'Ürün Özellikleri'),
+            _buildTabItem(0, 'Özellikler'),
             _buildTabItem(1, 'Teslimat'),
-            _buildTabItem(2, 'İade Koşulları'),
+            _buildTabItem(2, 'İade'),
           ],
         ),
-        const Divider(height: 1, thickness: 1, color: Canvas701Colors.divider),
+        const Divider(height: 1),
         const SizedBox(height: Canvas701Spacing.md),
-        _buildTabContent(),
+        _buildActiveContent(),
       ],
     );
   }
@@ -508,11 +736,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     final isActive = _activeTabIndex == index;
     return GestureDetector(
       onTap: () => setState(() => _activeTabIndex = index),
+      behavior: HitTestBehavior.opaque,
       child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: Canvas701Spacing.md,
-          vertical: Canvas701Spacing.sm,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
@@ -527,157 +753,117 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             color: isActive
                 ? Canvas701Colors.primary
                 : Canvas701Colors.textTertiary,
-            fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-            fontSize: 13,
+            fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+            fontSize: 14,
           ),
         ),
       ),
     );
   }
 
-  Widget _buildTabContent() {
+  Widget _buildActiveContent() {
     switch (_activeTabIndex) {
       case 0:
+        String description =
+            widget.productDetail?.cleanedDescription ??
+            _cleanHtml(widget.fallbackDescription);
         return Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              widget.product.description,
-              style: Canvas701Typography.bodyMedium.copyWith(height: 1.6),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: Canvas701Spacing.md),
-            _buildBulletPoint('380 gr/m² %100 Pamuklu Kanvas Kumaş'),
-            _buildBulletPoint('HP Latex Mürekkep (Kokusuz ve Sağlıklı)'),
-            _buildBulletPoint('3cm Derinliğinde Fırınlanmış Ahşap Şase'),
-            _buildBulletPoint('Kenarlar Görselin Devamı Şeklinde Kaplanır'),
+            _buildTextContent(description),
+            if (widget.productDetail?.productFeaturedImage != null &&
+                widget.productDetail!.productFeaturedImage.isNotEmpty) ...[
+              const SizedBox(height: Canvas701Spacing.lg),
+              GestureDetector(
+                onTap: () => FullScreenImageViewer.open(context, [
+                  widget.productDetail!.productFeaturedImage,
+                ]),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(
+                    widget.productDetail!.productFeaturedImage,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+            ],
           ],
         );
       case 1:
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.local_shipping_outlined,
-                  color: Canvas701Colors.primary,
-                  size: 20,
-                ),
-                const SizedBox(width: Canvas701Spacing.sm),
-                Text(
-                  'Hızlı ve Güvenli Teslimat',
-                  style: Canvas701Typography.titleSmall,
-                ),
-              ],
-            ),
-            const SizedBox(height: Canvas701Spacing.sm),
-            Text(
-              'Siparişleriniz 2-4 iş günü içerisinde kargoya teslim edilir. Özel korumalı ambalajı ile hasarsız teslimat garantisi sunuyoruz.',
-              style: Canvas701Typography.bodyMedium.copyWith(height: 1.5),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        );
+        return _buildDeliveryContent();
       case 2:
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.assignment_return_outlined,
-                  color: Canvas701Colors.primary,
-                  size: 20,
-                ),
-                const SizedBox(width: Canvas701Spacing.sm),
-                Text(
-                  'Kolay İade Süreci',
-                  style: Canvas701Typography.titleSmall,
-                ),
-              ],
-            ),
-            const SizedBox(height: Canvas701Spacing.sm),
-            Text(
-              'Ürününüzü teslim aldığınız tarihten itibaren 14 gün içerisinde iade edebilirsiniz. Kişiye özel hazırlanan ürünlerde (isimli vb.) iade kabul edilmemektedir.',
-              style: Canvas701Typography.bodyMedium.copyWith(height: 1.5),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        );
+        return _buildReturnContent();
       default:
         return const SizedBox.shrink();
     }
   }
 
-  Widget _buildBulletPoint(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.only(top: 6),
-            child: Icon(Icons.circle, size: 6, color: Canvas701Colors.primary),
-          ),
-          const SizedBox(width: Canvas701Spacing.sm),
-          Flexible(child: Text(text, style: Canvas701Typography.bodyMedium)),
-        ],
+  String _cleanHtml(String html) {
+    if (html.isEmpty) return '';
+    return html
+        .replaceAll('<p>', '')
+        .replaceAll('</p>', '\n\n')
+        .replaceAll('<br>', '\n')
+        .replaceAll('<br />', '\n')
+        .replaceAll('&bull;', '•')
+        .replaceAll('&nbsp;', ' ')
+        .replaceAll(RegExp(r'<[^>]*>'), '')
+        .trim();
+  }
+
+  Widget _buildTextContent(String text) {
+    return Text(
+      text,
+      style: Canvas701Typography.bodyMedium.copyWith(
+        height: 1.6,
+        color: Canvas701Colors.textPrimary,
       ),
     );
   }
 
-  Widget _buildRelatedProducts() {
-    return Consumer<ProductViewModel>(
-      builder: (context, viewModel, child) {
-        if (viewModel.products.isEmpty) return const SizedBox.shrink();
+  Widget _buildDeliveryContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildInfoRow(
+          Icons.local_shipping_outlined,
+          widget.productDetail?.cargoInfo ?? 'Hızlı Teslimat',
+        ),
+        const SizedBox(height: 12),
+        Text(
+          widget.productDetail?.cargoDetail ??
+              'Siparişleriniz en kısa sürede kargoya teslim edilir.',
+          style: Canvas701Typography.bodyMedium,
+        ),
+      ],
+    );
+  }
 
-        final related = viewModel.products
-            .where((p) => p.productID.toString() != widget.product.id)
-            .take(4)
-            .map((p) => Product.fromApi(p))
-            .toList();
+  Widget _buildReturnContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildInfoRow(
+          Icons.assignment_return_outlined,
+          '14 Gün İade Garantisi',
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'Ürününüzü teslim aldığınız tarihten itibaren 14 gün içerisinde iade edebilirsiniz. Ambalajı açılmamış ve zarar görmemiş ürünler kabul edilmektedir.',
+          style: Canvas701Typography.bodyMedium,
+        ),
+      ],
+    );
+  }
 
-        if (related.isEmpty) return const SizedBox.shrink();
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Benzer Ürünler', style: Canvas701Typography.titleLarge),
-            const SizedBox(height: Canvas701Spacing.md),
-            SizedBox(
-              height:
-                  360, // Ürün kartı yüksekliği için yeterli alan (347px + padding)
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: related.length,
-                separatorBuilder: (_, __) =>
-                    const SizedBox(width: Canvas701Spacing.md),
-                itemBuilder: (context, index) {
-                  return SizedBox(
-                    width: 180,
-                    child: ProductCard(
-                      product: related[index],
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                ProductDetailPage(product: related[index]),
-                          ),
-                        );
-                      },
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        );
-      },
+  Widget _buildInfoRow(IconData icon, String title) {
+    return Row(
+      children: [
+        Icon(icon, color: Canvas701Colors.primary, size: 20),
+        const SizedBox(width: 8),
+        Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+      ],
     );
   }
 }

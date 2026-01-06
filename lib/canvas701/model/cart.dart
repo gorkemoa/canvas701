@@ -1,12 +1,10 @@
-import 'product.dart';
+import 'product_models.dart';
 
 /// Sepet Modeli
 class Cart {
   final List<CartItem> items;
 
-  const Cart({
-    this.items = const [],
-  });
+  const Cart({this.items = const []});
 
   /// Sepet boş mu?
   bool get isEmpty => items.isEmpty;
@@ -26,7 +24,8 @@ class Cart {
   /// Sepete ürün ekle
   Cart addItem(CartItem newItem) {
     final existingIndex = items.indexWhere(
-      (item) => item.productId == newItem.productId && item.sizeId == newItem.sizeId,
+      (item) =>
+          item.productId == newItem.productId && item.sizeId == newItem.sizeId,
     );
 
     if (existingIndex >= 0) {
@@ -44,7 +43,11 @@ class Cart {
   /// Sepetten ürün çıkar
   Cart removeItem(String productId, String sizeId) {
     return Cart(
-      items: items.where((item) => !(item.productId == productId && item.sizeId == sizeId)).toList(),
+      items: items
+          .where(
+            (item) => !(item.productId == productId && item.sizeId == sizeId),
+          )
+          .toList(),
     );
   }
 
@@ -116,7 +119,11 @@ class CartItem {
   }
 
   /// Product'tan CartItem oluştur
-  factory CartItem.fromProduct(Product product, ProductSize size, {int quantity = 1}) {
+  factory CartItem.fromProduct(
+    Product product,
+    ProductSize size, {
+    int quantity = 1,
+  }) {
     return CartItem(
       productId: product.id,
       productCode: product.code,

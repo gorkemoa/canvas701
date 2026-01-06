@@ -3,9 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../api/auth_service.dart';
 import '../api/general_service.dart';
-import '../model/register_request.dart';
-import '../model/code_check_request.dart';
-import '../model/resend_code_request.dart';
+import '../model/login_models.dart';
 import '../model/kvkk_response.dart';
 
 class RegisterViewModel extends ChangeNotifier {
@@ -55,7 +53,7 @@ class RegisterViewModel extends ChangeNotifier {
 
     try {
       final packageInfo = await PackageInfo.fromPlatform();
-      
+
       final request = RegisterRequest(
         userFirstname: firstName,
         userLastname: lastName,
@@ -75,7 +73,11 @@ class RegisterViewModel extends ChangeNotifier {
         notifyListeners();
         return true;
       } else {
-        _errorMessage = response.errorMessage ?? response.data?.message ?? response.successMessage ?? 'Kayıt başarısız';
+        _errorMessage =
+            response.errorMessage ??
+            response.data?.message ??
+            response.successMessage ??
+            'Kayıt başarısız';
         _isLoading = false;
         notifyListeners();
         return false;
@@ -89,7 +91,9 @@ class RegisterViewModel extends ChangeNotifier {
   }
 
   Future<bool> verifyCode(String code) async {
-    debugPrint('--- RegisterViewModel.verifyCode() STARTED with code: $code ---');
+    debugPrint(
+      '--- RegisterViewModel.verifyCode() STARTED with code: $code ---',
+    );
     _isLoading = true;
     _errorMessage = null;
     _successMessage = null;
@@ -98,23 +102,27 @@ class RegisterViewModel extends ChangeNotifier {
     try {
       // Get codeToken from storage if not in memory
       final storedCodeToken = _codeToken ?? await _authService.getCodeToken();
-      debugPrint('--- RegisterViewModel.verifyCode() storedCodeToken: ${storedCodeToken != null ? "FOUND" : "NOT FOUND"} ---');
-      
+      debugPrint(
+        '--- RegisterViewModel.verifyCode() storedCodeToken: ${storedCodeToken != null ? "FOUND" : "NOT FOUND"} ---',
+      );
+
       if (storedCodeToken == null) {
-        _errorMessage = 'Doğrulama oturumu bulunamadı. Lütfen yeni kod isteyin.';
-        debugPrint('--- RegisterViewModel.verifyCode() FAILED: codeToken is null ---');
+        _errorMessage =
+            'Doğrulama oturumu bulunamadı. Lütfen yeni kod isteyin.';
+        debugPrint(
+          '--- RegisterViewModel.verifyCode() FAILED: codeToken is null ---',
+        );
         _isLoading = false;
         notifyListeners();
         return false;
       }
 
-      final request = CodeCheckRequest(
-        code: code,
-        codeToken: storedCodeToken,
-      );
+      final request = CodeCheckRequest(code: code, codeToken: storedCodeToken);
 
       final response = await _authService.checkCode(request);
-      debugPrint('--- RegisterViewModel.verifyCode() API Response: success=${response.success}, error=${response.error} ---');
+      debugPrint(
+        '--- RegisterViewModel.verifyCode() API Response: success=${response.success}, error=${response.error} ---',
+      );
 
       if (response.success) {
         _successMessage = response.successMessage;
@@ -123,8 +131,14 @@ class RegisterViewModel extends ChangeNotifier {
         notifyListeners();
         return true;
       } else {
-        _errorMessage = response.errorMessage ?? response.data?.message ?? response.successMessage ?? 'Doğrulama başarısız';
-        debugPrint('--- RegisterViewModel.verifyCode() API ERROR: $_errorMessage ---');
+        _errorMessage =
+            response.errorMessage ??
+            response.data?.message ??
+            response.successMessage ??
+            'Doğrulama başarısız';
+        debugPrint(
+          '--- RegisterViewModel.verifyCode() API ERROR: $_errorMessage ---',
+        );
         _isLoading = false;
         notifyListeners();
         return false;
@@ -148,35 +162,43 @@ class RegisterViewModel extends ChangeNotifier {
     try {
       // Get userToken from storage if not in memory
       final storedUserToken = _userToken ?? await _authService.getUserToken();
-      debugPrint('--- RegisterViewModel.resendCode() storedUserToken: ${storedUserToken != null ? "FOUND" : "NOT FOUND"} ---');
-      
+      debugPrint(
+        '--- RegisterViewModel.resendCode() storedUserToken: ${storedUserToken != null ? "FOUND" : "NOT FOUND"} ---',
+      );
+
       if (storedUserToken == null) {
-        _errorMessage = 'Kullanıcı oturumu bulunamadı. Lütfen tekrar giriş yapın.';
-        debugPrint('--- RegisterViewModel.resendCode() FAILED: userToken is null ---');
+        _errorMessage =
+            'Kullanıcı oturumu bulunamadı. Lütfen tekrar giriş yapın.';
+        debugPrint(
+          '--- RegisterViewModel.resendCode() FAILED: userToken is null ---',
+        );
         _isLoading = false;
         notifyListeners();
         return false;
       }
 
-      final request = ResendCodeRequest(
-        userToken: storedUserToken,
-      );
+      final request = ResendCodeRequest(userToken: storedUserToken);
 
       final response = await _authService.resendCode(request);
-      debugPrint('--- RegisterViewModel.resendCode() API Response: success=${response.success}, error=${response.error} ---');
+      debugPrint(
+        '--- RegisterViewModel.resendCode() API Response: success=${response.success}, error=${response.error} ---',
+      );
 
       if (response.success) {
         if (response.data?.codeToken != null) {
           _codeToken = response.data!.codeToken;
         }
-        _successMessage = response.successMessage ?? 'Doğrulama kodu tekrar gönderildi';
+        _successMessage =
+            response.successMessage ?? 'Doğrulama kodu tekrar gönderildi';
         debugPrint('--- RegisterViewModel.resendCode() SUCCESS ---');
         _isLoading = false;
         notifyListeners();
         return true;
       } else {
         _errorMessage = response.message ?? 'Kod gönderilemedi';
-        debugPrint('--- RegisterViewModel.resendCode() API ERROR: $_errorMessage ---');
+        debugPrint(
+          '--- RegisterViewModel.resendCode() API ERROR: $_errorMessage ---',
+        );
         _isLoading = false;
         notifyListeners();
         return false;

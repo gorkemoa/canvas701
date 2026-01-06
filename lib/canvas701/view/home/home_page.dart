@@ -1,4 +1,3 @@
-import 'package:canvas701/canvas701/model/product_list_response.dart';
 import 'package:canvas701/canvas701/theme/canvas701_theme_data.dart';
 import 'package:canvas701/canvas701/view/product/product_detail_page.dart';
 import 'package:flutter/material.dart';
@@ -23,12 +22,7 @@ class _HomePageState extends State<HomePage> {
   final PageController _bannerController = PageController();
   int _currentBannerIndex = 0;
 
-  final List<String> _banners = [
-    'https://picsum.photos/seed/hero1/800/400',
-    'https://picsum.photos/seed/hero2/800/400',
-    'https://picsum.photos/seed/hero3/800/400',
-    'https://picsum.photos/seed/hero4/800/400',
-  ];
+  final List<String> _banners = [];
 
   @override
   void initState() {
@@ -79,14 +73,20 @@ class _HomePageState extends State<HomePage> {
               ),
               child: Container(
                 height: 35,
-                padding: const EdgeInsets.symmetric(horizontal: Canvas701Spacing.md),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: Canvas701Spacing.md,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(19),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.search, color: Canvas701Colors.primary, size: 20),
+                    Icon(
+                      Icons.search,
+                      color: Canvas701Colors.primary,
+                      size: 20,
+                    ),
                     const SizedBox(width: Canvas701Spacing.sm),
                     Text(
                       'Ürün, kategori veya marka ara',
@@ -117,10 +117,12 @@ class _HomePageState extends State<HomePage> {
           SliverToBoxAdapter(
             child: Consumer<ProductViewModel>(
               builder: (context, viewModel, _) {
-                if (viewModel.isBestsellersLoading && viewModel.bestsellers.isEmpty) {
+                if (viewModel.isBestsellersLoading &&
+                    viewModel.bestsellers.isEmpty) {
                   return const SizedBox.shrink();
                 }
-                if (viewModel.bestsellers.isEmpty) return const SizedBox.shrink();
+                if (viewModel.bestsellers.isEmpty)
+                  return const SizedBox.shrink();
 
                 return Column(
                   children: [
@@ -136,10 +138,12 @@ class _HomePageState extends State<HomePage> {
           SliverToBoxAdapter(
             child: Consumer<ProductViewModel>(
               builder: (context, viewModel, _) {
-                if (viewModel.isNewArrivalsLoading && viewModel.newArrivals.isEmpty) {
+                if (viewModel.isNewArrivalsLoading &&
+                    viewModel.newArrivals.isEmpty) {
                   return const SizedBox.shrink();
                 }
-                if (viewModel.newArrivals.isEmpty) return const SizedBox.shrink();
+                if (viewModel.newArrivals.isEmpty)
+                  return const SizedBox.shrink();
 
                 return Column(
                   children: [
@@ -185,6 +189,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildHeroBanner() {
+    if (_banners.isEmpty) return const SizedBox.shrink();
     return Column(
       children: [
         SizedBox(
@@ -239,14 +244,9 @@ class _HomePageState extends State<HomePage> {
                               color: Colors.white,
                               fontSize: 10,
                               fontWeight: FontWeight.w700,
-                                shadows: [
-                                  Shadow(
-                              
-                                    offset: Offset(0, 2),
-                                    blurRadius: 10,
-                                  ),
-                                ]
-
+                              shadows: [
+                                Shadow(offset: Offset(0, 2), blurRadius: 10),
+                              ],
                             ),
                           ),
                         ],
@@ -272,8 +272,8 @@ class _HomePageState extends State<HomePage> {
                 margin: const EdgeInsets.symmetric(horizontal: 4),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(4),
-                  color: isSelected 
-                      ? Canvas701Colors.primary 
+                  color: isSelected
+                      ? Canvas701Colors.primary
                       : Canvas701Colors.primary.withOpacity(0.2),
                 ),
               );
@@ -283,7 +283,6 @@ class _HomePageState extends State<HomePage> {
       ],
     );
   }
-
 
   Widget _buildUSPBar() {
     return Container(
@@ -347,10 +346,13 @@ class _HomePageState extends State<HomePage> {
         return SizedBox(
           height: 100,
           child: ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: Canvas701Spacing.md),
+            padding: const EdgeInsets.symmetric(
+              horizontal: Canvas701Spacing.md,
+            ),
             scrollDirection: Axis.horizontal,
             itemCount: displayCategories.length,
-            separatorBuilder: (_, __) => const SizedBox(width: Canvas701Spacing.sm),
+            separatorBuilder: (_, __) =>
+                const SizedBox(width: Canvas701Spacing.sm),
             itemBuilder: (context, index) {
               final category = displayCategories[index];
               return _buildCategoryItem(category);
@@ -471,5 +473,4 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
 }

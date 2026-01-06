@@ -1,7 +1,7 @@
 import 'dart:convert';
+import 'package:canvas701/canvas701/constants/api_constants.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'api_constants.dart';
 import '../model/kvkk_response.dart';
 
 class GeneralService {
