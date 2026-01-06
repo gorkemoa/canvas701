@@ -430,15 +430,18 @@ class AuthService {
       '${ApiConstants.baseUrl}${ApiConstants.deleteAddress}',
     );
 
-    final body = {'userToken': token, 'addressID': addressID};
+    final request = DeleteAddressRequest(
+      userToken: token,
+      addressID: addressID,
+    );
 
-    _logRequest('POST', url.toString(), body);
+    _logRequest('POST', url.toString(), request.toJson());
 
     try {
-      final response = await http.post(
+      final response = await http.delete(
         url,
         headers: _getHeaders(),
-        body: jsonEncode(body),
+        body: jsonEncode(request.toJson()),
       );
 
       _logResponse(response.statusCode, response.body);

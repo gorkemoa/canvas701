@@ -121,28 +121,10 @@ class _AddressViewState extends State<_AddressView> {
                     children: [
                       // Header Section
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 16, 8, 12),
+                        padding: const EdgeInsets.fromLTRB(10, 16, 8, 12),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Icon Box
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: Canvas701Colors.primary.withOpacity(
-                                  0.08,
-                                ),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Icon(
-                                address.addressTypeId == 2
-                                    ? Icons.business_rounded
-                                    : Icons.home_rounded,
-                                color: Canvas701Colors.primary,
-                                size: 24,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
                             // Title & Type
                             Expanded(
                               child: Column(
@@ -159,7 +141,7 @@ class _AddressViewState extends State<_AddressView> {
                                   const SizedBox(height: 4),
                                   Container(
                                     padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
+                                      horizontal: 1,
                                       vertical: 2,
                                     ),
                                     decoration: BoxDecoration(
@@ -425,19 +407,19 @@ class _AddressViewState extends State<_AddressView> {
   void _showDeleteConfirmation(BuildContext context, UserAddress address) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Adresi Sil'),
         content: Text(
           '${address.addressTitle} başlıklı adresi silmek istediğinize emin misiniz?',
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('İptal'),
           ),
           TextButton(
             onPressed: () async {
-              Navigator.pop(context); // Close dialog
+              Navigator.pop(dialogContext); // Close dialog
               final success = await context
                   .read<AddressViewModel>()
                   .deleteAddress(address.addressId);

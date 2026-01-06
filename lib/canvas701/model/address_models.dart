@@ -88,6 +88,17 @@ class UpdateAddressRequest extends AddAddressRequest {
   }
 }
 
+class DeleteAddressRequest {
+  final String userToken;
+  final int addressID;
+
+  DeleteAddressRequest({required this.userToken, required this.addressID});
+
+  Map<String, dynamic> toJson() {
+    return {'userToken': userToken, 'addressID': addressID};
+  }
+}
+
 class AddAddressResponse {
   final bool error;
   final bool success;
