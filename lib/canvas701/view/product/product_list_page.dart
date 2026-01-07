@@ -462,6 +462,9 @@ class _ProductListPageState extends State<ProductListPage> {
                     decoration: BoxDecoration(
                       color: Canvas701Colors.error.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Canvas701Colors.error.withOpacity(0.3),
+                      ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -500,7 +503,6 @@ class _ProductListPageState extends State<ProductListPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Canvas701Colors.primary.withOpacity(0.1),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Canvas701Colors.primary.withOpacity(0.3)),
       ),
@@ -522,10 +524,7 @@ class _ProductListPageState extends State<ProductListPage> {
             onTap: onRemove,
             child: Container(
               padding: const EdgeInsets.all(2),
-              decoration: BoxDecoration(
-                color: Canvas701Colors.primary.withOpacity(0.2),
-                shape: BoxShape.circle,
-              ),
+
               child: const Icon(
                 Icons.close_rounded,
                 size: 14,
@@ -752,20 +751,10 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
 
         return ListView.separated(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: types.length + 1,
+          itemCount: types.length,
           separatorBuilder: (_, __) => const Divider(height: 1),
           itemBuilder: (context, index) {
-            if (index == 0) {
-              final isSelected = _typeKey == null || _typeKey!.isEmpty;
-              return _buildFilterTile(
-                title: 'Tümü',
-                icon: Icons.apps_rounded,
-                isSelected: isSelected,
-                onTap: () => setState(() => _typeKey = ''),
-              );
-            }
-
-            final type = types[index - 1];
+            final type = types[index];
             final isSelected = _typeKey == type.key;
 
             return _buildFilterTile(

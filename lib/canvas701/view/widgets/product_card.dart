@@ -2,6 +2,7 @@ import 'package:canvas701/canvas701/theme/canvas701_theme_data.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../model/model.dart';
+import 'size_selection_bottom_sheet.dart';
 
 /// Canvas701 Ürün Kartı Widget
 /// 
@@ -27,6 +28,16 @@ class ProductCard extends StatelessWidget {
     this.isFavorite = false,
   });
 
+  /// Boyut seçimi bottom sheet'ini aç
+  void _showSizeSelection(BuildContext context) {
+    SizeSelectionBottomSheet.show(
+      context,
+      productId: int.tryParse(product.id) ?? 0,
+      productName: product.name,
+      productImage: product.thumbnail,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -42,7 +53,7 @@ class ProductCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildImage(),
-            _buildInfo(),
+            _buildInfo(context),
           ],
         ),
       ),
@@ -186,7 +197,7 @@ class ProductCard extends StatelessWidget {
     );
   }
 
-  Widget _buildInfo() {
+  Widget _buildInfo(BuildContext context) {
     // Kategori adı (ilk kategori)
     final categoryName = product.categoryIds.isNotEmpty 
         ? _getCategoryName(product.categoryIds.first)
@@ -251,7 +262,7 @@ class ProductCard extends StatelessWidget {
             width: double.infinity,
             height: 36,
             child: ElevatedButton(
-              onPressed: onAddToCart ?? () {},
+              onPressed: onAddToCart ?? () => _showSizeSelection(context),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Canvas701Colors.primary,
                 foregroundColor: Canvas701Colors.textOnPrimary,

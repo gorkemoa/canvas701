@@ -40,4 +40,7 @@ class ApiConstants {
   // General
   static const String kvkkAgreement =
       'service/general/general/contracts/kvkkAgreement';
+
+  // Basket
+  static const String addBasket = 'service/user/account/basket/add';
 }
