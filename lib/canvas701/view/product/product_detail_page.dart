@@ -202,17 +202,20 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               final size = sizes[index];
               bool isSelected = false;
               String name = '';
+              String price='';
 
               if (size is ApiProductSize) {
                 isSelected =
                     _selectedSize is ApiProductSize &&
                     (_selectedSize as ApiProductSize).sizeID == size.sizeID;
                 name = size.sizeName;
+                price=size.sizePrice;
               } else if (size is ProductSize) {
                 isSelected =
                     _selectedSize is ProductSize &&
                     (_selectedSize as ProductSize).id == size.id;
                 name = size.name;
+                price='${size.price.toStringAsFixed(2).replaceAll('.', ',')} TL';
               }
 
               return GestureDetector(
@@ -232,8 +235,19 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     ),
                   ),
                   alignment: Alignment.center,
-                  child: Text(
-                    name,
+                  child: Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(text: '$name\n',style: const TextStyle(
+                          fontSize: 12,
+                        ),),
+                        TextSpan(
+                          text: price,
+                          style: const TextStyle(fontSize: 9),
+                        ),
+                      ],
+                    ),
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       color: isSelected ? Colors.white : Canvas701Colors.textPrimary,
                       fontWeight: isSelected
@@ -583,7 +597,7 @@ class ProductInfoSection extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Ürün Kodu: ${productDetail?.productID ?? fallbackCode}',
+                  'Ürün Kodu: ${productDetail?.productCode ?? fallbackCode}',
                   style: Canvas701Typography.labelSmall.copyWith(
                     color: Canvas701Colors.textTertiary,
                     fontSize: 10,

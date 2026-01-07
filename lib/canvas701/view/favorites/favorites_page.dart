@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../theme/canvas701_theme_data.dart';
 import '../../model/model.dart';
 import '../widgets/widgets.dart';
 import '../../../core/widgets/app_mode_switcher.dart';
+import '../../viewmodel/favorites_viewmodel.dart';
+import '../product/product_detail_page.dart';
 
 /// Canvas701 Favoriler Sayfası
 class FavoritesPage extends StatefulWidget {
@@ -14,29 +17,19 @@ class FavoritesPage extends StatefulWidget {
 
 class _FavoritesPageState extends State<FavoritesPage> {
   final TextEditingController _searchController = TextEditingController();
-  List<Product> _favoriteProducts = [];
-  List<Product> _filteredProducts = [];
+  String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
-    // Başlangıçta boş
-    _favoriteProducts = [];
-    _filteredProducts = [];
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<FavoritesViewModel>().fetchFavorites();
+    });
   }
 
   void _onSearch(String query) {
     setState(() {
-      if (query.isEmpty) {
-        _filteredProducts = List.from(_favoriteProducts);
-      } else {
-        _filteredProducts = _favoriteProducts
-            .where(
-              (product) =>
-                  product.name.toLowerCase().contains(query.toLowerCase()),
-            )
-            .toList();
-      }
+      _searchQuery = query;
     });
   }
 
@@ -65,37 +58,50 @@ class _FavoritesPageState extends State<FavoritesPage> {
           ),
         ),
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          // Favorileri yenileme simülasyonu
-          await Future.delayed(const Duration(seconds: 1));
-          setState(() {
-            _onSearch(_searchController.text);
-          });
-        },
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            // Favorites List
-            if (_filteredProducts.isEmpty)
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: _buildEmptyState(),
-              )
-            else
-              _buildFavoritesGrid(),
+      body: Consumer<FavoritesViewModel>(
+        builder: (context, viewModel, child) {
+          if (viewModel.isLoading && viewModel.favorites.isEmpty) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-            // Alt Boşluk
-            const SliverToBoxAdapter(
-              child: SizedBox(height: Canvas701Spacing.xxl),
+          final filteredProducts = viewModel.favorites.where((product) {
+            return product.productName
+                .toLowerCase()
+                .contains(_searchQuery.toLowerCase());
+          }).toList();
+
+          return RefreshIndicator(
+            onRefresh: () async {
+              await viewModel.fetchFavorites();
+            },
+            child: CustomScrollView(
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                // Favorites List
+                if (filteredProducts.isEmpty)
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: _buildEmptyState(),
+                  )
+                else
+                  _buildFavoritesGrid(filteredProducts, viewModel),
+
+                // Alt Boşluk
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: Canvas701Spacing.xxl),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildFavoritesGrid() {
+  Widget _buildFavoritesGrid(
+    List<ApiProduct> products,
+    FavoritesViewModel viewModel,
+  ) {
     return SliverPadding(
       padding: const EdgeInsets.all(Canvas701Spacing.md),
       sliver: SliverGrid(
@@ -106,15 +112,29 @@ class _FavoritesPageState extends State<FavoritesPage> {
           mainAxisSpacing: Canvas701Spacing.md,
         ),
         delegate: SliverChildBuilderDelegate((context, index) {
-          final product = _filteredProducts[index];
+          final apiProduct = products[index];
+          final product = Product.fromApi(apiProduct);
           return ProductCard(
             product: product,
             isFavorite: true,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ProductDetailPage(product: product),
+                ),
+              );
+            },
+            onAddToCart: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('${product.name} sepete eklendi!'),
+                ),
+              );
+            },
             onFavorite: () {
-              setState(() {
-                _favoriteProducts.remove(product);
-                _onSearch(_searchController.text);
-              });
+              // Not: Normalde burada API çağrısı da yapılır.
+              viewModel.removeFromFavorites(apiProduct.productID);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('${product.name} favorilerden çıkarıldı'),
@@ -123,7 +143,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
               );
             },
           );
-        }, childCount: _filteredProducts.length),
+        }, childCount: products.length),
       ),
     );
   }

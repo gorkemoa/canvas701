@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../viewmodel/category_viewmodel.dart';
+import '../viewmodel/product_viewmodel.dart';
+import '../viewmodel/profile_viewmodel.dart';
 import 'home/home_page.dart';
 import 'categories/categories_page.dart';
 import 'profile/profile_page.dart';
@@ -32,9 +36,36 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   }
 
   void _onNavTap(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
+    if (_currentIndex == index) {
+      // Aynı sekmeye tıklandığında da verileri yenile
+      _refreshData(index);
+    } else {
+      // Farklı sekmeye geçildiğinde de verileri yenile
+      _refreshData(index);
+      setState(() {
+        _currentIndex = index;
+      });
+    }
+  }
+
+  void _refreshData(int index) {
+    switch (index) {
+      case NavIndex.home:
+        context.read<CategoryViewModel>().fetchCategories();
+        context.read<ProductViewModel>().fetchAllProducts(refresh: true);
+        context.read<ProductViewModel>().fetchBestsellers();
+        context.read<ProductViewModel>().fetchNewArrivals();
+        break;
+      case NavIndex.categories:
+        context.read<CategoryViewModel>().fetchCategories();
+        break;
+      case NavIndex.special:
+        // Şimdilik boş, ileride Sana Özel verileri buraya eklenebilir
+        break;
+      case NavIndex.profile:
+        context.read<ProfileViewModel>().fetchUser();
+        break;
+    }
   }
 
   @override

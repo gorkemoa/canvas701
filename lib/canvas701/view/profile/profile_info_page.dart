@@ -140,7 +140,7 @@ class _ProfileInfoPageState extends State<ProfileInfoPage> {
       final bytes = await croppedFile.readAsBytes();
       setState(() {
         _selectedImage = File(croppedFile.path);
-        _base64Image = base64Encode(bytes);
+        _base64Image = 'data:image/jpeg;base64,${base64Encode(bytes)}';
       });
     }
   }

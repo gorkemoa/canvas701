@@ -129,7 +129,40 @@ class ProductService {
       return FilterListResponse(error: true, success: false);
     }
   }
+  Future<FavoriteListResponse> getFavorites() async {
+    final userToken = await AuthService().getUserToken();
+    final url = Uri.parse(
+      '${ApiConstants.baseUrl}${ApiConstants.getFavorites}?userToken=$userToken',
+    );
 
+    debugPrint('--- GET FAVORITES REQUEST ---');
+    debugPrint('URL: $url');
+
+    try {
+      final response = await http.get(url, headers: _getHeaders());
+
+      debugPrint('--- GET FAVORITES RESPONSE ---');
+      debugPrint('Status Code: ${response.statusCode}');
+
+      if (response.statusCode == 403) {
+        await AuthService().logout();
+      }
+
+      final body = response.body;
+      if (body.trim().startsWith('<')) {
+        debugPrint(
+          '--- GET FAVORITES ERROR: Received HTML instead of JSON ---',
+        );
+        return FavoriteListResponse(error: true, success: false);
+      }
+
+      final responseData = jsonDecode(body);
+      return FavoriteListResponse.fromJson(responseData);
+    } catch (e) {
+      debugPrint('--- GET FAVORITES ERROR: $e ---');
+      return FavoriteListResponse(error: true, success: false);
+    }
+  }
   Future<ProductDetailResponse> getProductDetail(int productId) async {
     final userToken = await AuthService().getUserToken();
     String urlString =

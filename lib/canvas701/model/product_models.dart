@@ -202,6 +202,8 @@ class ApiProductDetail {
   final String productFeaturedImage;
   final int productStock;
   final String productPrice;
+  final String productCode;
+/*  final String productLink; */
   final String productPriceDiscount;
   final int productDiscountType;
   final String productDiscount;
@@ -265,6 +267,7 @@ class ApiProductDetail {
     required this.productImage,
     required this.productFeaturedImage,
     required this.productStock,
+    required this.productCode,
     required this.productPrice,
     required this.productPriceDiscount,
     required this.productDiscountType,
@@ -286,6 +289,7 @@ class ApiProductDetail {
       productName: json['productName'] ?? '',
       productExcerpt: json['productExcerpt'] ?? '',
       productDescription: json['productDescription'] ?? '',
+      productCode: json['productCode'] ?? '',
       productImage: json['productImage'] ?? '',
       productFeaturedImage: json['productFeaturedImage'] ?? '',
       productStock: json['productStock'] ?? 0,
@@ -449,6 +453,49 @@ class ProductListData {
       emptyMessage: json['emptyMessage'] ?? '',
       products:
           (json['products'] as List?)
+              ?.map((p) => ApiProduct.fromJson(p))
+              .toList() ??
+          [],
+    );
+  }
+}
+
+class FavoriteListResponse {
+  final bool error;
+  final bool success;
+  final FavoriteListData? data;
+
+  FavoriteListResponse({
+    required this.error,
+    required this.success,
+    this.data,
+  });
+
+  factory FavoriteListResponse.fromJson(Map<String, dynamic> json) {
+    return FavoriteListResponse(
+      error: json['error'] ?? true,
+      success: json['success'] ?? false,
+      data: json['data'] != null ? FavoriteListData.fromJson(json['data']) : null,
+    );
+  }
+}
+
+class FavoriteListData {
+  final int totalItems;
+  final String emptyMessage;
+  final List<ApiProduct> favoriteProducts;
+
+  FavoriteListData({
+    required this.totalItems,
+    required this.emptyMessage,
+    required this.favoriteProducts,
+  });
+
+  factory FavoriteListData.fromJson(Map<String, dynamic> json) {
+    return FavoriteListData(
+      totalItems: json['totalItems'] ?? 0,
+      emptyMessage: json['emptyMessage'] ?? '',
+      favoriteProducts: (json['favoriteProducts'] as List?)
               ?.map((p) => ApiProduct.fromJson(p))
               .toList() ??
           [],
