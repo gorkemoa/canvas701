@@ -75,9 +75,10 @@ class ProductCard extends StatelessWidget {
                 ),
               ),
               child: Center(
-                child: CircularProgressIndicator(
-                  color: Canvas701Colors.accent,
-                  strokeWidth: 2,
+                child: Icon(
+                  Icons.image_outlined,
+                  color: Canvas701Colors.textTertiary.withOpacity(0.3),
+                  size: 32,
                 ),
               ),
             ),

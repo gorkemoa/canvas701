@@ -27,14 +27,9 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<CategoryViewModel>().fetchCategories();
-      final productViewModel = context.read<ProductViewModel>();
-      productViewModel.fetchFilters();
-      productViewModel.fetchBestsellers();
-      productViewModel.fetchNewArrivals();
-      productViewModel.fetchAllProducts(refresh: true);
-    });
+    // Veriler Splash sayfasında yüklendiği için burada tekrar yüklemeye gerek yok.
+    // Ancak sayfa her açıldığında güncel veri istenirse burası kalabilir.
+    // Kullanıcı isteğine göre Splash'te yüklendiği için burayı boş bırakıyoruz.
   }
 
   @override
@@ -154,7 +149,6 @@ class _HomePageState extends State<HomePage> {
                 if (viewModel.isLoading && viewModel.products.isEmpty) {
                   return const SizedBox(
                     height: 200,
-                    child: Center(child: CircularProgressIndicator()),
                   );
                 }
                 if (viewModel.products.isEmpty) {
@@ -328,7 +322,6 @@ class _HomePageState extends State<HomePage> {
         if (viewModel.isLoading && viewModel.categories.isEmpty) {
           return const SizedBox(
             height: 100,
-            child: Center(child: CircularProgressIndicator()),
           );
         }
 

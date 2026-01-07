@@ -85,7 +85,6 @@ class CategoriesPage extends StatelessWidget {
         if (viewModel.isLoading && viewModel.categories.isEmpty) {
           return const SizedBox(
             height: 120,
-            child: Center(child: CircularProgressIndicator()),
           );
         }
 
@@ -149,7 +148,7 @@ class CategoriesPage extends StatelessWidget {
       builder: (context, viewModel, child) {
         if (viewModel.isLoading && viewModel.categories.isEmpty) {
           return const SliverToBoxAdapter(
-            child: Center(child: CircularProgressIndicator()),
+            child: SizedBox(height: 200),
           );
         }
 
