@@ -54,30 +54,36 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 pinned: true,
                 backgroundColor: Colors.white,
                 elevation: 0,
+                scrolledUnderElevation: 0,
+                leadingWidth: 56,
                 leading: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: CircleAvatar(
-                    backgroundColor: Colors.white.withOpacity(0.9),
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.arrow_back,
-                        color: Colors.black,
-                        size: 20,
+                  padding: const EdgeInsets.only(left: 16.0),
+                  child: Center(
+                    child: CircleAvatar(
+                      radius: 18,
+                      backgroundColor: Colors.white.withOpacity(0.9),
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.arrow_back_ios_new,
+                          color: Colors.black,
+                          size: 16,
+                        ),
+                        onPressed: () => Navigator.pop(context),
                       ),
-                      onPressed: () => Navigator.pop(context),
                     ),
                   ),
                 ),
                 actions: [
                   Padding(
-                    padding: const EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.only(right: 16.0),
                     child: CircleAvatar(
+                      radius: 18,
                       backgroundColor: Colors.white.withOpacity(0.9),
                       child: IconButton(
                         icon: Icon(
                           _isFavorite ? Icons.favorite : Icons.favorite_outline,
                           color: _isFavorite ? Colors.red : Colors.black,
-                          size: 20,
+                          size: 18,
                         ),
                         onPressed: () =>
                             setState(() => _isFavorite = !_isFavorite),
@@ -100,14 +106,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 20.0,
+                    horizontal: 24.0,
                     vertical: 24.0,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildBreadcrumbs(productDetail),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 20),
                       ProductInfoSection(
                         productDetail: productDetail,
                         selectedSize: _selectedSize,
@@ -116,14 +122,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       ),
                       const SizedBox(height: 32),
                       _buildSizeSelection(productDetail),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 40),
                       ProductDescriptionTabs(
                         productDetail: productDetail,
                         fallbackDescription: widget.product.description,
                       ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 40),
                       _buildRelatedProducts(viewModel),
-                      const SizedBox(height: 100), // Space for bottom bar
+                      const SizedBox(height: 120), // Space for bottom bar
                     ],
                   ),
                 ),
@@ -139,15 +145,24 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   Widget _buildBreadcrumbs(ApiProductDetail? productDetail) {
     return Row(
       children: [
-        Text('Anasayfa', style: Canvas701Typography.labelSmall),
+        Text(
+          'Anasayfa',
+          style: Canvas701Typography.labelSmall.copyWith(
+            color: Canvas701Colors.textTertiary,
+            fontSize: 10,
+          ),
+        ),
         const Icon(
           Icons.chevron_right,
-          size: 12,
+          size: 10,
           color: Canvas701Colors.textTertiary,
         ),
         Text(
           productDetail?.categories?.name ?? 'Kanvas Tablolar',
-          style: Canvas701Typography.labelSmall,
+          style: Canvas701Typography.labelSmall.copyWith(
+            color: Canvas701Colors.textTertiary,
+            fontSize: 10,
+          ),
         ),
       ],
     );
@@ -172,16 +187,17 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         Text(
           'Ölçü Seçimi',
           style: Canvas701Typography.titleMedium.copyWith(
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w700,
+            fontSize: 14,
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
         SizedBox(
-          height: 45,
+          height: 38,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: sizes.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            separatorBuilder: (_, __) => const SizedBox(width: 10),
             itemBuilder: (context, index) {
               final size = sizes[index];
               bool isSelected = false;
@@ -203,26 +219,27 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 onTap: () => setState(() => _selectedSize = size),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
                     color: isSelected
                         ? Canvas701Colors.primary
-                        : Colors.grey[50],
-                    borderRadius: BorderRadius.circular(12),
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(8),
                     border: Border.all(
                       color: isSelected
                           ? Canvas701Colors.primary
-                          : Colors.grey[200]!,
+                          : Canvas701Colors.border,
                     ),
                   ),
                   alignment: Alignment.center,
                   child: Text(
                     name,
                     style: TextStyle(
-                      color: isSelected ? Colors.white : Colors.black,
+                      color: isSelected ? Colors.white : Canvas701Colors.textPrimary,
                       fontWeight: isSelected
-                          ? FontWeight.bold
-                          : FontWeight.normal,
+                          ? FontWeight.w600
+                          : FontWeight.w400,
+                      fontSize: 12,
                     ),
                   ),
                 ),
@@ -236,12 +253,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   Widget _buildBottomActionSheet(ApiProductDetail? productDetail) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: BoxDecoration(
         color: Colors.white,
+        border: const Border(
+          top: BorderSide(color: Canvas701Colors.divider, width: 1),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withOpacity(0.03),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),
@@ -251,24 +271,28 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         child: Row(
           children: [
             Container(
+              height: 48,
               decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(12),
+                color: Canvas701Colors.surfaceVariant,
+                borderRadius: BorderRadius.circular(10),
               ),
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.remove, size: 18),
+                    icon: const Icon(Icons.remove, size: 16),
                     onPressed: _quantity > 1
                         ? () => setState(() => _quantity--)
                         : null,
                   ),
                   Text(
                     '$_quantity',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.add, size: 18),
+                    icon: const Icon(Icons.add, size: 16),
                     onPressed: () => setState(() => _quantity++),
                   ),
                 ],
@@ -289,15 +313,19 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Canvas701Colors.primary,
                   foregroundColor: Colors.white,
-                  minimumSize: const Size(double.infinity, 54),
+                  minimumSize: const Size(double.infinity, 48),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   elevation: 0,
                 ),
                 child: const Text(
                   'SEPETE EKLE',
-                  style: TextStyle(fontWeight: FontWeight.w800),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
+                    fontSize: 14,
+                  ),
                 ),
               ),
             ),
@@ -321,20 +349,21 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         Text(
           'Benzer Ürünler',
           style: Canvas701Typography.titleLarge.copyWith(
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
           ),
         ),
         const SizedBox(height: 16),
         SizedBox(
-          height: 360,
+          height: 350,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: relatedItems.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 16),
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
             itemBuilder: (context, index) {
               final product = Product.fromApi(relatedItems[index]);
               return SizedBox(
-                width: 180, // Card original width is 180
+                width: 170, // Slightly reduced width
                 child: ProductCard(
                   product: product,
                   isFavorite: product.isFavorite,
@@ -523,28 +552,30 @@ class ProductInfoSection extends StatelessWidget {
         if (productDetail != null && productDetail!.totalComments > 0) ...[
           Row(
             children: [
-              const Icon(Icons.star, color: Colors.amber, size: 18),
+              const Icon(Icons.star, color: Colors.amber, size: 14),
               const SizedBox(width: 4),
               Text(
                 '${productDetail!.rating} (${productDetail!.totalComments} Değerlendirme)',
                 style: Canvas701Typography.labelSmall.copyWith(
                   color: Canvas701Colors.primary,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 11,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: Canvas701Spacing.sm),
+          const SizedBox(height: 8),
         ],
         Text(
           productDetail?.productName ?? fallbackName,
           style: Canvas701Typography.displaySmall.copyWith(
-            fontWeight: FontWeight.w800,
-            fontSize: 24,
-            height: 1.2,
+            fontWeight: FontWeight.w700,
+            fontSize: 20,
+            height: 1.3,
+            color: Canvas701Colors.textPrimary,
           ),
         ),
-        const SizedBox(height: Canvas701Spacing.xs),
+        const SizedBox(height: 12),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -555,6 +586,7 @@ class ProductInfoSection extends StatelessWidget {
                   'Ürün Kodu: ${productDetail?.productID ?? fallbackCode}',
                   style: Canvas701Typography.labelSmall.copyWith(
                     color: Canvas701Colors.textTertiary,
+                    fontSize: 10,
                   ),
                 ),
                 if (productDetail != null &&
@@ -568,15 +600,16 @@ class ProductInfoSection extends StatelessWidget {
                             padding: const EdgeInsets.only(right: 4.0),
                             child: Image.network(
                               productDetail!.productDiscountIcon,
-                              width: 14,
-                              height: 14,
+                              width: 12,
+                              height: 12,
                             ),
                           ),
                         Text(
                           productDetail!.productDiscount,
                           style: Canvas701Typography.labelSmall.copyWith(
                             color: Colors.red,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 10,
                           ),
                         ),
                       ],
@@ -586,12 +619,17 @@ class ProductInfoSection extends StatelessWidget {
             ),
             if (productDetail != null)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: productDetail!.productStock > 0
-                      ? Colors.green.withOpacity(0.1)
-                      : Colors.red.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(4),
+                      ? Colors.green.withOpacity(0.05)
+                      : Colors.red.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: productDetail!.productStock > 0
+                        ? Colors.green.withOpacity(0.1)
+                        : Colors.red.withOpacity(0.1),
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -599,7 +637,7 @@ class ProductInfoSection extends StatelessWidget {
                       productDetail!.productStock > 0
                           ? Icons.check_circle
                           : Icons.error,
-                      size: 12,
+                      size: 10,
                       color: productDetail!.productStock > 0
                           ? Colors.green
                           : Colors.red,
@@ -610,8 +648,8 @@ class ProductInfoSection extends StatelessWidget {
                           ? 'Stokta Var'
                           : 'Stokta Yok',
                       style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
                         color: productDetail!.productStock > 0
                             ? Colors.green
                             : Colors.red,
@@ -622,7 +660,7 @@ class ProductInfoSection extends StatelessWidget {
               ),
           ],
         ),
-        const SizedBox(height: Canvas701Spacing.lg),
+        const SizedBox(height: 24),
         Row(
           crossAxisAlignment: CrossAxisAlignment.baseline,
           textBaseline: TextBaseline.alphabetic,
@@ -631,40 +669,39 @@ class ProductInfoSection extends StatelessWidget {
               currentPrice,
               style: Canvas701Typography.displaySmall.copyWith(
                 color: Canvas701Colors.primary,
-                fontWeight: FontWeight.w900,
-                fontSize: 28,
+                fontWeight: FontWeight.w700,
+                fontSize: 24,
               ),
             ),
             if (oldPrice != null) ...[
-              const SizedBox(width: Canvas701Spacing.sm),
+              const SizedBox(width: 12),
               Text(
                 oldPrice,
                 style: Canvas701Typography.bodyMedium.copyWith(
                   color: Canvas701Colors.textTertiary,
                   decoration: TextDecoration.lineThrough,
-                  fontSize: 16,
+                  fontSize: 14,
                 ),
               ),
             ],
           ],
         ),
         if (productDetail != null && productDetail!.cargoInfo.isNotEmpty) ...[
-          const SizedBox(height: Canvas701Spacing.md),
+          const SizedBox(height: 20),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.orange.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.orange.withOpacity(0.1)),
+              color: Canvas701Colors.surfaceVariant,
+              borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
               children: [
                 const Icon(
                   Icons.local_shipping_outlined,
-                  color: Colors.orange,
-                  size: 18,
+                  color: Canvas701Colors.textPrimary,
+                  size: 16,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -672,15 +709,15 @@ class ProductInfoSection extends StatelessWidget {
                       Text(
                         productDetail!.cargoInfo,
                         style: Canvas701Typography.labelSmall.copyWith(
-                          color: Colors.orange[800],
-                          fontWeight: FontWeight.bold,
+                          color: Canvas701Colors.textPrimary,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       if (productDetail!.cargoDetail.isNotEmpty)
                         Text(
                           productDetail!.cargoDetail,
                           style: Canvas701Typography.labelSmall.copyWith(
-                            color: Colors.orange[700],
+                            color: Canvas701Colors.textSecondary,
                             fontSize: 10,
                           ),
                         ),
@@ -738,12 +775,12 @@ class _ProductDescriptionTabsState extends State<ProductDescriptionTabs> {
       onTap: () => setState(() => _activeTabIndex = index),
       behavior: HitTestBehavior.opaque,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
               color: isActive ? Canvas701Colors.primary : Colors.transparent,
-              width: 2,
+              width: 1.5,
             ),
           ),
         ),
@@ -753,8 +790,8 @@ class _ProductDescriptionTabsState extends State<ProductDescriptionTabs> {
             color: isActive
                 ? Canvas701Colors.primary
                 : Canvas701Colors.textTertiary,
-            fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-            fontSize: 14,
+            fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+            fontSize: 13,
           ),
         ),
       ),
@@ -773,13 +810,13 @@ class _ProductDescriptionTabsState extends State<ProductDescriptionTabs> {
             _buildTextContent(description),
             if (widget.productDetail?.productFeaturedImage != null &&
                 widget.productDetail!.productFeaturedImage.isNotEmpty) ...[
-              const SizedBox(height: Canvas701Spacing.lg),
+              const SizedBox(height: 24),
               GestureDetector(
                 onTap: () => FullScreenImageViewer.open(context, [
                   widget.productDetail!.productFeaturedImage,
                 ]),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                   child: Image.network(
                     widget.productDetail!.productFeaturedImage,
                     width: double.infinity,
@@ -818,6 +855,7 @@ class _ProductDescriptionTabsState extends State<ProductDescriptionTabs> {
       style: Canvas701Typography.bodyMedium.copyWith(
         height: 1.6,
         color: Canvas701Colors.textPrimary,
+        fontSize: 13,
       ),
     );
   }
@@ -834,7 +872,7 @@ class _ProductDescriptionTabsState extends State<ProductDescriptionTabs> {
         Text(
           widget.productDetail?.cargoDetail ??
               'Siparişleriniz en kısa sürede kargoya teslim edilir.',
-          style: Canvas701Typography.bodyMedium,
+          style: Canvas701Typography.bodyMedium.copyWith(fontSize: 13),
         ),
       ],
     );
@@ -851,7 +889,7 @@ class _ProductDescriptionTabsState extends State<ProductDescriptionTabs> {
         const SizedBox(height: 12),
         Text(
           'Ürününüzü teslim aldığınız tarihten itibaren 14 gün içerisinde iade edebilirsiniz. Ambalajı açılmamış ve zarar görmemiş ürünler kabul edilmektedir.',
-          style: Canvas701Typography.bodyMedium,
+          style: Canvas701Typography.bodyMedium.copyWith(fontSize: 13),
         ),
       ],
     );
@@ -860,9 +898,15 @@ class _ProductDescriptionTabsState extends State<ProductDescriptionTabs> {
   Widget _buildInfoRow(IconData icon, String title) {
     return Row(
       children: [
-        Icon(icon, color: Canvas701Colors.primary, size: 20),
+        Icon(icon, color: Canvas701Colors.primary, size: 18),
         const SizedBox(width: 8),
-        Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        Text(
+          title, 
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 13,
+          ),
+        ),
       ],
     );
   }

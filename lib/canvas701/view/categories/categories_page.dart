@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../viewmodel/category_viewmodel.dart';
 import '../../model/category_response.dart';
 import '../../../core/widgets/app_mode_switcher.dart';
+import '../widgets/widgets.dart';
 
 /// Canvas701 Kategoriler Sayfası
 class CategoriesPage extends StatelessWidget {
@@ -14,83 +15,45 @@ class CategoriesPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Canvas701Colors.background,
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          // Modern App Bar
-          _buildAppBar(context),
-
-          // Arama Alanı
-          SliverToBoxAdapter(
-            child: _buildSearchBar(context),
-          ),
-
-          // Öne Çıkanlar Başlığı
-          SliverToBoxAdapter(
-            child: _buildSectionHeader('Popüler Koleksiyonlar'),
-          ),
-
-          // Yatay Popüler Kategoriler
-          SliverToBoxAdapter(
-            child: _buildPopularCategories(),
-          ),
-
-          // Tüm Kategoriler Başlığı
-          SliverToBoxAdapter(
-            child: _buildSectionHeader('Tüm Kategoriler'),
-          ),
-
-          // Kategoriler Grid
-          _buildCategoriesGrid(context),
-
-          // Alt Boşluk
-          const SliverToBoxAdapter(
-            child: SizedBox(height: Canvas701Spacing.xxl),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAppBar(BuildContext context) {
-    return const SliverAppBar(
-      floating: true,
-      pinned: true,
-      backgroundColor: Canvas701Colors.primary,
-      elevation: 0,
-      toolbarHeight: 45,
-      titleSpacing: 0,
-      automaticallyImplyLeading: false,
-      title: AppModeSwitcher(),
-    );
-  }
-
-  Widget _buildSearchBar(BuildContext context) {
-    return Container(
-      color: Canvas701Colors.primary,
-      padding: const EdgeInsets.fromLTRB(
-        Canvas701Spacing.md,
-        5,
-        Canvas701Spacing.md,
-        Canvas701Spacing.md,
-      ),
-      child: Container(
-        height: 35,
-        padding: const EdgeInsets.symmetric(horizontal: Canvas701Spacing.md),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(19),
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.search, color: Canvas701Colors.primary, size: 20),
-            const SizedBox(width: Canvas701Spacing.sm),
-            Text(
-              'Ürün, kategori veya marka ara',
-              style: Canvas701Typography.bodyMedium.copyWith(
-                color: Colors.grey.shade500,
-                fontSize: 13,
+      body: RefreshIndicator(
+        edgeOffset: 105,
+        onRefresh: () async {
+          await context.read<CategoryViewModel>().fetchCategories();
+        },
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            // Sticky Search Bar
+            SliverAppBar(
+              backgroundColor: Canvas701Colors.primary,
+              elevation: 0,
+              toolbarHeight: 45,
+              titleSpacing: 0,
+              automaticallyImplyLeading: false,
+              pinned: true,
+              title: const AppModeSwitcher(),
+              bottom: const PreferredSize(
+                preferredSize: Size.fromHeight(60),
+                child: Canvas701SearchBar(),
               ),
+            ),
+            // Öne Çıkanlar Başlığı
+            SliverToBoxAdapter(
+              child: _buildSectionHeader('Popüler Koleksiyonlar'),
+            ),
+
+            // Yatay Popüler Kategoriler
+            SliverToBoxAdapter(child: _buildPopularCategories()),
+
+            // Tüm Kategoriler Başlığı
+            SliverToBoxAdapter(child: _buildSectionHeader('Tüm Kategoriler')),
+
+            // Kategoriler Grid
+            _buildCategoriesGrid(context),
+
+            // Alt Boşluk
+            const SliverToBoxAdapter(
+              child: SizedBox(height: Canvas701Spacing.xxl),
             ),
           ],
         ),
@@ -132,10 +95,13 @@ class CategoriesPage extends StatelessWidget {
         return SizedBox(
           height: 120,
           child: ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: Canvas701Spacing.md),
+            padding: const EdgeInsets.symmetric(
+              horizontal: Canvas701Spacing.md,
+            ),
             scrollDirection: Axis.horizontal,
             itemCount: populars.length,
-            separatorBuilder: (_, __) => const SizedBox(width: Canvas701Spacing.md),
+            separatorBuilder: (_, __) =>
+                const SizedBox(width: Canvas701Spacing.md),
             itemBuilder: (context, index) {
               final category = populars[index];
               return Column(
@@ -145,14 +111,19 @@ class CategoriesPage extends StatelessWidget {
                     height: 75,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(color: Canvas701Colors.primary, width: 2),
+                      border: Border.all(
+                        color: Canvas701Colors.primary,
+                        width: 2,
+                      ),
                     ),
                     child: ClipOval(
                       child: CachedNetworkImage(
                         imageUrl: category.catThumbImage1,
                         fit: BoxFit.cover,
-                        placeholder: (context, url) => Container(color: Canvas701Colors.surfaceVariant),
-                        errorWidget: (context, url, error) => const Icon(Icons.image_not_supported),
+                        placeholder: (context, url) =>
+                            Container(color: Canvas701Colors.surfaceVariant),
+                        errorWidget: (context, url, error) =>
+                            const Icon(Icons.image_not_supported),
                       ),
                     ),
                   ),
@@ -195,13 +166,10 @@ class CategoriesPage extends StatelessWidget {
               crossAxisSpacing: Canvas701Spacing.md,
               childAspectRatio: 0.8,
             ),
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final category = viewModel.categories[index];
-                return _CategoryCard(category: category);
-              },
-              childCount: viewModel.categories.length,
-            ),
+            delegate: SliverChildBuilderDelegate((context, index) {
+              final category = viewModel.categories[index];
+              return _CategoryCard(category: category);
+            }, childCount: viewModel.categories.length),
           ),
         );
       },
@@ -241,8 +209,10 @@ class _CategoryCard extends StatelessWidget {
             CachedNetworkImage(
               imageUrl: category.catThumbImage1,
               fit: BoxFit.cover,
-              placeholder: (context, url) => Container(color: Canvas701Colors.surfaceVariant),
-              errorWidget: (context, url, error) => const Icon(Icons.image_not_supported),
+              placeholder: (context, url) =>
+                  Container(color: Canvas701Colors.surfaceVariant),
+              errorWidget: (context, url, error) =>
+                  const Icon(Icons.image_not_supported),
             ),
 
             // Overlay
@@ -251,10 +221,7 @@ class _CategoryCard extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withOpacity(0.7),
-                  ],
+                  colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
                   stops: const [0.6, 1.0],
                 ),
               ),
@@ -296,7 +263,11 @@ class _CategoryCard extends StatelessWidget {
                   color: Colors.white24,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.chevron_right, color: Colors.white, size: 16),
+                child: const Icon(
+                  Icons.chevron_right,
+                  color: Colors.white,
+                  size: 16,
+                ),
               ),
             ),
           ],

@@ -49,14 +49,9 @@ class Canvas701BottomNav extends StatelessWidget {
               label: 'Kategoriler',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.favorite_outline),
-              activeIcon: Icon(Icons.favorite),
-              label: 'Favoriler',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.shopping_bag_outlined),
-              activeIcon: Icon(Icons.shopping_bag),
-              label: 'Sepet',
+              icon: Icon(Icons.auto_awesome_outlined),
+              activeIcon: Icon(Icons.auto_awesome),
+              label: 'Sana Özel',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.person_outline),
@@ -76,7 +71,6 @@ class NavIndex {
 
   static const int home = 0;
   static const int categories = 1;
-  static const int favorites = 2;
-  static const int cart = 3;
-  static const int profile = 4;
+  static const int special = 2;
+  static const int profile = 3;
 }

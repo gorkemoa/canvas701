@@ -3,12 +3,11 @@ import 'package:canvas701/core/view/services_page.dart';
 import 'package:canvas701/core/app_mode.dart';
 import 'package:flutter/material.dart';
 
-
 class AppModeSwitcher extends StatelessWidget {
   final Color backgroundColor;
   final bool isBack;
   final List<Widget>? trailing;
-  
+
   const AppModeSwitcher({
     super.key,
     this.backgroundColor = Canvas701Colors.primary,
@@ -42,9 +41,9 @@ class AppModeSwitcher extends StatelessWidget {
           // Vertical Divider
           Container(
             width: 1.5,
-            height: 20,
+            height: 30,
             margin: const EdgeInsets.symmetric(horizontal: 10),
-            color: Colors.white.withOpacity(0.2),
+            color: Colors.white.withOpacity(0.4),
           ),
           // Mode Switcher
           Expanded(
@@ -71,8 +70,12 @@ class AppModeSwitcher extends StatelessWidget {
                       AnimatedPositioned(
                         duration: const Duration(milliseconds: 800),
                         curve: Curves.easeOutQuint,
-                        left: currentMode == AppMode.canvas ? 0 : canvasWidth + gap ,
-                        width: currentMode == AppMode.canvas ? canvasWidth  : creatorsWidth ,
+                        left: currentMode == AppMode.canvas
+                            ? 0
+                            : canvasWidth + gap,
+                        width: currentMode == AppMode.canvas
+                            ? canvasWidth
+                            : creatorsWidth,
                         height: 28,
                         child: Container(
                           decoration: BoxDecoration(
@@ -85,8 +88,12 @@ class AppModeSwitcher extends StatelessWidget {
                       AnimatedPositioned(
                         duration: const Duration(milliseconds: 500),
                         curve: Curves.easeInOutCubic,
-                        left: currentMode == AppMode.canvas ? 0 : canvasWidth + gap,
-                        width: currentMode == AppMode.canvas ? canvasWidth : creatorsWidth,
+                        left: currentMode == AppMode.canvas
+                            ? 0
+                            : canvasWidth + gap,
+                        width: currentMode == AppMode.canvas
+                            ? canvasWidth
+                            : creatorsWidth,
                         height: 28,
                         child: Container(
                           decoration: BoxDecoration(
@@ -108,14 +115,17 @@ class AppModeSwitcher extends StatelessWidget {
                           _buildLogoItem(
                             isActive: currentMode == AppMode.canvas,
                             assetPath: 'assets/Canvas701-Logo.png',
-                            onTap: () => AppModeManager.instance.setMode(AppMode.canvas),
+                            onTap: () =>
+                                AppModeManager.instance.setMode(AppMode.canvas),
                             width: canvasWidth,
                           ),
                           const SizedBox(width: gap),
                           _buildLogoItem(
                             isActive: currentMode == AppMode.creators,
                             assetPath: 'assets/Creators.png',
-                            onTap: () => AppModeManager.instance.setMode(AppMode.creators),
+                            onTap: () => AppModeManager.instance.setMode(
+                              AppMode.creators,
+                            ),
                             width: creatorsWidth,
                           ),
                         ],
@@ -126,10 +136,7 @@ class AppModeSwitcher extends StatelessWidget {
               },
             ),
           ),
-          if (trailing != null) ...[
-            const SizedBox(width: 10),
-            ...trailing!,
-          ],
+          if (trailing != null) ...[const SizedBox(width: 10), ...trailing!],
         ],
       ),
     );
@@ -143,10 +150,7 @@ class AppModeSwitcher extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.08),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.05),
-          width: 1,
-        ),
+        border: Border.all(color: Colors.white.withOpacity(0.05), width: 1),
       ),
     );
   }
@@ -193,7 +197,10 @@ class AppModeSwitcher extends StatelessWidget {
                 duration: const Duration(milliseconds: 500),
                 curve: Curves.easeOut,
                 transform: Matrix4.translationValues(0, 0, 0),
-                padding: EdgeInsets.zero,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 30,
+                  vertical: 2,
+                ),
                 child: AnimatedOpacity(
                   duration: const Duration(milliseconds: 400),
                   opacity: isActive ? 1.0 : 0.5,
@@ -223,13 +230,8 @@ class AppModeSwitcher extends StatelessWidget {
           color: Colors.white.withOpacity(0.15),
           shape: BoxShape.circle,
         ),
-        child: Icon(
-          icon,
-          color: Colors.white,
-          size: 18,
-        ),
+        child: Icon(icon, color: Colors.white, size: 18),
       ),
     );
   }
-
 }

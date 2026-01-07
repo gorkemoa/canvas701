@@ -44,11 +44,14 @@ class _CartPageState extends State<CartPage> {
     return Scaffold(
       backgroundColor: Canvas701Colors.background,
       appBar: AppBar(
-        automaticallyImplyLeading: false,
+        automaticallyImplyLeading: true,
         backgroundColor: Canvas701Colors.primary,
+        foregroundColor: Colors.white,
         elevation: 0,
-        title: const Text('Sepet', style: TextStyle(color: Canvas701Colors.textOnPrimary, fontSize: 18)),
-        centerTitle: true,
+        title: const Text(
+          'Sepet',
+          style: TextStyle(color: Canvas701Colors.textOnPrimary, fontSize: 18),
+        ),
       ),
       body: _cart.isEmpty ? _buildEmptyCart() : _buildCartContent(),
       bottomNavigationBar: _cart.isEmpty ? null : _buildCheckoutBar(),

@@ -31,8 +31,10 @@ class _FavoritesPageState extends State<FavoritesPage> {
         _filteredProducts = List.from(_favoriteProducts);
       } else {
         _filteredProducts = _favoriteProducts
-            .where((product) =>
-                product.name.toLowerCase().contains(query.toLowerCase()))
+            .where(
+              (product) =>
+                  product.name.toLowerCase().contains(query.toLowerCase()),
+            )
             .toList();
       }
     });
@@ -42,92 +44,51 @@ class _FavoritesPageState extends State<FavoritesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Canvas701Colors.background,
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          // Modern App Bar
-          const SliverAppBar(
-            floating: true,
-            pinned: true,
-            backgroundColor: Canvas701Colors.primary,
-            elevation: 0,
-            toolbarHeight: 45,
-            titleSpacing: 0,
-            automaticallyImplyLeading: false,
-            title: AppModeSwitcher(),
+      appBar: AppBar(
+        backgroundColor: Canvas701Colors.primary,
+        elevation: 0,
+        toolbarHeight: 45,
+        titleSpacing: 0,
+        automaticallyImplyLeading: true,
+        foregroundColor: Colors.white,
+        title: const AppModeSwitcher(),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(60),
+          child: Canvas701SearchBar(
+            controller: _searchController,
+            onChanged: _onSearch,
+            hintText: 'Favorilerimde ara',
+            onClear: () {
+              _searchController.clear();
+              _onSearch('');
+            },
           ),
-
-          // Arama Alanı (CategoriesPage stilinde)
-          SliverToBoxAdapter(
-            child: _buildSearchBar(),
-          ),
-
-          // Favorites List
-          if (_filteredProducts.isEmpty)
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: _buildEmptyState(),
-            )
-          else
-            _buildFavoritesGrid(),
-
-          // Alt Boşluk
-          const SliverToBoxAdapter(
-            child: SizedBox(height: Canvas701Spacing.xxl),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSearchBar() {
-    return Container(
-      color: Canvas701Colors.primary,
-      padding: const EdgeInsets.fromLTRB(
-        Canvas701Spacing.md,
-        5,
-        Canvas701Spacing.md,
-        Canvas701Spacing.md,
-      ),
-      child: Container(
-        height: 35,
-        padding: const EdgeInsets.symmetric(horizontal: Canvas701Spacing.md),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(19),
         ),
-        child: Row(
-          children: [
-            Icon(Icons.search, color: Canvas701Colors.primary, size: 20),
-            const SizedBox(width: Canvas701Spacing.sm),
-            Expanded(
-              child: TextField(
-                controller: _searchController,
-                onChanged: _onSearch,
-                style: Canvas701Typography.bodyMedium.copyWith(
-                  fontSize: 13,
-                ),
-                decoration: InputDecoration(
-                  hintText: 'Favorilerimde ara',
-                  hintStyle: Canvas701Typography.bodyMedium.copyWith(
-                    color: Colors.grey.shade500,
-                    fontSize: 13,
-                  ),
-                  border: InputBorder.none,
-                  isDense: true,
-                  contentPadding: EdgeInsets.zero,
-                  filled: false,
-                ),
-              ),
+      ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          // Favorileri yenileme simülasyonu
+          await Future.delayed(const Duration(seconds: 1));
+          setState(() {
+            _onSearch(_searchController.text);
+          });
+        },
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            // Favorites List
+            if (_filteredProducts.isEmpty)
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: _buildEmptyState(),
+              )
+            else
+              _buildFavoritesGrid(),
+
+            // Alt Boşluk
+            const SliverToBoxAdapter(
+              child: SizedBox(height: Canvas701Spacing.xxl),
             ),
-            if (_searchController.text.isNotEmpty)
-              GestureDetector(
-                onTap: () {
-                  _searchController.clear();
-                  _onSearch('');
-                },
-                child: Icon(Icons.close, color: Colors.grey.shade500, size: 18),
-              ),
           ],
         ),
       ),
@@ -144,28 +105,25 @@ class _FavoritesPageState extends State<FavoritesPage> {
           crossAxisSpacing: Canvas701Spacing.md,
           mainAxisSpacing: Canvas701Spacing.md,
         ),
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            final product = _filteredProducts[index];
-            return ProductCard(
-              product: product,
-              isFavorite: true,
-              onFavorite: () {
-                setState(() {
-                  _favoriteProducts.remove(product);
-                  _onSearch(_searchController.text);
-                });
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('${product.name} favorilerden çıkarıldı'),
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
-              },
-            );
-          },
-          childCount: _filteredProducts.length,
-        ),
+        delegate: SliverChildBuilderDelegate((context, index) {
+          final product = _filteredProducts[index];
+          return ProductCard(
+            product: product,
+            isFavorite: true,
+            onFavorite: () {
+              setState(() {
+                _favoriteProducts.remove(product);
+                _onSearch(_searchController.text);
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('${product.name} favorilerden çıkarıldı'),
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            },
+          );
+        }, childCount: _filteredProducts.length),
       ),
     );
   }
@@ -175,27 +133,23 @@ class _FavoritesPageState extends State<FavoritesPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.favorite_outline,
-            size: 64,
-            color: Colors.grey.shade400,
-          ),
+          Icon(Icons.favorite_outline, size: 64, color: Colors.grey.shade400),
           const SizedBox(height: 16),
           Text(
             _searchController.text.isEmpty
                 ? 'Henüz favori ürününüz yok'
                 : 'Aramanızla eşleşen ürün bulunamadı',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Colors.grey.shade600,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(color: Colors.grey.shade600),
           ),
           if (_searchController.text.isEmpty) ...[
             const SizedBox(height: 8),
             Text(
               'Beğendiğiniz ürünleri buraya ekleyebilirsiniz.',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey.shade500,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade500),
             ),
           ],
         ],

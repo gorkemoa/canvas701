@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'home/home_page.dart';
 import 'categories/categories_page.dart';
-import 'favorites/favorites_page.dart';
-import 'cart/cart_page.dart';
 import 'profile/profile_page.dart';
+import 'special/special_page.dart';
 import 'widgets/widgets.dart';
 
 /// Canvas701 Ana Navigasyon Sayfası
@@ -27,8 +26,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     _pages = [
       const HomePage(),
       const CategoriesPage(),
-      const FavoritesPage(),
-      const CartPage(),
+      const SpecialPage(),
       const ProfilePage(),
     ];
   }
@@ -42,10 +40,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _pages,
-      ),
+      body: IndexedStack(index: _currentIndex, children: _pages),
       bottomNavigationBar: Canvas701BottomNav(
         currentIndex: _currentIndex,
         onTap: _onNavTap,

@@ -74,7 +74,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 toolbarHeight: 45,
                 titleSpacing: 0,
                 automaticallyImplyLeading: false,
-                title: AppModeSwitcher(),
+                title: const AppModeSwitcher(),
               ),
               SliverToBoxAdapter(
                 child: Column(
@@ -234,6 +234,14 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildGuestView() {
     return Scaffold(
       backgroundColor: Canvas701Colors.background,
+      appBar: AppBar(
+        backgroundColor: Canvas701Colors.primary,
+        elevation: 0,
+        toolbarHeight: 45,
+        titleSpacing: 0,
+        automaticallyImplyLeading: false,
+        title: const AppModeSwitcher(),
+      ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(32.0),
