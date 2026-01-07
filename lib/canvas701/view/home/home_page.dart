@@ -1,5 +1,6 @@
 import 'package:canvas701/canvas701/theme/canvas701_theme_data.dart';
 import 'package:canvas701/canvas701/view/product/product_detail_page.dart';
+import 'package:canvas701/canvas701/view/product/product_list_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
@@ -12,7 +13,8 @@ import '../../../core/widgets/app_mode_switcher.dart';
 
 /// Canvas701 Ana Sayfa
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final VoidCallback? onSeeAllCategories;
+  const HomePage({super.key, this.onSeeAllCategories});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -20,6 +22,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final PageController _bannerController = PageController();
+  final TextEditingController _searchController = TextEditingController();
   int _currentBannerIndex = 0;
 
   final List<String> _banners = [];
@@ -35,7 +38,22 @@ class _HomePageState extends State<HomePage> {
   @override
   void dispose() {
     _bannerController.dispose();
+    _searchController.dispose();
     super.dispose();
+  }
+
+  void _onSearch(String value) {
+    if (value.trim().isEmpty) return;
+    
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProductListPage(
+          title: 'Arama: $value',
+          searchText: value,
+        ),
+      ),
+    );
   }
 
   @override
@@ -55,36 +73,11 @@ class _HomePageState extends State<HomePage> {
             automaticallyImplyLeading: false,
             title: const AppModeSwitcher(),
             bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(50),
-              child: Container(
-                color: Canvas701Colors.primary,
-                padding: const EdgeInsets.fromLTRB(
-                  Canvas701Spacing.md,
-                  5,
-                  Canvas701Spacing.md,
-                  Canvas701Spacing.md,
-                ),
-                child: Container(
-                  height: 35,
-                  padding: const EdgeInsets.symmetric(horizontal: Canvas701Spacing.md),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(19),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.search, color: Canvas701Colors.primary, size: 20),
-                      const SizedBox(width: Canvas701Spacing.sm),
-                      Text(
-                        'Ürün, kategori veya marka ara',
-                        style: Canvas701Typography.bodyMedium.copyWith(
-                          color: Colors.grey.shade500,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              preferredSize: const Size.fromHeight(60),
+              child: Canvas701SearchBar(
+                controller: _searchController,
+                onSubmitted: _onSearch,
+                onClear: () => _searchController.clear(),
               ),
             ),
           ),
@@ -97,7 +90,10 @@ class _HomePageState extends State<HomePage> {
 
           // Categories Section
           SliverToBoxAdapter(
-            child: _buildSectionHeader('Kategoriler', onSeeAll: () {}),
+            child: _buildSectionHeader(
+              'Kategoriler',
+              onSeeAll: widget.onSeeAllCategories,
+            ),
           ),
           SliverToBoxAdapter(child: _buildCategoriesGrid()),
 
@@ -112,7 +108,20 @@ class _HomePageState extends State<HomePage> {
 
                 return Column(
                   children: [
-                    _buildSectionHeader('Çok Satanlar', onSeeAll: () {}),
+                    _buildSectionHeader(
+                      'Çok Satanlar',
+                      onSeeAll: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ProductListPage(
+                              title: 'Çok Satanlar',
+                              sortKey: 'sortBestSellers',
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                     _buildProductsRow(viewModel.bestsellers),
                   ],
                 );
@@ -131,7 +140,20 @@ class _HomePageState extends State<HomePage> {
 
                 return Column(
                   children: [
-                    _buildSectionHeader('Son Eklenenler', onSeeAll: () {}),
+                    _buildSectionHeader(
+                      'Son Eklenenler',
+                      onSeeAll: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ProductListPage(
+                              title: 'Son Eklenenler',
+                              sortKey: 'sortNewToOld',
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                     _buildProductsRow(viewModel.newArrivals),
                   ],
                 );
@@ -141,7 +163,20 @@ class _HomePageState extends State<HomePage> {
 
           // All Products Section
           SliverToBoxAdapter(
-            child: _buildSectionHeader('Tüm Ürünler', onSeeAll: () {}),
+            child: _buildSectionHeader(
+              'Tüm Ürünler',
+              onSeeAll: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ProductListPage(
+                      title: 'Tüm Ürünler',
+                      sortKey: 'sortDefault',
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
           SliverToBoxAdapter(
             child: Consumer<ProductViewModel>(
@@ -351,7 +386,15 @@ class _HomePageState extends State<HomePage> {
   Widget _buildCategoryItem(ApiCategory category) {
     return GestureDetector(
       onTap: () {
-        // TODO: Navigate to category
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProductListPage(
+              title: category.catName,
+              categoryId: category.catID,
+            ),
+          ),
+        );
       },
       child: Column(
         children: [

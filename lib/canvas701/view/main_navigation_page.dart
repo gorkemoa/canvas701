@@ -24,7 +24,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   void initState() {
     super.initState();
     _pages = [
-      const HomePage(),
+      HomePage(onSeeAllCategories: () => _onNavTap(NavIndex.categories)),
       const CategoriesPage(),
       const SpecialPage(),
       const ProfilePage(),

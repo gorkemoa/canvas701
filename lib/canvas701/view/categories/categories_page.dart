@@ -6,10 +6,38 @@ import '../../viewmodel/category_viewmodel.dart';
 import '../../model/category_response.dart';
 import '../../../core/widgets/app_mode_switcher.dart';
 import '../widgets/widgets.dart';
+import '../product/product_list_page.dart';
 
 /// Canvas701 Kategoriler Sayfası
-class CategoriesPage extends StatelessWidget {
+class CategoriesPage extends StatefulWidget {
   const CategoriesPage({super.key});
+
+  @override
+  State<CategoriesPage> createState() => _CategoriesPageState();
+}
+
+class _CategoriesPageState extends State<CategoriesPage> {
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearch(String value) {
+    if (value.trim().isEmpty) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProductListPage(
+          title: 'Arama: $value',
+          searchText: value,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,9 +60,16 @@ class CategoriesPage extends StatelessWidget {
               automaticallyImplyLeading: false,
               pinned: true,
               title: const AppModeSwitcher(),
-              bottom: const PreferredSize(
-                preferredSize: Size.fromHeight(60),
-                child: Canvas701SearchBar(),
+              bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(60),
+                child: Canvas701SearchBar(
+                  controller: _searchController,
+                  onSubmitted: _onSearch,
+                  onClear: () {
+                    _searchController.clear();
+                    setState(() {});
+                  },
+                ),
               ),
             ),
             // Öne Çıkanlar Başlığı
@@ -103,38 +138,51 @@ class CategoriesPage extends StatelessWidget {
                 const SizedBox(width: Canvas701Spacing.md),
             itemBuilder: (context, index) {
               final category = populars[index];
-              return Column(
-                children: [
-                  Container(
-                    width: 75,
-                    height: 75,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Canvas701Colors.primary,
-                        width: 2,
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ProductListPage(
+                        title: category.catName,
+                        categoryId: category.catID,
                       ),
                     ),
-                    child: ClipOval(
-                      child: CachedNetworkImage(
-                        imageUrl: category.catThumbImage1,
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) =>
-                            Container(color: Canvas701Colors.surfaceVariant),
-                        errorWidget: (context, url, error) =>
-                            const Icon(Icons.image_not_supported),
+                  );
+                },
+                child: Column(
+                  children: [
+                    Container(
+                      width: 75,
+                      height: 75,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Canvas701Colors.primary,
+                          width: 2,
+                        ),
+                      ),
+                      child: ClipOval(
+                        child: CachedNetworkImage(
+                          imageUrl: category.catThumbImage1,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) =>
+                              Container(color: Canvas701Colors.surfaceVariant),
+                          errorWidget: (context, url, error) =>
+                              const Icon(Icons.image_not_supported),
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    category.catName,
-                    style: Canvas701Typography.labelSmall.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: Canvas701Colors.textSecondary,
+                    const SizedBox(height: 8),
+                    Text(
+                      category.catName,
+                      style: Canvas701Typography.labelSmall.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: Canvas701Colors.textSecondary,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               );
             },
           ),
@@ -186,7 +234,15 @@ class _CategoryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // Navigasyon
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProductListPage(
+              title: category.catName,
+              categoryId: category.catID,
+            ),
+          ),
+        );
       },
       child: Container(
         decoration: BoxDecoration(

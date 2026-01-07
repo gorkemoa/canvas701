@@ -6,6 +6,7 @@ import '../cart/cart_page.dart';
 class Canvas701SearchBar extends StatelessWidget {
   final TextEditingController? controller;
   final ValueChanged<String>? onChanged;
+  final ValueChanged<String>? onSubmitted;
   final String hintText;
   final VoidCallback? onClear;
 
@@ -13,6 +14,7 @@ class Canvas701SearchBar extends StatelessWidget {
     super.key,
     this.controller,
     this.onChanged,
+    this.onSubmitted,
     this.hintText = 'Ürün, kategori veya marka ara',
     this.onClear,
   });
@@ -25,7 +27,7 @@ class Canvas701SearchBar extends StatelessWidget {
         Canvas701Spacing.md,
         5,
         Canvas701Spacing.md,
-        13,
+        10,
       ),
       child: Row(
         children: [
@@ -35,11 +37,13 @@ class Canvas701SearchBar extends StatelessWidget {
               height: 35,
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(22),
+                borderRadius: BorderRadius.circular(30),
               ),
               child: TextField(
                 controller: controller,
                 onChanged: onChanged,
+                onSubmitted: onSubmitted,
+                textInputAction: TextInputAction.search,
                 textAlignVertical: TextAlignVertical.center,
                 style: Canvas701Typography.bodyMedium.copyWith(
                   fontSize: 14,
@@ -81,7 +85,7 @@ class Canvas701SearchBar extends StatelessWidget {
           // Sepet İkonu (Profil yerine sepet, stil daire içinde)
           _buildActionButton(
             context,
-            Icons.shopping_cart_rounded,
+            Icons.shopping_cart_outlined,
             () {
               Navigator.push(
                 context,
@@ -109,8 +113,8 @@ class Canvas701SearchBar extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(22),
         child: Container(
-          width: 44,
-          height: 44,
+          width: 40,
+          height: 40,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: Colors.white.withOpacity(0.15),
@@ -122,23 +126,7 @@ class Canvas701SearchBar extends StatelessWidget {
             alignment: Alignment.center,
             children: [
               Icon(icon, color: Colors.white, size: 24),
-              if (showBadge)
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: Canvas701Colors.accent,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Canvas701Colors.primary,
-                        width: 1.5,
-                      ),
-                    ),
-                  ),
-                ),
+                
             ],
           ),
         ),

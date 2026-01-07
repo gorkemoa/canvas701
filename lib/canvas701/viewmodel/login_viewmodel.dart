@@ -31,8 +31,7 @@ class LoginViewModel extends ChangeNotifier {
       } else {
         _errorMessage =
             response.errorMessage ??
-            response.data?.message ??
-            'Giriş başarısız';
+            response.data?.message;
         _isLoading = false;
         notifyListeners();
         return false;
@@ -42,6 +41,107 @@ class LoginViewModel extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
       return false;
+    }
+  }
+
+  Future<ForgotPasswordResponse> forgotPassword(String email) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final request = ForgotPasswordRequest(userEmail: email);
+      final response = await _authService.forgotPassword(request);
+
+      if (!response.success) {
+        _errorMessage = response.message;
+      }
+
+      _isLoading = false;
+      notifyListeners();
+      return response;
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return ForgotPasswordResponse(
+        error: true,
+        success: false,
+        message: e.toString(),
+      );
+    }
+  }
+
+  Future<CodeCheckResponse> checkCode(String code) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final codeToken = await _authService.getCodeToken();
+      if (codeToken == null) {
+        throw Exception('Doğrulama tokenı bulunamadı');
+      }
+
+      final request = CodeCheckRequest(code: code, codeToken: codeToken);
+      final response = await _authService.checkCode(request);
+
+      if (!response.success) {
+        _errorMessage = response.errorMessage ?? response.data?.message;
+      }
+
+      _isLoading = false;
+      notifyListeners();
+      return response;
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return CodeCheckResponse(
+        error: true,
+        success: false,
+        errorMessage: e.toString(),
+      );
+    }
+  }
+
+  Future<ForgotPasswordUpdateResponse> updatePassword(
+    String password,
+    String passwordAgain,
+  ) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final passToken = await _authService.getPassToken();
+      if (passToken == null) {
+        throw Exception('Şifre güncelleme tokenı bulunamadı');
+      }
+
+      final request = ForgotPasswordUpdateRequest(
+        passToken: passToken,
+        password: password,
+        passwordAgain: passwordAgain,
+      );
+      final response = await _authService.forgotPasswordUpdate(request);
+
+      if (!response.success) {
+        _errorMessage = response.message;
+      }
+
+      _isLoading = false;
+      notifyListeners();
+      return response;
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return ForgotPasswordUpdateResponse(
+        error: true,
+        success: false,
+        message: e.toString(),
+      );
     }
   }
 }

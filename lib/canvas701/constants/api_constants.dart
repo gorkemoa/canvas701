@@ -10,6 +10,8 @@ class ApiConstants {
   static const String register = 'service/auth/register';
   static const String checkCode = 'service/auth/code/checkCode';
   static const String authSendCode = 'service/auth/code/authSendCode';
+  static const String forgotPassword = 'service/auth/forgotPassword';
+  static const String forgotPasswordUpdate = 'service/auth/forgotPassword/updatePass';
 
   // User
   static String getUser(int userId) => 'service/user/id/$userId';

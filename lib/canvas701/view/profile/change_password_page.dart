@@ -100,6 +100,15 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                     hint: 'Yeni şifrenizi giriniz',
                     obscureText: _obscureNew,
                     onToggle: () => setState(() => _obscureNew = !_obscureNew),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Bu alan boş bırakılamaz';
+                      }
+                      if (RegExp(r'^\d+$').hasMatch(value)) {
+                        return 'Şifre sadece rakamlardan oluşamaz';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 20),
                   _buildPasswordField(

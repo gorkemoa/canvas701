@@ -130,7 +130,11 @@ class AuthService {
       final codeCheckResponse = CodeCheckResponse.fromJson(responseData);
 
       if (response.statusCode == 200 && codeCheckResponse.success) {
-        // Verification successful - copy userToken to auth_token
+        if (codeCheckResponse.data?.passToken != null) {
+          await _savePassToken(codeCheckResponse.data!.passToken!);
+        }
+
+        // Verification successful - copy userToken to auth_token (for registration flow)
         final userToken = await getUserToken();
         if (userToken != null) {
           await _saveToken(userToken);
@@ -180,6 +184,75 @@ class AuthService {
       return resendResponse;
     } catch (e) {
       return ResendCodeResponse(
+        error: true,
+        success: false,
+        message: e.toString(),
+      );
+    }
+  }
+
+  Future<ForgotPasswordResponse> forgotPassword(
+    ForgotPasswordRequest request,
+  ) async {
+    final url = Uri.parse(
+      '${ApiConstants.baseUrl}${ApiConstants.forgotPassword}',
+    );
+
+    _logRequest('POST', url.toString(), request.toJson());
+
+    try {
+      final response = await http.post(
+        url,
+        headers: _getHeaders(),
+        body: jsonEncode(request.toJson()),
+      );
+
+      _logResponse(response.statusCode, response.body);
+
+      final responseData = jsonDecode(response.body);
+      final forgotResponse = ForgotPasswordResponse.fromJson(responseData);
+
+      if (response.statusCode == 200 && forgotResponse.success) {
+        if (forgotResponse.data?.codeToken != null) {
+          await _saveCodeToken(forgotResponse.data!.codeToken!);
+          debugPrint(
+            '--- FORGOT PASS CODE TOKEN SAVED: ${forgotResponse.data!.codeToken} ---',
+          );
+        }
+      }
+
+      return forgotResponse;
+    } catch (e) {
+      return ForgotPasswordResponse(
+        error: true,
+        success: false,
+        message: e.toString(),
+      );
+    }
+  }
+
+  Future<ForgotPasswordUpdateResponse> forgotPasswordUpdate(
+    ForgotPasswordUpdateRequest request,
+  ) async {
+    final url = Uri.parse(
+      '${ApiConstants.baseUrl}${ApiConstants.forgotPasswordUpdate}',
+    );
+
+    _logRequest('POST', url.toString(), request.toJson());
+
+    try {
+      final response = await http.post(
+        url,
+        headers: _getHeaders(),
+        body: jsonEncode(request.toJson()),
+      );
+
+      _logResponse(response.statusCode, response.body);
+
+      final responseData = jsonDecode(response.body);
+      return ForgotPasswordUpdateResponse.fromJson(responseData);
+    } catch (e) {
+      return ForgotPasswordUpdateResponse(
         error: true,
         success: false,
         message: e.toString(),
@@ -544,6 +617,11 @@ class AuthService {
     await prefs.setString('code_token', token);
   }
 
+  Future<void> _savePassToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('pass_token', token);
+  }
+
   Future<String?> getUserToken() async {
     final prefs = await SharedPreferences.getInstance();
     final authToken = prefs.getString('auth_token');
@@ -565,6 +643,11 @@ class AuthService {
       '--- AuthService.getCodeToken() code_token: ${codeToken != null ? "EXISTS" : "NULL"} ---',
     );
     return codeToken;
+  }
+
+  Future<String?> getPassToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('pass_token');
   }
 
   Future<void> _clearCodeToken() async {

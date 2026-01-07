@@ -228,3 +228,95 @@ class ResendCodeData {
     return ResendCodeData(codeToken: json['codeToken']);
   }
 }
+
+class ForgotPasswordRequest {
+  final String userEmail;
+
+  ForgotPasswordRequest({required this.userEmail});
+
+  Map<String, dynamic> toJson() {
+    return {'userEmail': userEmail};
+  }
+}
+
+class ForgotPasswordResponse {
+  final bool error;
+  final bool success;
+  final String? message;
+  final ForgotPasswordData? data;
+
+  ForgotPasswordResponse({
+    required this.error,
+    required this.success,
+    this.message,
+    this.data,
+  });
+
+  factory ForgotPasswordResponse.fromJson(Map<String, dynamic> json) {
+    return ForgotPasswordResponse(
+      error: json['error'] ?? true,
+      success: json['success'] ?? false,
+      message: json['message'] ?? json['error_message'],
+      data:
+          json['data'] != null ? ForgotPasswordData.fromJson(json['data']) : null,
+    );
+  }
+}
+
+class ForgotPasswordData {
+  final int? userID;
+  final String? userEmail;
+  final String? codeToken;
+
+  ForgotPasswordData({this.userID, this.userEmail, this.codeToken});
+
+  factory ForgotPasswordData.fromJson(Map<String, dynamic> json) {
+    return ForgotPasswordData(
+      userID: json['userID'],
+      userEmail: json['userEmail'],
+      codeToken: json['codeToken'],
+    );
+  }
+}
+
+class ForgotPasswordUpdateRequest {
+  final String passToken;
+  final String password;
+  final String passwordAgain;
+
+  ForgotPasswordUpdateRequest({
+    required this.passToken,
+    required this.password,
+    required this.passwordAgain,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'passToken': passToken,
+      'password': password,
+      'passwordAgain': passwordAgain,
+    };
+  }
+}
+
+class ForgotPasswordUpdateResponse {
+  final bool error;
+  final bool success;
+  final String? message;
+
+  ForgotPasswordUpdateResponse({
+    required this.error,
+    required this.success,
+    this.message,
+  });
+
+  factory ForgotPasswordUpdateResponse.fromJson(Map<String, dynamic> json) {
+    return ForgotPasswordUpdateResponse(
+      error: json['error'] ?? true,
+      success: json['success'] ?? false,
+      message: json['message'] ??
+          json['error_message'] ??
+          (json['data'] != null ? json['data']['message'] : null),
+    );
+  }
+}

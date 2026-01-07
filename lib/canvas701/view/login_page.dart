@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodel/login_viewmodel.dart';
 import '../theme/canvas701_theme_data.dart';
+import 'forgot_password_page.dart';
 import 'main_navigation_page.dart';
 import 'register_page.dart';
 
@@ -49,6 +50,7 @@ class _LoginPageState extends State<LoginPage> {
     _timer?.cancel();
     super.dispose();
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -143,7 +145,11 @@ class _LoginPageState extends State<LoginPage> {
                         alignment: Alignment.centerRight,
                         child: TextButton(
                           onPressed: () {
-                            // TODO: Implement forgot password
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const ForgotPasswordPage(),
+                              ),
+                            );
                           },
                           child: const Text(
                             'Şifremi Unuttum',
