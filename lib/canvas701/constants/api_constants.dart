@@ -43,4 +43,5 @@ class ApiConstants {
 
   // Basket
   static const String addBasket = 'service/user/account/basket/add';
+  static const String getUserBaskets = 'service/user/account/basket/list';
 }

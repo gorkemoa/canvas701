@@ -1,6 +1,6 @@
+import 'package:canvas701/canvas701/api/cart_service.dart';
 import 'package:flutter/material.dart';
 import '../../theme/canvas701_theme_data.dart';
-import '../../model/cart.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({super.key});
@@ -10,34 +10,47 @@ class CartPage extends StatefulWidget {
 }
 
 class _CartPageState extends State<CartPage> {
-  // Sepet verisi
-  late Cart _cart;
+  final CartService _cartService = CartService();
+  
+  bool _isLoading = true;
+  String? _errorMessage;
+  GetBasketsData? _basketData;
 
   @override
   void initState() {
     super.initState();
-    _initializeCart();
+    _fetchBaskets();
   }
 
-  void _initializeCart() {
-    _cart = const Cart(items: []);
-  }
-
-  void _updateQuantity(CartItem item, int delta) {
+  Future<void> _fetchBaskets() async {
     setState(() {
-      _cart = _cart.updateQuantity(
-        item.productId,
-        item.sizeId,
-        item.quantity + delta,
-      );
+      _isLoading = true;
+      _errorMessage = null;
     });
+
+    try {
+      final response = await _cartService.getUserBaskets();
+
+      if (response.success && response.data != null) {
+        setState(() {
+          _basketData = response.data;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _errorMessage = response.message ?? 'Sepet yüklenemedi';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Bağlantı hatası oluştu';
+        _isLoading = false;
+      });
+    }
   }
 
-  void _removeItem(CartItem item) {
-    setState(() {
-      _cart = _cart.removeItem(item.productId, item.sizeId);
-    });
-  }
+  bool get _isEmpty => _basketData == null || _basketData!.baskets.isEmpty;
 
   @override
   Widget build(BuildContext context) {
@@ -48,14 +61,67 @@ class _CartPageState extends State<CartPage> {
         backgroundColor: Canvas701Colors.primary,
         foregroundColor: Colors.white,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Canvas701Colors.surface,
+          ),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         title: const Text(
-          'Sepet',
+          'Sepetim',
           style: TextStyle(color: Canvas701Colors.textOnPrimary, fontSize: 18),
         ),
       ),
-      body: _cart.isEmpty ? _buildEmptyCart() : _buildCartContent(),
-      bottomNavigationBar: _cart.isEmpty ? null : _buildCheckoutBar(),
+      body: _buildBody(),
+      bottomNavigationBar: _isEmpty || _isLoading ? null : _buildCheckoutBar(),
     );
+  }
+
+  Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: Canvas701Colors.primary),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 64,
+              color: Canvas701Colors.textTertiary.withOpacity(0.5),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              _errorMessage!,
+              style: Canvas701Typography.bodyMedium.copyWith(
+                color: Canvas701Colors.textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: _fetchBaskets,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Canvas701Colors.primary,
+                foregroundColor: Canvas701Colors.textOnPrimary,
+              ),
+              child: const Text('Tekrar Dene'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_isEmpty) {
+      return _buildEmptyCart();
+    }
+
+    return _buildCartContent();
   }
 
   Widget _buildEmptyCart() {
@@ -69,10 +135,7 @@ class _CartPageState extends State<CartPage> {
             color: Canvas701Colors.textTertiary.withOpacity(0.3),
           ),
           const SizedBox(height: 24),
-          const Text(
-            'Sepetiniz Boş',
-            style: Canvas701Typography.headlineMedium,
-          ),
+          const Text('Sepetiniz Boş', style: Canvas701Typography.headlineMedium),
           const SizedBox(height: 12),
           Text(
             'Henüz sepetinize ürün eklemediniz.',
@@ -105,21 +168,23 @@ class _CartPageState extends State<CartPage> {
   }
 
   Widget _buildCartContent() {
-    return ListView(
-      padding: const EdgeInsets.symmetric(vertical: 20),
-      children: [
-        ..._cart.items.map(
-          (item) => _CartItemTile(
-            item: item,
-            onIncrease: () => _updateQuantity(item, 1),
-            onDecrease: () => _updateQuantity(item, -1),
-            onRemove: () => _removeItem(item),
+    return RefreshIndicator(
+      onRefresh: _fetchBaskets,
+      color: Canvas701Colors.primary,
+      child: ListView(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        children: [
+          ..._basketData!.baskets.map(
+            (item) => _CartItemTile(
+              item: item,
+              onRefresh: _fetchBaskets,
+            ),
           ),
-        ),
-        const SizedBox(height: 24),
-        _buildOrderSummary(),
-        const SizedBox(height: 20),
-      ],
+          const SizedBox(height: 24),
+          _buildOrderSummary(),
+          const SizedBox(height: 20),
+        ],
+      ),
     );
   }
 
@@ -130,48 +195,123 @@ class _CartPageState extends State<CartPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text('Ödeme Detayı', style: Canvas701Typography.labelLarge),
-          const SizedBox(height: 12),
-          ..._cart.items.map(
-            (item) => Padding(
-              padding: const EdgeInsets.only(bottom: 4),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    item.productName,
-                    style: Canvas701Typography.bodySmall.copyWith(
-                      color: Canvas701Colors.textTertiary,
-                    ),
-                  ),
-                  Text(
-                    '₺${item.totalPrice.toInt()}',
-                    style: Canvas701Typography.bodySmall.copyWith(
-                      color: Canvas701Colors.textTertiary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+         
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 8),
             child: Divider(color: Canvas701Colors.divider, thickness: 1),
           ),
+          const SizedBox(height: 4),
+          _buildSummaryRow('Sepet Toplamı', _basketData!.cartTotal),
+           const SizedBox(height: 4),
+
+          // Ara Toplam
+          _buildSummaryRow('Ara Toplam', _basketData!.subtotal),
+          const SizedBox(height: 4),
+          
+          _buildSummaryRow('KDV (${_basketData!.vatRate})', _basketData!.vatAmount),
+          const SizedBox(height: 4),
+
+          // Kargo
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Kargo',
+                  style: Canvas701Typography.bodySmall.copyWith(
+                    color: Canvas701Colors.textSecondary,
+                  ),
+                ),
+                _basketData!.cargoPrice == '0,00 TL'
+                    ? Container(
+                      
+
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.local_shipping_outlined,
+                              size: 14,
+                              color: Canvas701Colors.success,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'ÜCRETSİZ',
+                              style: Canvas701Typography.bodySmall.copyWith(
+                                color: Canvas701Colors.success,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 10,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : Text(
+                        _basketData!.cargoPrice,
+                        style: Canvas701Typography.bodySmall.copyWith(
+                          color: Canvas701Colors.textSecondary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+              ],
+            ),
+          ),
+
+          // İndirim
+          if (_basketData!.discountAmount != '0,00 TL')
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: _buildSummaryRow(
+                'İndirim',
+                '-${_basketData!.discountAmount}',
+                valueColor: Canvas701Colors.success,
+              ),
+            ),
+          
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 8),
+            child: Divider(color: Canvas701Colors.divider, thickness: 1),
+          ),
+          
+          // Toplam
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Toplam (${_cart.itemCount} ürün)',
+                'Toplam (${_basketData!.totalItems} ürün)',
                 style: Canvas701Typography.headlineSmall,
               ),
               Text(
-                '₺${_cart.total.toInt()}',
+                _basketData!.grandTotal,
                 style: Canvas701Typography.price.copyWith(fontSize: 20),
               ),
             ],
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildSummaryRow(String label, String value, {Color? valueColor}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: Canvas701Typography.bodySmall.copyWith(
+            color: Canvas701Colors.textSecondary,
+          ),
+        ),
+        Text(
+          value,
+          style: Canvas701Typography.bodySmall.copyWith(
+            color: valueColor ?? Canvas701Colors.textSecondary,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 
@@ -197,6 +337,9 @@ class _CartPageState extends State<CartPage> {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
+            onTap: () {
+              // TODO: Ödeme sayfasına git
+            },
             borderRadius: BorderRadius.circular(Canvas701Radius.xl),
             child: Padding(
               padding: const EdgeInsets.symmetric(
@@ -217,14 +360,27 @@ class _CartPageState extends State<CartPage> {
                     ),
                   ),
                   const SizedBox(width: Canvas701Spacing.md),
-                  const Expanded(
-                    child: Text(
-                      'Teslimat Hizmetini Seçin',
-                      style: TextStyle(
-                        color: Canvas701Colors.textOnPrimary,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Teslimat Hizmetini Seçin',
+                          style: TextStyle(
+                            color: Canvas701Colors.textOnPrimary,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          _basketData!.grandTotal,
+                          style: TextStyle(
+                            color: Canvas701Colors.textOnPrimary.withOpacity(0.8),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   Container(
@@ -256,16 +412,12 @@ class _CartPageState extends State<CartPage> {
 }
 
 class _CartItemTile extends StatelessWidget {
-  final CartItem item;
-  final VoidCallback onIncrease;
-  final VoidCallback onDecrease;
-  final VoidCallback onRemove;
+  final BasketItem item;
+  final VoidCallback onRefresh;
 
   const _CartItemTile({
     required this.item,
-    required this.onIncrease,
-    required this.onDecrease,
-    required this.onRemove,
+    required this.onRefresh,
   });
 
   @override
@@ -290,7 +442,14 @@ class _CartItemTile extends StatelessWidget {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(Canvas701Radius.lg),
-              child: Image.network(item.productImage, fit: BoxFit.cover),
+              child: Image.network(
+                item.productImage,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => const Icon(
+                  Icons.image_outlined,
+                  color: Canvas701Colors.textTertiary,
+                ),
+              ),
             ),
           ),
           const SizedBox(width: Canvas701Spacing.md),
@@ -300,14 +459,14 @@ class _CartItemTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item.productName,
+                  item.productTitle,
                   style: Canvas701Typography.titleLarge,
-                  maxLines: 1,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: Canvas701Spacing.xxs),
                 Text(
-                  item.sizeName,
+                  item.variant,
                   style: Canvas701Typography.bodySmall.copyWith(
                     color: Canvas701Colors.textTertiary,
                   ),
@@ -317,35 +476,21 @@ class _CartItemTile extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '₺${item.unitPrice.toInt()}',
+                      item.unitPrice,
                       style: Canvas701Typography.price,
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: Canvas701Spacing.xxs,
-                        vertical: 2,
+                        horizontal: Canvas701Spacing.sm,
+                        vertical: Canvas701Spacing.xxs,
                       ),
                       decoration: BoxDecoration(
                         color: Canvas701Colors.surfaceVariant,
                         borderRadius: BorderRadius.circular(Canvas701Radius.md),
                       ),
-                      child: Row(
-                        children: [
-                          _QuantityButton(
-                            icon: Icons.remove,
-                            onTap: onDecrease,
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: Canvas701Spacing.xs,
-                            ),
-                            child: Text(
-                              '${item.quantity}',
-                              style: Canvas701Typography.titleMedium,
-                            ),
-                          ),
-                          _QuantityButton(icon: Icons.add, onTap: onIncrease),
-                        ],
+                      child: Text(
+                        'x${item.cartQuantity}',
+                        style: Canvas701Typography.titleMedium,
                       ),
                     ),
                   ],
@@ -354,29 +499,6 @@ class _CartItemTile extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _QuantityButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onTap;
-
-  const _QuantityButton({required this.icon, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(Canvas701Radius.sm),
-      child: Container(
-        padding: const EdgeInsets.all(Canvas701Spacing.xxs),
-        decoration: BoxDecoration(
-          color: Canvas701Colors.surface,
-          borderRadius: BorderRadius.circular(Canvas701Radius.xs),
-        ),
-        child: Icon(icon, size: 14, color: Canvas701Colors.textPrimary),
       ),
     );
   }

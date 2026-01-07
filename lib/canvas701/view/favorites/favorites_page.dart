@@ -128,13 +128,6 @@ class _FavoritesPageState extends State<FavoritesPage> {
                 ),
               );
             },
-            onAddToCart: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('${product.name} sepete eklendi!'),
-                ),
-              );
-            },
             onFavorite: () {
               viewModel.toggleFavorite(apiProduct.productID);
             },

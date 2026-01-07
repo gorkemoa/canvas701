@@ -79,6 +79,55 @@ class CartService {
       );
     }
   }
+
+  /// Sepet listesini getir
+  Future<GetBasketsResponse> getUserBaskets() async {
+    final userToken = await AuthService().getUserToken();
+    final url = Uri.parse(
+      '${ApiConstants.baseUrl}${ApiConstants.getUserBaskets}?userToken=${userToken ?? ""}',
+    );
+
+    debugPrint('--- GET USER BASKETS REQUEST ---');
+    debugPrint('URL: $url');
+
+    try {
+      final response = await http.get(url, headers: _getHeaders());
+
+      debugPrint('--- GET USER BASKETS RESPONSE ---');
+      debugPrint('Status Code: ${response.statusCode}');
+
+      if (response.statusCode == 403) {
+        await AuthService().logout();
+        return GetBasketsResponse(
+          error: true,
+          success: false,
+          message: 'Oturum süreniz doldu. Lütfen tekrar giriş yapın.',
+        );
+      }
+
+      final body = response.body;
+      if (body.trim().startsWith('<')) {
+        debugPrint(
+          '--- GET USER BASKETS ERROR: Received HTML instead of JSON ---',
+        );
+        return GetBasketsResponse(
+          error: true,
+          success: false,
+          message: 'Bir hata oluştu. Lütfen tekrar deneyin.',
+        );
+      }
+
+      final responseData = jsonDecode(body);
+      return GetBasketsResponse.fromJson(responseData);
+    } catch (e) {
+      debugPrint('--- GET USER BASKETS ERROR: $e ---');
+      return GetBasketsResponse(
+        error: true,
+        success: false,
+        message: 'Bağlantı hatası. Lütfen tekrar deneyin.',
+      );
+    }
+  }
 }
 
 /// Sepete Ekleme İstek Modeli
@@ -140,6 +189,111 @@ class AddBasketData {
     return AddBasketData(
       status: json['status'],
       message: json['message'],
+    );
+  }
+}
+
+/// Sepet Listesi Cevap Modeli
+class GetBasketsResponse {
+  final bool error;
+  final bool success;
+  final String? message;
+  final GetBasketsData? data;
+
+  GetBasketsResponse({
+    required this.error,
+    required this.success,
+    this.message,
+    this.data,
+  });
+
+  factory GetBasketsResponse.fromJson(Map<String, dynamic> json) {
+    return GetBasketsResponse(
+      error: json['error'] ?? true,
+      success: json['success'] ?? false,
+      message: json['data']?['message'] ?? json['message'],
+      data: json['data'] != null ? GetBasketsData.fromJson(json['data']) : null,
+    );
+  }
+}
+
+/// Sepet Listesi Data Modeli
+class GetBasketsData {
+  final String cartTotal;
+  final String subtotal;
+  final String vatAmount;
+  final String cargoPrice;
+  final String discountAmount;
+  final String grandTotal;
+  final String vatRate;
+  final int totalItems;
+  final List<BasketItem> baskets;
+
+  GetBasketsData({
+    required this.cartTotal,
+    required this.subtotal,
+    required this.vatAmount,
+    required this.cargoPrice,
+    required this.discountAmount,
+    required this.grandTotal,
+    required this.vatRate,
+    required this.totalItems,
+    required this.baskets,
+  });
+
+  factory GetBasketsData.fromJson(Map<String, dynamic> json) {
+    return GetBasketsData(
+      cartTotal: json['cartTotal'] ?? '',
+      subtotal: json['subtotal'] ?? '',
+      vatAmount: json['vatAmount'] ?? '',
+      cargoPrice: json['cargoPrice'] ?? '',
+      discountAmount: json['discountAmount'] ?? '',
+      grandTotal: json['grandTotal'] ?? '',
+      vatRate: json['vatRate'] ?? '',
+      totalItems: json['totalItems'] ?? 0,
+      baskets: (json['baskets'] as List?)
+              ?.map((b) => BasketItem.fromJson(b))
+              .toList() ??
+          [],
+    );
+  }
+}
+
+/// Sepet Ürün Modeli
+class BasketItem {
+  final int cartID;
+  final int productID;
+  final String productCode;
+  final String productTitle;
+  final String productImage;
+  final String variant;
+  final int cartQuantity;
+  final String unitPrice;
+  final String totalPrice;
+
+  BasketItem({
+    required this.cartID,
+    required this.productID,
+    required this.productCode,
+    required this.productTitle,
+    required this.productImage,
+    required this.variant,
+    required this.cartQuantity,
+    required this.unitPrice,
+    required this.totalPrice,
+  });
+
+  factory BasketItem.fromJson(Map<String, dynamic> json) {
+    return BasketItem(
+      cartID: json['cartID'] ?? 0,
+      productID: json['productID'] ?? 0,
+      productCode: json['productCode'] ?? '',
+      productTitle: json['productTitle'] ?? '',
+      productImage: json['productImage'] ?? '',
+      variant: json['variant'] ?? '',
+      cartQuantity: json['cartQuantity'] ?? 0,
+      unitPrice: json['unitPrice'] ?? '',
+      totalPrice: json['totalPrice'] ?? '',
     );
   }
 }

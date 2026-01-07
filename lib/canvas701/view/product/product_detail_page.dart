@@ -7,6 +7,8 @@ import 'package:share_plus/share_plus.dart';
 import '../../model/model.dart';
 import '../../viewmodel/product_viewmodel.dart';
 import '../widgets/widgets.dart';
+import '../../api/cart_service.dart';
+import '../../model/product_models.dart';
 
 /// Canvas701 Ürün Detay Sayfası
 /// Tasarım: https://www.canvas701.com/gucci-magaza-onu-kanvas-tablo
@@ -22,6 +24,7 @@ class ProductDetailPage extends StatefulWidget {
 class _ProductDetailPageState extends State<ProductDetailPage> {
   Object? _selectedSize;
   int _quantity = 1;
+  bool _isAddingToCart = false;
 
   @override
   void initState() {
@@ -33,6 +36,66 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         int.parse(widget.product.id),
       );
     });
+  }
+
+  Future<void> _addToBasket() async {
+    if (_selectedSize == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Lütfen bir boyut seçin'),
+          backgroundColor: Canvas701Colors.error,
+        ),
+      );
+      return;
+    }
+
+    String variant = '';
+    if (_selectedSize is ApiProductSize) {
+      variant = (_selectedSize as ApiProductSize).sizeName;
+    } else if (_selectedSize is ProductSize) {
+      variant = (_selectedSize as ProductSize).name;
+    }
+
+    setState(() => _isAddingToCart = true);
+
+    try {
+      final response = await CartService().addToBasket(
+        productId: int.parse(widget.product.id),
+        variant: variant,
+        quantity: _quantity,
+      );
+
+      if (mounted) {
+        if (response.success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(response.message ?? 'Ürün sepete eklendi'),
+              backgroundColor: Canvas701Colors.success,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(response.message ?? 'Bir hata oluştu'),
+              backgroundColor: Canvas701Colors.error,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Bağlantı hatası oluştu'),
+            backgroundColor: Canvas701Colors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isAddingToCart = false);
+      }
+    }
   }
 
   @override
@@ -344,15 +407,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             const SizedBox(width: 16),
             Expanded(
               child: ElevatedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        '${productDetail?.productName ?? widget.product.name} sepete eklendi!',
-                      ),
-                    ),
-                  );
-                },
+                onPressed: _isAddingToCart ? null : _addToBasket,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Canvas701Colors.primary,
                   foregroundColor: Colors.white,
@@ -362,14 +417,23 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   ),
                   elevation: 0,
                 ),
-                child: const Text(
-                  'SEPETE EKLE',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.5,
-                    fontSize: 14,
-                  ),
-                ),
+                child: _isAddingToCart
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text(
+                        'SEPETE EKLE',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.5,
+                          fontSize: 14,
+                        ),
+                      ),
               ),
             ),
           ],
@@ -425,13 +489,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       },
                       onFavorite: () {
                         favViewModel.toggleFavorite(apiProduct.productID);
-                      },
-                      onAddToCart: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('${product.name} sepete eklendi!'),
-                          ),
-                        );
                       },
                     ),
                   );

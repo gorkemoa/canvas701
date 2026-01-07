@@ -487,16 +487,6 @@ class _HomePageState extends State<HomePage> {
                     ),
                   );
                 },
-                onAddToCart: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('${product.name} sepete eklendi!'),
-                      duration: const Duration(seconds: 2),
-                      action:
-                          SnackBarAction(label: 'Geri Al', onPressed: () {}),
-                    ),
-                  );
-                },
                 onFavorite: () {
                   favViewModel.toggleFavorite(apiProduct.productID);
                 },

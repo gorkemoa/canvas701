@@ -316,13 +316,6 @@ class _ProductListPageState extends State<ProductListPage> {
                           ),
                         );
                       },
-                      onAddToCart: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('${product.name} sepete eklendi!'),
-                          ),
-                        );
-                      },
                       onFavorite: () {
                         favViewModel.toggleFavorite(apiProduct.productID);
                       },
