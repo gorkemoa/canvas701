@@ -42,9 +42,12 @@ class _FavoritesPageState extends State<FavoritesPage> {
         elevation: 0,
         toolbarHeight: 45,
         titleSpacing: 0,
-        automaticallyImplyLeading: true,
+        automaticallyImplyLeading: false,
         foregroundColor: Colors.white,
-        title: const AppModeSwitcher(),
+        title: AppModeSwitcher(
+          isBack: true,
+          onMenuIconTap: () => Navigator.pop(context),
+        ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(60),
           child: Canvas701SearchBar(

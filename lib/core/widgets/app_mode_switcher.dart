@@ -7,12 +7,14 @@ class AppModeSwitcher extends StatelessWidget {
   final Color backgroundColor;
   final bool isBack;
   final List<Widget>? trailing;
+  final VoidCallback? onMenuIconTap;
 
   const AppModeSwitcher({
     super.key,
     this.backgroundColor = Canvas701Colors.primary,
     this.isBack = false,
     this.trailing,
+    this.onMenuIconTap,
   });
 
   @override
@@ -27,16 +29,19 @@ class AppModeSwitcher extends StatelessWidget {
           // Menu Icon (Turkcell Style)
           _buildAppBarIcon(
             isBack ? Icons.arrow_back_ios_new_rounded : Icons.grid_view_rounded,
-            onTap: () {
-              if (isBack) {
-                Navigator.pop(context);
-              } else {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const ServicesPage()),
-                );
-              }
-            },
+            onTap: onMenuIconTap ??
+                () {
+                  if (isBack) {
+                    Navigator.pop(context);
+                  } else {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ServicesPage(),
+                      ),
+                    );
+                  }
+                },
           ),
           // Vertical Divider
           Container(
