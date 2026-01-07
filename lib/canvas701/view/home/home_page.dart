@@ -49,9 +49,9 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: Canvas701Colors.background,
       body: CustomScrollView(
         slivers: [
-          // App Bar
+          // App Bar & Search Bar
           SliverAppBar(
-            floating: true,
+            floating: false,
             pinned: true,
             backgroundColor: Canvas701Colors.primary,
             elevation: 0,
@@ -59,37 +59,36 @@ class _HomePageState extends State<HomePage> {
             titleSpacing: 0,
             automaticallyImplyLeading: false,
             title: const AppModeSwitcher(),
-          ),
-
-          // Search Bar
-          SliverToBoxAdapter(
-            child: Container(
-              color: Canvas701Colors.primary,
-              padding: const EdgeInsets.fromLTRB(
-                Canvas701Spacing.md,
-                5,
-                Canvas701Spacing.md,
-                Canvas701Spacing.md,
-              ),
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(50),
               child: Container(
-                height: 35,
-                padding: const EdgeInsets.symmetric(horizontal: Canvas701Spacing.md),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(19),
+                color: Canvas701Colors.primary,
+                padding: const EdgeInsets.fromLTRB(
+                  Canvas701Spacing.md,
+                  5,
+                  Canvas701Spacing.md,
+                  Canvas701Spacing.md,
                 ),
-                child: Row(
-                  children: [
-                    Icon(Icons.search, color: Canvas701Colors.primary, size: 20),
-                    const SizedBox(width: Canvas701Spacing.sm),
-                    Text(
-                      'Ürün, kategori veya marka ara',
-                      style: Canvas701Typography.bodyMedium.copyWith(
-                        color: Colors.grey.shade500,
-                        fontSize: 13,
+                child: Container(
+                  height: 35,
+                  padding: const EdgeInsets.symmetric(horizontal: Canvas701Spacing.md),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(19),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.search, color: Canvas701Colors.primary, size: 20),
+                      const SizedBox(width: Canvas701Spacing.sm),
+                      Text(
+                        'Ürün, kategori veya marka ara',
+                        style: Canvas701Typography.bodyMedium.copyWith(
+                          color: Colors.grey.shade500,
+                          fontSize: 13,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
