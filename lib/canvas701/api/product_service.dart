@@ -132,7 +132,7 @@ class ProductService {
   Future<FavoriteListResponse> getFavorites() async {
     final userToken = await AuthService().getUserToken();
     final url = Uri.parse(
-      '${ApiConstants.baseUrl}${ApiConstants.getFavorites}?userToken=$userToken',
+      '${ApiConstants.baseUrl}${ApiConstants.getFavorites}?userToken=${userToken ?? ""}',
     );
 
     debugPrint('--- GET FAVORITES REQUEST ---');
@@ -161,6 +161,51 @@ class ProductService {
     } catch (e) {
       debugPrint('--- GET FAVORITES ERROR: $e ---');
       return FavoriteListResponse(error: true, success: false);
+    }
+  }
+
+  Future<AddDeleteFavoriteResponse> toggleFavorite(int productId) async {
+    final url = Uri.parse(
+      '${ApiConstants.baseUrl}${ApiConstants.addDeleteFavorite}',
+    );
+    final userToken = await AuthService().getUserToken();
+
+    final request = AddDeleteFavoriteRequest(
+      userToken: userToken,
+      productID: productId,
+    );
+
+    debugPrint('--- TOGGLE FAVORITE REQUEST ---');
+    debugPrint('URL: $url');
+    debugPrint('Body: ${jsonEncode(request.toJson())}');
+
+    try {
+      final response = await http.put(
+        url,
+        headers: _getHeaders(),
+        body: jsonEncode(request.toJson()),
+      );
+
+      debugPrint('--- TOGGLE FAVORITE RESPONSE ---');
+      debugPrint('Status Code: ${response.statusCode}');
+
+      if (response.statusCode == 403) {
+        await AuthService().logout();
+      }
+
+      final body = response.body;
+      if (body.trim().startsWith('<')) {
+        debugPrint(
+          '--- TOGGLE FAVORITE ERROR: Received HTML instead of JSON ---',
+        );
+        return AddDeleteFavoriteResponse(error: true, success: false);
+      }
+
+      final responseData = jsonDecode(body);
+      return AddDeleteFavoriteResponse.fromJson(responseData);
+    } catch (e) {
+      debugPrint('--- TOGGLE FAVORITE ERROR: $e ---');
+      return AddDeleteFavoriteResponse(error: true, success: false);
     }
   }
   Future<ProductDetailResponse> getProductDetail(int productId) async {

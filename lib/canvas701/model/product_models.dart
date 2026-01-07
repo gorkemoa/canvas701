@@ -542,3 +542,40 @@ class ApiProduct {
     );
   }
 }
+
+class AddDeleteFavoriteRequest {
+  final String? userToken;
+  final int productID;
+
+  AddDeleteFavoriteRequest({
+    this.userToken,
+    required this.productID,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'userToken': userToken ?? '',
+      'productID': productID,
+    };
+  }
+}
+
+class AddDeleteFavoriteResponse {
+  final bool error;
+  final bool success;
+  final String? message;
+
+  AddDeleteFavoriteResponse({
+    required this.error,
+    required this.success,
+    this.message,
+  });
+
+  factory AddDeleteFavoriteResponse.fromJson(Map<String, dynamic> json) {
+    return AddDeleteFavoriteResponse(
+      error: json['error'] ?? true,
+      success: json['success'] ?? false,
+      message: json['data']?['message'],
+    );
+  }
+}

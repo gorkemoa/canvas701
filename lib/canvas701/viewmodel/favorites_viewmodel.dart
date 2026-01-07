@@ -45,4 +45,53 @@ class FavoritesViewModel extends ChangeNotifier {
     _favorites.removeWhere((p) => p.productID == productId);
     notifyListeners();
   }
+
+  bool isFavorite(int productId) {
+    return _favorites.any((p) => p.productID == productId);
+  }
+
+  void updateFavoriteStatus(int productId, bool isFav, {ApiProduct? product}) {
+    final existingIndex = _favorites.indexWhere((p) => p.productID == productId);
+    if (isFav && existingIndex == -1) {
+      if (product != null) {
+        _favorites.add(product);
+      } else {
+        // Not: Eğer ürün objesi yoksa bile belki bir dummy eklenebilir veya sadece ID bazlı tutulabilir.
+        // Ama genellikle liste fetişlenirken tam obje gelir.
+      }
+      notifyListeners();
+    } else if (!isFav && existingIndex != -1) {
+      _favorites.removeAt(existingIndex);
+      notifyListeners();
+    }
+  }
+
+  void updateFavoritesFromProducts(List<ApiProduct> products) {
+    bool changed = false;
+    for (var product in products) {
+      if (product.isFavorite) {
+        if (!_favorites.any((p) => p.productID == product.productID)) {
+          _favorites.add(product);
+          changed = true;
+        }
+      }
+    }
+    if (changed) {
+      notifyListeners();
+    }
+  }
+
+  Future<bool> toggleFavorite(int productId) async {
+    try {
+      final response = await _productService.toggleFavorite(productId);
+      if (response.success) {
+        await fetchFavorites();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      debugPrint('Error toggling favorite: $e');
+      return false;
+    }
+  }
 }

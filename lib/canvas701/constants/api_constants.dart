@@ -18,6 +18,8 @@ class ApiConstants {
   static String updateUser(int userId) => 'service/user/update/$userId/account';
   static const String updatePassword = 'service/user/update/password';
   static const String getFavorites = 'service/user/account/favorites/list';
+  static const String addDeleteFavorite =
+      'service/user/account/favorites/addDelete';
 
   // Products
   static const String getCategories = 'service/products/category/list/0';

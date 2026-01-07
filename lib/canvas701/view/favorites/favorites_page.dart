@@ -133,14 +133,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
               );
             },
             onFavorite: () {
-              // Not: Normalde burada API çağrısı da yapılır.
-              viewModel.removeFromFavorites(apiProduct.productID);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('${product.name} favorilerden çıkarıldı'),
-                  duration: const Duration(seconds: 2),
-                ),
-              );
+              viewModel.toggleFavorite(apiProduct.productID);
             },
           );
         }, childCount: products.length),

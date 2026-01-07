@@ -1,6 +1,7 @@
 import 'package:canvas701/canvas701/theme/canvas701_theme_data.dart';
 import 'package:canvas701/canvas701/view/product/product_detail_page.dart';
 import 'package:canvas701/canvas701/view/product/product_list_page.dart';
+import 'package:canvas701/canvas701/viewmodel/favorites_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
@@ -459,46 +460,51 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildProductsRow(List<ApiProduct> apiProducts) {
-    final products = apiProducts.map((p) => Product.fromApi(p)).toList();
-    return SizedBox(
-      height: 350,
-      child: ListView.separated(
-        padding: const EdgeInsets.symmetric(horizontal: Canvas701Spacing.md),
-        scrollDirection: Axis.horizontal,
-        itemCount: products.length,
-        separatorBuilder: (_, __) => const SizedBox(width: Canvas701Spacing.md),
-        itemBuilder: (context, index) {
-          final product = products[index];
-          return ProductCard(
-            product: product,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ProductDetailPage(product: product),
-                ),
+    return Consumer<FavoritesViewModel>(
+      builder: (context, favViewModel, child) {
+        return SizedBox(
+          height: 350,
+          child: ListView.separated(
+            padding:
+                const EdgeInsets.symmetric(horizontal: Canvas701Spacing.md),
+            scrollDirection: Axis.horizontal,
+            itemCount: apiProducts.length,
+            separatorBuilder:
+                (_, __) => const SizedBox(width: Canvas701Spacing.md),
+            itemBuilder: (context, index) {
+              final apiProduct = apiProducts[index];
+              final product = Product.fromApi(apiProduct);
+              final isFav = favViewModel.isFavorite(apiProduct.productID);
+
+              return ProductCard(
+                product: product,
+                isFavorite: isFav,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ProductDetailPage(product: product),
+                    ),
+                  );
+                },
+                onAddToCart: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('${product.name} sepete eklendi!'),
+                      duration: const Duration(seconds: 2),
+                      action:
+                          SnackBarAction(label: 'Geri Al', onPressed: () {}),
+                    ),
+                  );
+                },
+                onFavorite: () {
+                  favViewModel.toggleFavorite(apiProduct.productID);
+                },
               );
             },
-            onAddToCart: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('${product.name} sepete eklendi!'),
-                  duration: const Duration(seconds: 2),
-                  action: SnackBarAction(label: 'Geri Al', onPressed: () {}),
-                ),
-              );
-            },
-            onFavorite: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('${product.name} favorilere eklendi!'),
-                  duration: const Duration(seconds: 1),
-                ),
-              );
-            },
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 

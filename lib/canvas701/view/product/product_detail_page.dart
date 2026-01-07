@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:canvas701/canvas701/theme/canvas701_theme_data.dart';
+import 'package:canvas701/canvas701/viewmodel/favorites_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -21,13 +22,11 @@ class ProductDetailPage extends StatefulWidget {
 class _ProductDetailPageState extends State<ProductDetailPage> {
   Object? _selectedSize;
   int _quantity = 1;
-  bool _isFavorite = false;
 
   @override
   void initState() {
     super.initState();
     _selectedSize = widget.product.availableSizes.first;
-    _isFavorite = widget.product.isFavorite;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ProductViewModel>().fetchProductDetail(
@@ -101,14 +100,20 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     child: CircleAvatar(
                       radius: 18,
                       backgroundColor: Colors.white.withOpacity(0.9),
-                      child: IconButton(
-                        icon: Icon(
-                          _isFavorite ? Icons.favorite : Icons.favorite_outline,
-                          color: _isFavorite ? Colors.red : Colors.black,
-                          size: 18,
-                        ),
-                        onPressed: () =>
-                            setState(() => _isFavorite = !_isFavorite),
+                      child: Consumer<FavoritesViewModel>(
+                        builder: (context, favViewModel, child) {
+                          final isFav = favViewModel
+                              .isFavorite(int.parse(widget.product.id));
+                          return IconButton(
+                            icon: Icon(
+                              isFav ? Icons.favorite : Icons.favorite_outline,
+                              color: isFav ? Colors.red : Colors.black,
+                              size: 18,
+                            ),
+                            onPressed: () => favViewModel
+                                .toggleFavorite(int.parse(widget.product.id)),
+                          );
+                        },
                       ),
                     ),
                   ),
@@ -399,32 +404,38 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             itemCount: relatedItems.length,
             separatorBuilder: (_, __) => const SizedBox(width: 12),
             itemBuilder: (context, index) {
-              final product = Product.fromApi(relatedItems[index]);
-              return SizedBox(
-                width: 170, // Slightly reduced width
-                child: ProductCard(
-                  product: product,
-                  isFavorite: product.isFavorite,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            ProductDetailPage(product: product),
-                      ),
-                    );
-                  },
-                  onFavorite: () {
-                    // Favori işlemleri eklenebilir
-                  },
-                  onAddToCart: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('${product.name} sepete eklendi!'),
-                      ),
-                    );
-                  },
-                ),
+              final apiProduct = relatedItems[index];
+              final product = Product.fromApi(apiProduct);
+              return Consumer<FavoritesViewModel>(
+                builder: (context, favViewModel, child) {
+                  final isFav = favViewModel.isFavorite(apiProduct.productID);
+                  return SizedBox(
+                    width: 170, // Slightly reduced width
+                    child: ProductCard(
+                      product: product,
+                      isFavorite: isFav,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                ProductDetailPage(product: product),
+                          ),
+                        );
+                      },
+                      onFavorite: () {
+                        favViewModel.toggleFavorite(apiProduct.productID);
+                      },
+                      onAddToCart: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('${product.name} sepete eklendi!'),
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
               );
             },
           ),

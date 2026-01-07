@@ -1,4 +1,6 @@
+import 'package:canvas701/canvas701/viewmodel/favorites_viewmodel.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../model/model.dart';
 import '../../theme/canvas701_theme_data.dart';
 import '../widgets/widgets.dart';
@@ -92,6 +94,12 @@ class _ProductListPageState extends State<ProductListPage> {
       );
 
       if (response.success && response.data != null) {
+        if (mounted) {
+          context
+              .read<FavoritesViewModel>()
+              .updateFavoritesFromProducts(response.data!.products);
+        }
+
         setState(() {
           if (refresh) {
             _products.clear();
@@ -187,30 +195,34 @@ class _ProductListPageState extends State<ProductListPage> {
                 mainAxisSpacing: Canvas701Spacing.md,
               ),
               delegate: SliverChildBuilderDelegate((context, index) {
-                final product = Product.fromApi(_products[index]);
-                return ProductCard(
-                  product: product,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            ProductDetailPage(product: product),
-                      ),
-                    );
-                  },
-                  onAddToCart: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('${product.name} sepete eklendi!'),
-                      ),
-                    );
-                  },
-                  onFavorite: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('${product.name} favorilere eklendi!'),
-                      ),
+                final apiProduct = _products[index];
+                final product = Product.fromApi(apiProduct);
+
+                return Consumer<FavoritesViewModel>(
+                  builder: (context, favViewModel, child) {
+                    final isFav = favViewModel.isFavorite(apiProduct.productID);
+                    return ProductCard(
+                      product: product,
+                      isFavorite: isFav,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                ProductDetailPage(product: product),
+                          ),
+                        );
+                      },
+                      onAddToCart: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('${product.name} sepete eklendi!'),
+                          ),
+                        );
+                      },
+                      onFavorite: () {
+                        favViewModel.toggleFavorite(apiProduct.productID);
+                      },
                     );
                   },
                 );
