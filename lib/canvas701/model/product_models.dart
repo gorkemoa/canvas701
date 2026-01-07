@@ -203,7 +203,7 @@ class ApiProductDetail {
   final int productStock;
   final String productPrice;
   final String productCode;
-/*  final String productLink; */
+  final String productLink;
   final String productPriceDiscount;
   final int productDiscountType;
   final String productDiscount;
@@ -268,6 +268,7 @@ class ApiProductDetail {
     required this.productFeaturedImage,
     required this.productStock,
     required this.productCode,
+    required this.productLink,
     required this.productPrice,
     required this.productPriceDiscount,
     required this.productDiscountType,
@@ -290,6 +291,7 @@ class ApiProductDetail {
       productExcerpt: json['productExcerpt'] ?? '',
       productDescription: json['productDescription'] ?? '',
       productCode: json['productCode'] ?? '',
+      productLink: json['productLink'] ?? '',
       productImage: json['productImage'] ?? '',
       productFeaturedImage: json['productFeaturedImage'] ?? '',
       productStock: json['productStock'] ?? 0,

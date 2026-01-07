@@ -1,24 +1,39 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 
 class FullScreenImageViewer extends StatefulWidget {
   final List<String> images;
   final int initialIndex;
+  final String? productName;
+  final String? productLink;
 
   const FullScreenImageViewer({
     super.key,
     required this.images,
     required this.initialIndex,
+    this.productName,
+    this.productLink,
   });
 
-  static void open(BuildContext context, List<String> images, {int index = 0}) {
+  static void open(
+    BuildContext context,
+    List<String> images, {
+    int index = 0,
+    String? productName,
+    String? productLink,
+  }) {
     Navigator.push(
       context,
       PageRouteBuilder(
         opaque: false,
         barrierColor: Colors.black.withOpacity(0.95),
-        pageBuilder: (context, _, __) =>
-            FullScreenImageViewer(images: images, initialIndex: index),
+        pageBuilder: (context, _, __) => FullScreenImageViewer(
+          images: images,
+          initialIndex: index,
+          productName: productName,
+          productLink: productLink,
+        ),
       ),
     );
   }
@@ -73,9 +88,26 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
           Positioned(
             top: 50,
             right: 20,
-            child: IconButton(
-              icon: const Icon(Icons.close, color: Colors.white, size: 30),
-              onPressed: () => Navigator.pop(context),
+            child: Row(
+              children: [
+                if (widget.productLink != null)
+                  IconButton(
+                    icon:
+                        const Icon(Icons.share_outlined, color: Colors.white, size: 24),
+                    onPressed: () {
+                      final currentImageUrl = widget.images[_currentIndex];
+                      final shareText = widget.productName != null
+                          ? '${widget.productName}\n${widget.productLink}\n$currentImageUrl'
+                          : '${widget.productLink}\n$currentImageUrl';
+                      Share.share(shareText);
+                    },
+                  ),
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
             ),
           ),
           // Page indicator

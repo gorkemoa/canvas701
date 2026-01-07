@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:canvas701/canvas701/theme/canvas701_theme_data.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../model/model.dart';
 import '../../viewmodel/product_viewmodel.dart';
 import '../widgets/widgets.dart';
@@ -74,6 +75,27 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   ),
                 ),
                 actions: [
+                  CircleAvatar(
+                    radius: 18,
+                    backgroundColor: Colors.white.withOpacity(0.9),
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.share_outlined,
+                        color: Colors.black,
+                        size: 18,
+                      ),
+                      onPressed: () {
+                        if (productDetail?.productLink != null &&
+                            productDetail!.productLink.isNotEmpty) {
+                          Share.share(
+                            '${productDetail.productName}\n${productDetail.productLink}',
+                            subject: productDetail.productName,
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
                   Padding(
                     padding: const EdgeInsets.only(right: 16.0),
                     child: CircleAvatar(
@@ -98,6 +120,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     hasDiscount:
                         productDetail != null &&
                         productDetail.productPriceDiscount != '0,00 TL',
+                    productName: productDetail?.productName ?? widget.product.name,
+                    productLink: productDetail?.productLink,
                   ),
                 ),
               ),
@@ -416,12 +440,16 @@ class ProductImageGallery extends StatefulWidget {
   final List<String> images;
   final String heroTag;
   final bool hasDiscount;
+  final String? productName;
+  final String? productLink;
 
   const ProductImageGallery({
     super.key,
     required this.images,
     required this.heroTag,
     this.hasDiscount = false,
+    this.productName,
+    this.productLink,
   });
 
   @override
@@ -454,6 +482,8 @@ class _ProductImageGalleryState extends State<ProductImageGallery> {
                   context,
                   widget.images,
                   index: index,
+                  productName: widget.productName,
+                  productLink: widget.productLink,
                 ),
                 child: CachedNetworkImage(
                   imageUrl: widget.images[index],
@@ -826,9 +856,12 @@ class _ProductDescriptionTabsState extends State<ProductDescriptionTabs> {
                 widget.productDetail!.productFeaturedImage.isNotEmpty) ...[
               const SizedBox(height: 24),
               GestureDetector(
-                onTap: () => FullScreenImageViewer.open(context, [
-                  widget.productDetail!.productFeaturedImage,
-                ]),
+                onTap: () => FullScreenImageViewer.open(
+                  context,
+                  [widget.productDetail!.productFeaturedImage],
+                  productName: widget.productDetail?.productName,
+                  productLink: widget.productDetail?.productLink,
+                ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(10),
                   child: Image.network(
