@@ -1,0 +1,184 @@
+> Task :gradle:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :gradle:compileKotlin UP-TO-DATE
+> Task :gradle:compileJava NO-SOURCE
+> Task :gradle:compileGroovy NO-SOURCE
+> Task :gradle:pluginDescriptors UP-TO-DATE
+> Task :gradle:processResources UP-TO-DATE
+> Task :gradle:classes UP-TO-DATE
+> Task :gradle:jar UP-TO-DATE
+
+> Configure project :image_cropper
+Warning: The plugin image_cropper requires Android SDK version 36 or higher.
+For more information about build configuration, see https://flutter.dev/to/review-gradle-config.
+
+> Configure project :url_launcher_android
+
+> Task :app:signingReport
+Variant: debug
+Config: debug
+Store: /Users/gorkem/.android/debug.keystore
+Alias: AndroidDebugKey
+MD5: 2B:F2:C1:B3:E5:C1:63:17:B8:A8:BC:39:9E:BC:F9:3D
+SHA1: 53:D4:CD:75:9E:E5:80:08:6C:14:CD:E3:61:04:A0:4D:05:94:24:77
+SHA-256: 8E:FB:46:D6:12:B6:C6:81:44:D8:B4:FC:74:FA:B1:2F:67:85:55:8C:C8:94:9C:9B:32:5A:60:AA:05:44:21:49
+Valid until: 21 Aralık 2055 Salı
+----------
+Variant: release
+Config: debug
+Store: /Users/gorkem/.android/debug.keystore
+Alias: AndroidDebugKey
+MD5: 2B:F2:C1:B3:E5:C1:63:17:B8:A8:BC:39:9E:BC:F9:3D
+SHA1: 53:D4:CD:75:9E:E5:80:08:6C:14:CD:E3:61:04:A0:4D:05:94:24:77
+SHA-256: 8E:FB:46:D6:12:B6:C6:81:44:D8:B4:FC:74:FA:B1:2F:67:85:55:8C:C8:94:9C:9B:32:5A:60:AA:05:44:21:49
+Valid until: 21 Aralık 2055 Salı
+----------
+Variant: profile
+Config: debug
+Store: /Users/gorkem/.android/debug.keystore
+Alias: AndroidDebugKey
+MD5: 2B:F2:C1:B3:E5:C1:63:17:B8:A8:BC:39:9E:BC:F9:3D
+SHA1: 53:D4:CD:75:9E:E5:80:08:6C:14:CD:E3:61:04:A0:4D:05:94:24:77
+SHA-256: 8E:FB:46:D6:12:B6:C6:81:44:D8:B4:FC:74:FA:B1:2F:67:85:55:8C:C8:94:9C:9B:32:5A:60:AA:05:44:21:49
+Valid until: 21 Aralık 2055 Salı
+----------
+Variant: debugAndroidTest
+Config: debug
+Store: /Users/gorkem/.android/debug.keystore
+Alias: AndroidDebugKey
+MD5: 2B:F2:C1:B3:E5:C1:63:17:B8:A8:BC:39:9E:BC:F9:3D
+SHA1: 53:D4:CD:75:9E:E5:80:08:6C:14:CD:E3:61:04:A0:4D:05:94:24:77
+SHA-256: 8E:FB:46:D6:12:B6:C6:81:44:D8:B4:FC:74:FA:B1:2F:67:85:55:8C:C8:94:9C:9B:32:5A:60:AA:05:44:21:49
+Valid until: 21 Aralık 2055 Salı
+----------
+
+> Task :firebase_core:signingReport
+Variant: debugAndroidTest
+Config: debug
+Store: /Users/gorkem/.android/debug.keystore
+Alias: AndroidDebugKey
+MD5: 2B:F2:C1:B3:E5:C1:63:17:B8:A8:BC:39:9E:BC:F9:3D
+SHA1: 53:D4:CD:75:9E:E5:80:08:6C:14:CD:E3:61:04:A0:4D:05:94:24:77
+SHA-256: 8E:FB:46:D6:12:B6:C6:81:44:D8:B4:FC:74:FA:B1:2F:67:85:55:8C:C8:94:9C:9B:32:5A:60:AA:05:44:21:49
+Valid until: 21 Aralık 2055 Salı
+----------
+
+> Task :firebase_messaging:signingReport
+Variant: debugAndroidTest
+Config: debug
+Store: /Users/gorkem/.android/debug.keystore
+Alias: AndroidDebugKey
+MD5: 2B:F2:C1:B3:E5:C1:63:17:B8:A8:BC:39:9E:BC:F9:3D
+SHA1: 53:D4:CD:75:9E:E5:80:08:6C:14:CD:E3:61:04:A0:4D:05:94:24:77
+SHA-256: 8E:FB:46:D6:12:B6:C6:81:44:D8:B4:FC:74:FA:B1:2F:67:85:55:8C:C8:94:9C:9B:32:5A:60:AA:05:44:21:49
+Valid until: 21 Aralık 2055 Salı
+----------
+
+> Task :flutter_plugin_android_lifecycle:signingReport
+Variant: debugAndroidTest
+Config: debug
+Store: /Users/gorkem/.android/debug.keystore
+Alias: AndroidDebugKey
+MD5: 2B:F2:C1:B3:E5:C1:63:17:B8:A8:BC:39:9E:BC:F9:3D
+SHA1: 53:D4:CD:75:9E:E5:80:08:6C:14:CD:E3:61:04:A0:4D:05:94:24:77
+SHA-256: 8E:FB:46:D6:12:B6:C6:81:44:D8:B4:FC:74:FA:B1:2F:67:85:55:8C:C8:94:9C:9B:32:5A:60:AA:05:44:21:49
+Valid until: 21 Aralık 2055 Salı
+----------
+
+> Task :image_cropper:signingReport
+Variant: debugAndroidTest
+Config: debug
+Store: /Users/gorkem/.android/debug.keystore
+Alias: AndroidDebugKey
+MD5: 2B:F2:C1:B3:E5:C1:63:17:B8:A8:BC:39:9E:BC:F9:3D
+SHA1: 53:D4:CD:75:9E:E5:80:08:6C:14:CD:E3:61:04:A0:4D:05:94:24:77
+SHA-256: 8E:FB:46:D6:12:B6:C6:81:44:D8:B4:FC:74:FA:B1:2F:67:85:55:8C:C8:94:9C:9B:32:5A:60:AA:05:44:21:49
+Valid until: 21 Aralık 2055 Salı
+----------
+
+> Task :image_picker_android:signingReport
+Variant: debugAndroidTest
+Config: debug
+Store: /Users/gorkem/.android/debug.keystore
+Alias: AndroidDebugKey
+MD5: 2B:F2:C1:B3:E5:C1:63:17:B8:A8:BC:39:9E:BC:F9:3D
+SHA1: 53:D4:CD:75:9E:E5:80:08:6C:14:CD:E3:61:04:A0:4D:05:94:24:77
+SHA-256: 8E:FB:46:D6:12:B6:C6:81:44:D8:B4:FC:74:FA:B1:2F:67:85:55:8C:C8:94:9C:9B:32:5A:60:AA:05:44:21:49
+Valid until: 21 Aralık 2055 Salı
+----------
+
+> Task :package_info_plus:signingReport
+Variant: debugAndroidTest
+Config: debug
+Store: /Users/gorkem/.android/debug.keystore
+Alias: AndroidDebugKey
+MD5: 2B:F2:C1:B3:E5:C1:63:17:B8:A8:BC:39:9E:BC:F9:3D
+SHA1: 53:D4:CD:75:9E:E5:80:08:6C:14:CD:E3:61:04:A0:4D:05:94:24:77
+SHA-256: 8E:FB:46:D6:12:B6:C6:81:44:D8:B4:FC:74:FA:B1:2F:67:85:55:8C:C8:94:9C:9B:32:5A:60:AA:05:44:21:49
+Valid until: 21 Aralık 2055 Salı
+----------
+
+> Task :path_provider_android:signingReport
+Variant: debugAndroidTest
+Config: debug
+Store: /Users/gorkem/.android/debug.keystore
+Alias: AndroidDebugKey
+MD5: 2B:F2:C1:B3:E5:C1:63:17:B8:A8:BC:39:9E:BC:F9:3D
+SHA1: 53:D4:CD:75:9E:E5:80:08:6C:14:CD:E3:61:04:A0:4D:05:94:24:77
+SHA-256: 8E:FB:46:D6:12:B6:C6:81:44:D8:B4:FC:74:FA:B1:2F:67:85:55:8C:C8:94:9C:9B:32:5A:60:AA:05:44:21:49
+Valid until: 21 Aralık 2055 Salı
+----------
+
+> Task :share_plus:signingReport
+Variant: debugAndroidTest
+Config: debug
+Store: /Users/gorkem/.android/debug.keystore
+Alias: AndroidDebugKey
+MD5: 2B:F2:C1:B3:E5:C1:63:17:B8:A8:BC:39:9E:BC:F9:3D
+SHA1: 53:D4:CD:75:9E:E5:80:08:6C:14:CD:E3:61:04:A0:4D:05:94:24:77
+SHA-256: 8E:FB:46:D6:12:B6:C6:81:44:D8:B4:FC:74:FA:B1:2F:67:85:55:8C:C8:94:9C:9B:32:5A:60:AA:05:44:21:49
+Valid until: 21 Aralık 2055 Salı
+----------
+
+> Task :shared_preferences_android:signingReport
+Variant: debugAndroidTest
+Config: debug
+Store: /Users/gorkem/.android/debug.keystore
+Alias: AndroidDebugKey
+MD5: 2B:F2:C1:B3:E5:C1:63:17:B8:A8:BC:39:9E:BC:F9:3D
+SHA1: 53:D4:CD:75:9E:E5:80:08:6C:14:CD:E3:61:04:A0:4D:05:94:24:77
+SHA-256: 8E:FB:46:D6:12:B6:C6:81:44:D8:B4:FC:74:FA:B1:2F:67:85:55:8C:C8:94:9C:9B:32:5A:60:AA:05:44:21:49
+Valid until: 21 Aralık 2055 Salı
+----------
+
+> Task :sqflite_android:signingReport
+Variant: debugAndroidTest
+Config: debug
+Store: /Users/gorkem/.android/debug.keystore
+Alias: AndroidDebugKey
+MD5: 2B:F2:C1:B3:E5:C1:63:17:B8:A8:BC:39:9E:BC:F9:3D
+SHA1: 53:D4:CD:75:9E:E5:80:08:6C:14:CD:E3:61:04:A0:4D:05:94:24:77
+SHA-256: 8E:FB:46:D6:12:B6:C6:81:44:D8:B4:FC:74:FA:B1:2F:67:85:55:8C:C8:94:9C:9B:32:5A:60:AA:05:44:21:49
+Valid until: 21 Aralık 2055 Salı
+----------
+
+> Task :url_launcher_android:signingReport
+Variant: debugAndroidTest
+Config: debug
+Store: /Users/gorkem/.android/debug.keystore
+Alias: AndroidDebugKey
+MD5: 2B:F2:C1:B3:E5:C1:63:17:B8:A8:BC:39:9E:BC:F9:3D
+SHA1: 53:D4:CD:75:9E:E5:80:08:6C:14:CD:E3:61:04:A0:4D:05:94:24:77
+SHA-256: 8E:FB:46:D6:12:B6:C6:81:44:D8:B4:FC:74:FA:B1:2F:67:85:55:8C:C8:94:9C:9B:32:5A:60:AA:05:44:21:49
+Valid until: 21 Aralık 2055 Salı
+----------
+
+[Incubating] Problems report is available at: file:///Users/gorkem/Projeler/canvas701/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.12/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 2s
+16 actionable tasks: 12 executed, 4 up-to-date

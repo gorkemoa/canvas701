@@ -7,6 +7,7 @@ class ApiConstants {
 
   // Auth
   static const String login = 'service/auth/login';
+  static const String loginSocial = 'service/auth/loginSocial';
   static const String register = 'service/auth/register';
   static const String checkCode = 'service/auth/code/checkCode';
   static const String authSendCode = 'service/auth/code/authSendCode';

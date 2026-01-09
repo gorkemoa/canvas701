@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "943279152524",
+    "project_id": "canvas701",
+    "storage_bucket": "canvas701.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:943279152524:android:53ce00aec4c5d8a3554aa9",
+        "android_client_info": {
+          "package_name": "com.office701.canvas701"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA7e-nEJT_FTMrQUy9_U0Qi6jxwIYf4yO4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

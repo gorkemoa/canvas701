@@ -9,6 +9,35 @@ class LoginRequest {
   }
 }
 
+class SocialLoginRequest {
+  final String platform;
+  final String deviceID;
+  final String devicePlatform;
+  final String version;
+  final String? accessToken;
+  final String? idToken;
+
+  SocialLoginRequest({
+    required this.platform,
+    required this.deviceID,
+    required this.devicePlatform,
+    required this.version,
+    this.accessToken,
+    this.idToken,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'platform': platform,
+      'deviceID': deviceID,
+      'devicePlatform': devicePlatform,
+      'version': version,
+      'accessToken': accessToken,
+      'idToken': idToken,
+    };
+  }
+}
+
 class LoginResponse {
   final bool error;
   final bool success;

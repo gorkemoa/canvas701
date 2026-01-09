@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodel/login_viewmodel.dart';
@@ -51,6 +52,17 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
+
+  Future<void> _handleSocialLogin(BuildContext context, LoginViewModel viewModel, String platform) async {
+    final success = await viewModel.socialLogin(platform);
+    if (success && mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => const MainNavigationPage(),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -222,6 +234,40 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                               ),
                       ),
+                      const SizedBox(height: 24),
+                      const Row(
+                        children: [
+                          Expanded(child: Divider(color: Colors.white70)),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 16),
+                            child: Text(
+                              'Veya şununla devam et',
+                              style: TextStyle(
+                                color: Colors.white,
+                                shadows: [Shadow(color: Colors.black, blurRadius: 2)],
+                              ),
+                            ),
+                          ),
+                          Expanded(child: Divider(color: Colors.white70)),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (Platform.isIOS)
+                            _SocialButton(
+                              icon: Icons.apple,
+                              onPressed: () => _handleSocialLogin(context, viewModel, 'apple'),
+                            ),
+                          if (Platform.isIOS) const SizedBox(width: 20),
+                          _SocialButton(
+                            icon: Icons.g_mobiledata,
+                            iconColor: Colors.red,
+                            onPressed: () => _handleSocialLogin(context, viewModel, 'google'),
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: 40),
                       // Register Link
                       Row(
@@ -262,6 +308,47 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SocialButton extends StatelessWidget {
+  final IconData? icon;
+  final Color? iconColor;
+  final VoidCallback onPressed;
+
+  const _SocialButton({
+    this.icon,
+    this.iconColor,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onPressed,
+      child: Container(
+        width: 60,
+        height: 60,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Center(
+          child: Icon(
+            icon,
+            size: 30,
+            color: iconColor ?? Colors.black,
+          ),
         ),
       ),
     );

@@ -72,6 +72,61 @@ class AuthService {
     }
   }
 
+  Future<LoginResponse> loginSocial(SocialLoginRequest request) async {
+    final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.loginSocial}');
+
+    _logRequest('POST', url.toString(), request.toJson());
+
+    try {
+      final response = await http.post(
+        url,
+        headers: _getHeaders(),
+        body: jsonEncode(request.toJson()),
+      );
+
+      _logResponse(response.statusCode, response.body);
+
+      if (response.statusCode == 403) {
+        await logout();
+        _redirectToLogin();
+        return LoginResponse(
+          error: true,
+          success: false,
+          data: LoginData(
+            status: 'error',
+            message: 'Oturum süresi doldu (403)',
+          ),
+        );
+      }
+
+      final responseData = jsonDecode(response.body);
+      final loginResponse = LoginResponse.fromJson(responseData);
+
+      if (response.statusCode == 401 || response.statusCode == 417) {
+        return loginResponse;
+      }
+
+      if (response.statusCode == 200 && loginResponse.success) {
+        if (loginResponse.data?.token != null) {
+          await _saveToken(loginResponse.data!.token!);
+          debugPrint('--- TOKEN SAVED: ${loginResponse.data!.token} ---');
+          if (loginResponse.data!.userID != null) {
+            await _saveUserId(loginResponse.data!.userID!);
+            debugPrint('--- USER ID SAVED: ${loginResponse.data!.userID} ---');
+          }
+        }
+      }
+
+      return loginResponse;
+    } catch (e) {
+      return LoginResponse(
+        error: true,
+        success: false,
+        data: LoginData(status: 'error', message: e.toString()),
+      );
+    }
+  }
+
   Future<RegisterResponse> register(RegisterRequest request) async {
     final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.register}');
 

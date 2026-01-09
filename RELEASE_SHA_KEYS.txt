@@ -1,0 +1,37 @@
+Keystore type: PKCS12
+Keystore provider: SUN
+
+Your keystore contains 1 entry
+
+Alias name: canvas701
+Creation date: 9 Oca 2026
+Entry type: PrivateKeyEntry
+Certificate chain length: 1
+Certificate[1]:
+Owner: CN=yunus sahin, OU=office701, O=office701, L=izmir, ST=izmir, C=izmir
+Issuer: CN=yunus sahin, OU=office701, O=office701, L=izmir, ST=izmir, C=izmir
+Serial number: f32c060c44859e10
+Valid from: Fri Jan 09 11:08:39 TRT 2026 until: Tue May 27 11:08:39 TRT 2053
+Certificate fingerprints:
+	 SHA1: 29:F1:DA:F9:29:39:8F:D2:00:2D:82:19:FB:11:7D:A6:54:F0:89:A0
+	 SHA256: 5F:0E:74:07:CA:37:63:11:BE:00:26:39:D0:59:73:5E:EF:6B:FB:13:AE:CA:9B:8D:5A:D4:B7:14:82:59:C9:4B
+Signature algorithm name: SHA256withRSA
+Subject Public Key Algorithm: 2048-bit RSA key
+Version: 3
+
+Extensions: 
+
+#1: ObjectId: 2.5.29.14 Criticality=false
+SubjectKeyIdentifier [
+KeyIdentifier [
+0000: E0 A6 FF 84 F2 19 D8 9E   B9 B3 02 F5 D1 21 6A 65  .............!je
+0010: 13 77 DF E0                                        .w..
+]
+]
+
+
+
+*******************************************
+*******************************************
+
+
