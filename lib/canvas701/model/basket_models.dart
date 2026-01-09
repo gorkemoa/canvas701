@@ -30,12 +30,14 @@ class UpdateBasketRequest {
   final int basketID;
   final int quantity;
   final String variant;
+  final int isActive;
 
   UpdateBasketRequest({
     required this.userToken,
     required this.basketID,
     required this.quantity,
     required this.variant,
+    this.isActive = 1,
   });
 
   Map<String, dynamic> toJson() {
@@ -44,7 +46,62 @@ class UpdateBasketRequest {
       'basketID': basketID,
       'quantity': quantity,
       'variant': variant,
+      'isActive': isActive,
     };
+  }
+}
+
+/// Sepet Silme İstek Modeli
+class DeleteBasketRequest {
+  final String userToken;
+  final int basketID;
+
+  DeleteBasketRequest({
+    required this.userToken,
+    required this.basketID,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'userToken': userToken,
+      'basketID': basketID,
+    };
+  }
+}
+
+/// Sepet Temizleme İstek Modeli
+class ClearBasketRequest {
+  final String userToken;
+
+  ClearBasketRequest({
+    required this.userToken,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'userToken': userToken,
+    };
+  }
+}
+
+/// Sepet İşlem Cevap Modeli (Silme, Temizleme vb.)
+class BasketActionResponse {
+  final bool error;
+  final bool success;
+  final String? message;
+
+  BasketActionResponse({
+    required this.error,
+    required this.success,
+    this.message,
+  });
+
+  factory BasketActionResponse.fromJson(Map<String, dynamic> json) {
+    return BasketActionResponse(
+      error: json['error'] ?? true,
+      success: json['success'] ?? false,
+      message: json['data']?['message'] ?? json['message'],
+    );
   }
 }
 
@@ -121,6 +178,7 @@ class GetBasketsData {
   final String grandTotal;
   final String vatRate;
   final int totalItems;
+  final int activeItems;
   final List<BasketItem> baskets;
 
   GetBasketsData({
@@ -132,6 +190,7 @@ class GetBasketsData {
     required this.grandTotal,
     required this.vatRate,
     required this.totalItems,
+    required this.activeItems,
     required this.baskets,
   });
 
@@ -145,6 +204,7 @@ class GetBasketsData {
       grandTotal: json['grandTotal'] ?? '',
       vatRate: json['vatRate'] ?? '',
       totalItems: json['totalItems'] ?? 0,
+      activeItems: json['activeItems'] ?? 0,
       baskets: (json['baskets'] as List?)
               ?.map((b) => BasketItem.fromJson(b))
               .toList() ??
@@ -164,6 +224,7 @@ class BasketItem {
   final int cartQuantity;
   final String unitPrice;
   final String totalPrice;
+  final bool isActive;
 
   BasketItem({
     required this.cartID,
@@ -175,6 +236,7 @@ class BasketItem {
     required this.cartQuantity,
     required this.unitPrice,
     required this.totalPrice,
+    required this.isActive,
   });
 
   factory BasketItem.fromJson(Map<String, dynamic> json) {
@@ -188,6 +250,7 @@ class BasketItem {
       cartQuantity: json['cartQuantity'] ?? 0,
       unitPrice: json['unitPrice'] ?? '',
       totalPrice: json['totalPrice'] ?? '',
+      isActive: json['isActive'] ?? true,
     );
   }
 }
