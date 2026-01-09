@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodel/register_viewmodel.dart';
@@ -6,6 +7,7 @@ import '../theme/canvas701_theme_data.dart';
 import '../model/kvkk_response.dart';
 import 'code_verification_page.dart';
 import 'login_page.dart';
+import 'main_navigation_page.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -61,6 +63,18 @@ class _RegisterPageState extends State<RegisterPage> {
     _confirmPasswordController.dispose();
     _timer?.cancel();
     super.dispose();
+  }
+
+  Future<void> _handleSocialLogin(
+      BuildContext context, RegisterViewModel viewModel, String platform) async {
+    final success = await viewModel.socialLogin(platform);
+    if (success && mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => const MainNavigationPage(),
+        ),
+      );
+    }
   }
 
   void _showKvkkDialog(KvkkData? data) {
@@ -403,6 +417,41 @@ class _RegisterPageState extends State<RegisterPage> {
                               ),
                       ),
                       const SizedBox(height: 24),
+                      const Row(
+                        children: [
+                          Expanded(child: Divider(color: Colors.white70)),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 16),
+                            child: Text(
+                              'Veya şununla devam et',
+                              style: TextStyle(
+                                color: Colors.white,
+                                shadows: [
+                                  Shadow(color: Colors.black, blurRadius: 2)
+                                ],
+                              ),
+                            ),
+                          ),
+                          Expanded(child: Divider(color: Colors.white70)),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      if (Platform.isIOS) ...[
+                        _SocialButton(
+                          icon: Icons.apple,
+                          label: 'Apple ile Giriş Yap',
+                          onPressed: () =>
+                              _handleSocialLogin(context, viewModel, 'apple'),
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+                      _SocialButton(
+                        imagePath: 'assets/google.png',
+                        label: 'Google ile Giriş Yap',
+                        onPressed: () =>
+                            _handleSocialLogin(context, viewModel, 'google'),
+                      ),
+                      const SizedBox(height: 24),
                       // Login Link
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -442,6 +491,59 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _SocialButton extends StatelessWidget {
+  final IconData? icon;
+  final String? imagePath;
+  final String label;
+  final VoidCallback onPressed;
+
+  const _SocialButton({
+    this.icon,
+    this.imagePath,
+    required this.label,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onPressed,
+      child: Container(
+        height: 56,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (imagePath != null)
+              Image.asset(imagePath!, height: 24)
+            else if (icon != null)
+              Icon(icon, size: 35, color: Colors.black),
+            const SizedBox(width: 10),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.black,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
