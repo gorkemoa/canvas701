@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:canvas701/canvas701/api/auth_service.dart';
+import 'package:canvas701/canvas701/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';

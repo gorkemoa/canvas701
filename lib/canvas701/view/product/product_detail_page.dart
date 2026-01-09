@@ -7,7 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../model/model.dart';
 import '../../viewmodel/product_viewmodel.dart';
 import '../widgets/widgets.dart';
-import '../../api/cart_service.dart';
+import '../../services/cart_service.dart';
 import '../../model/product_models.dart';
 
 /// Canvas701 Ürün Detay Sayfası

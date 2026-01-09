@@ -1,46 +1,43 @@
 import 'dart:convert';
-import 'package:canvas701/canvas701/constants/api_constants.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import '../constants/api_constants.dart';
 import '../model/category_response.dart';
 import '../model/product_models.dart';
 import '../model/filter_list_response.dart';
-import 'auth_service.dart';
+import 'base_service.dart';
+import 'token_manager.dart';
 
-class ProductService {
+/// Ürün işlemlerini yöneten servis
+/// Ürün listeleme, detay, filtreleme, favoriler
+class ProductService extends BaseService {
   static final ProductService _instance = ProductService._internal();
   factory ProductService() => _instance;
   ProductService._internal();
 
-  Map<String, String> _getHeaders() {
-    final String basicAuth =
-        'Basic ${base64Encode(utf8.encode('${ApiConstants.apiUsername}:${ApiConstants.apiPassword}'))}';
-    return {'Content-Type': 'application/json', 'Authorization': basicAuth};
-  }
+  final TokenManager _tokenManager = TokenManager();
 
+  // ==================== CATEGORIES ====================
+
+  /// Tüm kategorileri getir
   Future<CategoryResponse> getCategories() async {
-    final url = Uri.parse(
-      '${ApiConstants.baseUrl}${ApiConstants.getCategories}',
-    );
+    final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.getCategories}');
 
     debugPrint('--- GET CATEGORIES REQUEST ---');
     debugPrint('URL: $url');
 
     try {
-      final response = await http.get(url, headers: _getHeaders());
+      final response = await http.get(url, headers: getHeaders());
 
       debugPrint('--- GET CATEGORIES RESPONSE ---');
       debugPrint('Status Code: ${response.statusCode}');
 
-      final body = response.body;
-      if (body.trim().startsWith('<')) {
-        debugPrint(
-          '--- GET CATEGORIES ERROR: Received HTML instead of JSON ---',
-        );
+      if (isHtmlResponse(response.body)) {
+        debugPrint('--- GET CATEGORIES ERROR: Received HTML instead of JSON ---');
         return CategoryResponse(error: true, success: false);
       }
 
-      final responseData = jsonDecode(body);
+      final responseData = jsonDecode(response.body);
       return CategoryResponse.fromJson(responseData);
     } catch (e) {
       debugPrint('--- GET CATEGORIES ERROR: $e ---');
@@ -48,6 +45,9 @@ class ProductService {
     }
   }
 
+  // ==================== PRODUCTS ====================
+
+  /// Tüm ürünleri getir (filtreleme ve sayfalama destekli)
   Future<ProductListResponse> getAllProducts({
     int catID = 0,
     String typeKey = '',
@@ -56,7 +56,7 @@ class ProductService {
     int page = 1,
   }) async {
     final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.allProducts}');
-    final userToken = await AuthService().getUserToken();
+    final userToken = await _tokenManager.getUserToken();
 
     final request = ProductListRequest(
       userToken: userToken,
@@ -74,7 +74,7 @@ class ProductService {
     try {
       final response = await http.post(
         url,
-        headers: _getHeaders(),
+        headers: getHeaders(),
         body: jsonEncode(request.toJson()),
       );
 
@@ -82,19 +82,16 @@ class ProductService {
       debugPrint('Status Code: ${response.statusCode}');
 
       if (response.statusCode == 403) {
-        // Handle unauthorized
-        await AuthService().logout();
+        await _tokenManager.clearAll();
+        _tokenManager.redirectToLogin();
       }
 
-      final body = response.body;
-      if (body.trim().startsWith('<')) {
-        debugPrint(
-          '--- GET ALL PRODUCTS ERROR: Received HTML instead of JSON ---',
-        );
+      if (isHtmlResponse(response.body)) {
+        debugPrint('--- GET ALL PRODUCTS ERROR: Received HTML instead of JSON ---');
         return ProductListResponse(error: true, success: false);
       }
 
-      final responseData = jsonDecode(body);
+      final responseData = jsonDecode(response.body);
       return ProductListResponse.fromJson(responseData);
     } catch (e) {
       debugPrint('--- GET ALL PRODUCTS ERROR: $e ---');
@@ -102,6 +99,48 @@ class ProductService {
     }
   }
 
+  /// Ürün detayını getir
+  Future<ProductDetailResponse> getProductDetail(int productId) async {
+    final userToken = await _tokenManager.getUserToken();
+    String urlString = '${ApiConstants.baseUrl}${ApiConstants.getProductDetail(productId)}';
+
+    if (userToken != null && userToken.isNotEmpty) {
+      urlString += '?userToken=$userToken';
+    }
+
+    final url = Uri.parse(urlString);
+
+    debugPrint('--- GET PRODUCT DETAIL REQUEST ---');
+    debugPrint('URL: $url');
+
+    try {
+      final response = await http.get(url, headers: getHeaders());
+
+      debugPrint('--- GET PRODUCT DETAIL RESPONSE ---');
+      debugPrint('Status Code: ${response.statusCode}');
+
+      if (response.statusCode == 403) {
+        await _tokenManager.clearAll();
+        _tokenManager.redirectToLogin();
+      }
+
+      if (isHtmlResponse(response.body)) {
+        debugPrint('--- GET PRODUCT DETAIL ERROR: Received HTML instead of JSON ---');
+        debugPrint('Response Body Overview: ${response.body.length > 200 ? response.body.substring(0, 200) : response.body}');
+        return ProductDetailResponse(error: true, success: false);
+      }
+
+      final responseData = jsonDecode(response.body);
+      return ProductDetailResponse.fromJson(responseData);
+    } catch (e) {
+      debugPrint('--- GET PRODUCT DETAIL ERROR: $e ---');
+      return ProductDetailResponse(error: true, success: false);
+    }
+  }
+
+  // ==================== FILTERS ====================
+
+  /// Filtre listesini getir
   Future<FilterListResponse> getFilterList() async {
     final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.filterList}');
 
@@ -109,28 +148,29 @@ class ProductService {
     debugPrint('URL: $url');
 
     try {
-      final response = await http.get(url, headers: _getHeaders());
+      final response = await http.get(url, headers: getHeaders());
 
       debugPrint('--- GET FILTER LIST RESPONSE ---');
       debugPrint('Status Code: ${response.statusCode}');
 
-      final body = response.body;
-      if (body.trim().startsWith('<')) {
-        debugPrint(
-          '--- GET FILTER LIST ERROR: Received HTML instead of JSON ---',
-        );
+      if (isHtmlResponse(response.body)) {
+        debugPrint('--- GET FILTER LIST ERROR: Received HTML instead of JSON ---');
         return FilterListResponse(error: true, success: false);
       }
 
-      final responseData = jsonDecode(body);
+      final responseData = jsonDecode(response.body);
       return FilterListResponse.fromJson(responseData);
     } catch (e) {
       debugPrint('--- GET FILTER LIST ERROR: $e ---');
       return FilterListResponse(error: true, success: false);
     }
   }
+
+  // ==================== FAVORITES ====================
+
+  /// Favori ürünleri getir
   Future<FavoriteListResponse> getFavorites() async {
-    final userToken = await AuthService().getUserToken();
+    final userToken = await _tokenManager.getUserToken();
     final url = Uri.parse(
       '${ApiConstants.baseUrl}${ApiConstants.getFavorites}?userToken=${userToken ?? ""}',
     );
@@ -139,24 +179,22 @@ class ProductService {
     debugPrint('URL: $url');
 
     try {
-      final response = await http.get(url, headers: _getHeaders());
+      final response = await http.get(url, headers: getHeaders());
 
       debugPrint('--- GET FAVORITES RESPONSE ---');
       debugPrint('Status Code: ${response.statusCode}');
 
       if (response.statusCode == 403) {
-        await AuthService().logout();
+        await _tokenManager.clearAll();
+        _tokenManager.redirectToLogin();
       }
 
-      final body = response.body;
-      if (body.trim().startsWith('<')) {
-        debugPrint(
-          '--- GET FAVORITES ERROR: Received HTML instead of JSON ---',
-        );
+      if (isHtmlResponse(response.body)) {
+        debugPrint('--- GET FAVORITES ERROR: Received HTML instead of JSON ---');
         return FavoriteListResponse(error: true, success: false);
       }
 
-      final responseData = jsonDecode(body);
+      final responseData = jsonDecode(response.body);
       return FavoriteListResponse.fromJson(responseData);
     } catch (e) {
       debugPrint('--- GET FAVORITES ERROR: $e ---');
@@ -164,11 +202,10 @@ class ProductService {
     }
   }
 
+  /// Favori ekle/kaldır toggle
   Future<AddDeleteFavoriteResponse> toggleFavorite(int productId) async {
-    final url = Uri.parse(
-      '${ApiConstants.baseUrl}${ApiConstants.addDeleteFavorite}',
-    );
-    final userToken = await AuthService().getUserToken();
+    final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.addDeleteFavorite}');
+    final userToken = await _tokenManager.getUserToken();
 
     final request = AddDeleteFavoriteRequest(
       userToken: userToken,
@@ -182,7 +219,7 @@ class ProductService {
     try {
       final response = await http.put(
         url,
-        headers: _getHeaders(),
+        headers: getHeaders(),
         body: jsonEncode(request.toJson()),
       );
 
@@ -190,64 +227,20 @@ class ProductService {
       debugPrint('Status Code: ${response.statusCode}');
 
       if (response.statusCode == 403) {
-        await AuthService().logout();
+        await _tokenManager.clearAll();
+        _tokenManager.redirectToLogin();
       }
 
-      final body = response.body;
-      if (body.trim().startsWith('<')) {
-        debugPrint(
-          '--- TOGGLE FAVORITE ERROR: Received HTML instead of JSON ---',
-        );
+      if (isHtmlResponse(response.body)) {
+        debugPrint('--- TOGGLE FAVORITE ERROR: Received HTML instead of JSON ---');
         return AddDeleteFavoriteResponse(error: true, success: false);
       }
 
-      final responseData = jsonDecode(body);
+      final responseData = jsonDecode(response.body);
       return AddDeleteFavoriteResponse.fromJson(responseData);
     } catch (e) {
       debugPrint('--- TOGGLE FAVORITE ERROR: $e ---');
       return AddDeleteFavoriteResponse(error: true, success: false);
-    }
-  }
-  Future<ProductDetailResponse> getProductDetail(int productId) async {
-    final userToken = await AuthService().getUserToken();
-    String urlString =
-        '${ApiConstants.baseUrl}${ApiConstants.getProductDetail(productId)}';
-
-    if (userToken != null && userToken.isNotEmpty) {
-      urlString += '?userToken=$userToken';
-    }
-
-    final url = Uri.parse(urlString);
-
-    debugPrint('--- GET PRODUCT DETAIL REQUEST ---');
-    debugPrint('URL: $url');
-
-    try {
-      final response = await http.get(url, headers: _getHeaders());
-
-      debugPrint('--- GET PRODUCT DETAIL RESPONSE ---');
-      debugPrint('Status Code: ${response.statusCode}');
-
-      if (response.statusCode == 403) {
-        await AuthService().logout();
-      }
-
-      final body = response.body;
-      if (body.trim().startsWith('<')) {
-        debugPrint(
-          '--- GET PRODUCT DETAIL ERROR: Received HTML instead of JSON ---',
-        );
-        debugPrint(
-          'Response Body Overview: ${body.length > 200 ? body.substring(0, 200) : body}',
-        );
-        return ProductDetailResponse(error: true, success: false);
-      }
-
-      final responseData = jsonDecode(body);
-      return ProductDetailResponse.fromJson(responseData);
-    } catch (e) {
-      debugPrint('--- GET PRODUCT DETAIL ERROR: $e ---');
-      return ProductDetailResponse(error: true, success: false);
     }
   }
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../api/auth_service.dart';
+import '../services/user_service.dart';
 import '../model/user_models.dart';
 
 class ProfileViewModel extends ChangeNotifier {
@@ -7,7 +7,7 @@ class ProfileViewModel extends ChangeNotifier {
   factory ProfileViewModel() => _instance;
   ProfileViewModel._internal();
 
-  final AuthService _authService = AuthService();
+  final UserService _userService = UserService();
 
   User? _user;
   User? get user => _user;
@@ -32,7 +32,7 @@ class ProfileViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _authService.getUser();
+      final response = await _userService.getUser();
       if (response.success && response.data?.user != null) {
         _user = response.data!.user;
         debugPrint('--- USER DATA FETCHED: ${_user?.userFullname} ---');
@@ -67,7 +67,7 @@ class ProfileViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _authService.updateUser(_user!.userID, request);
+      final response = await _userService.updateUser(_user!.userID, request);
       if (response.success) {
         await fetchUser(); // Refresh user data after update
       }
@@ -93,7 +93,7 @@ class ProfileViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _authService.updatePassword(request);
+      final response = await _userService.updatePassword(request);
       return response;
     } catch (e) {
       _errorMessage = e.toString();

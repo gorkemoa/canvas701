@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import '../api/auth_service.dart';
-import '../api/general_service.dart';
+import '../services/auth_service.dart';
+import '../services/address_service.dart';
+import '../services/location_service.dart';
 import '../model/address_models.dart';
 
 class AddAddressViewModel extends ChangeNotifier {
   final AuthService _authService = AuthService();
-  final GeneralService _generalService = GeneralService();
+  final AddressService _addressService = AddressService();
+  final LocationService _locationService = LocationService();
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -63,7 +65,7 @@ class AddAddressViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _generalService.getCities();
+      final response = await _locationService.getCities();
       if (response.success && response.data != null) {
         _cities = response.data!.cities;
       } else {
@@ -87,7 +89,7 @@ class AddAddressViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _generalService.getDistricts(cityId);
+      final response = await _locationService.getDistricts(cityId);
       if (response.success && response.data != null) {
         _districts = response.data!.districts;
       } else {
@@ -181,7 +183,7 @@ class AddAddressViewModel extends ChangeNotifier {
           postalCode: postalCode,
           identityNumber: _addressType == 1 ? identityNumber : null,
         );
-        final response = await _authService.updateAddress(request);
+        final response = await _addressService.updateAddress(request);
         if (!response.success) {
           _errorMessage = response.errorMessage ?? response.data?.message;
         }
@@ -207,7 +209,7 @@ class AddAddressViewModel extends ChangeNotifier {
           identityNumber: _addressType == 1 ? identityNumber : null,
         );
 
-        final response = await _authService.addAddress(request);
+        final response = await _addressService.addAddress(request);
 
         if (!response.success) {
           _errorMessage = response.errorMessage ?? response.data?.message;

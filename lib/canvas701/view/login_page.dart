@@ -96,7 +96,7 @@ class _LoginPageState extends State<LoginPage> {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const SizedBox(height: 250),
+                      const SizedBox(height: 150),
                       // Başlık 
                        Image.asset(
                         'assets/Canvas701-Logo.png',
@@ -252,23 +252,20 @@ class _LoginPageState extends State<LoginPage> {
                         ],
                       ),
                       const SizedBox(height: 24),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          if (Platform.isIOS)
-                            _SocialButton(
-                              icon: Icons.apple,
-                              onPressed: () => _handleSocialLogin(context, viewModel, 'apple'),
-                            ),
-                          if (Platform.isIOS) const SizedBox(width: 20),
-                          _SocialButton(
-                            icon: Icons.g_mobiledata,
-                            iconColor: Colors.red,
-                            onPressed: () => _handleSocialLogin(context, viewModel, 'google'),
-                          ),
-                        ],
+                      if (Platform.isIOS) ...[
+                        _SocialButton(
+                          icon: Icons.apple,
+                          label: 'Apple ile Giriş Yap',
+                          onPressed: () => _handleSocialLogin(context, viewModel, 'apple'),
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+                      _SocialButton(
+                        imagePath: 'assets/google.png',
+                        label: 'Google ile Giriş Yap',
+                        onPressed: () => _handleSocialLogin(context, viewModel, 'google'),
                       ),
-                      const SizedBox(height: 40),
+                      const SizedBox(height: 20),
                       // Register Link
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -316,12 +313,14 @@ class _LoginPageState extends State<LoginPage> {
 
 class _SocialButton extends StatelessWidget {
   final IconData? icon;
-  final Color? iconColor;
+  final String? imagePath;
+  final String label;
   final VoidCallback onPressed;
 
   const _SocialButton({
     this.icon,
-    this.iconColor,
+    this.imagePath,
+    required this.label,
     required this.onPressed,
   });
 
@@ -330,8 +329,7 @@ class _SocialButton extends StatelessWidget {
     return InkWell(
       onTap: onPressed,
       child: Container(
-        width: 60,
-        height: 60,
+        height: 56,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
@@ -343,12 +341,23 @@ class _SocialButton extends StatelessWidget {
             ),
           ],
         ),
-        child: Center(
-          child: Icon(
-            icon,
-            size: 30,
-            color: iconColor ?? Colors.black,
-          ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (imagePath != null)
+              Image.asset(imagePath!, height: 24)
+            else if (icon != null)
+              Icon(icon, size: 35, color: Colors.black),
+            const SizedBox(width: 10),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.black,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
       ),
     );

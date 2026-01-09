@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../theme/canvas701_theme_data.dart';
 import '../../../core/widgets/app_mode_switcher.dart';
-import '../../api/auth_service.dart';
+import '../../services/auth_service.dart';
 import '../../viewmodel/profile_viewmodel.dart';
 import '../login_page.dart';
 import '../code_verification_page.dart';

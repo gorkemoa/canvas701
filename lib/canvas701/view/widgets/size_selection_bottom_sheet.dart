@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../api/cart_service.dart';
-import '../../api/product_service.dart';
+import '../../services/cart_service.dart';
+import '../../services/product_service.dart';
 import '../../model/product_models.dart';
 import '../../theme/canvas701_theme_data.dart';
 

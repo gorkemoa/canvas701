@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import '../api/auth_service.dart';
-import '../api/general_service.dart';
+import '../services/auth_service.dart';
+import '../services/general_service.dart';
 import '../model/login_models.dart';
 import '../model/kvkk_response.dart';
 

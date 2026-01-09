@@ -8,7 +8,7 @@ import '../../model/category_response.dart';
 import '../../model/filter_list_response.dart';
 import '../../theme/canvas701_theme_data.dart';
 import '../widgets/widgets.dart';
-import '../../api/product_service.dart';
+import '../../services/product_service.dart';
 import '../../model/product_models.dart';
 import 'product_detail_page.dart';
 

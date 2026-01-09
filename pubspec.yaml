@@ -46,9 +46,9 @@ dependencies:
   share_plus: ^12.0.1
   path_provider: ^2.1.5
   firebase_core: ^4.3.0
-  firebase_messaging: ^16.1.0
   google_sign_in: ^6.2.2
   sign_in_with_apple: ^6.1.3
+  firebase_messaging: ^16.1.0
 
 
 dev_dependencies:
@@ -74,8 +74,10 @@ flutter:
     - assets/logo.png
     - assets/Canvas701-Logo.png
     - assets/Creators.png
+    - assets/google.png
     - assets/logos/
     - assets/bg/
+    - assets/google.png
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

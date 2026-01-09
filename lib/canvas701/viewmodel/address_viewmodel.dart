@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../api/auth_service.dart';
+import '../services/address_service.dart';
 import '../model/address_models.dart';
 
 class AddressViewModel extends ChangeNotifier {
-  final AuthService _authService = AuthService();
+  final AddressService _addressService = AddressService();
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -24,7 +24,7 @@ class AddressViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _authService.getUserAddresses();
+      final response = await _addressService.getUserAddresses();
       if (response.success) {
         _addresses = response.addresses;
       } else {
@@ -43,7 +43,7 @@ class AddressViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _authService.deleteAddress(addressID);
+      final response = await _addressService.deleteAddress(addressID);
       if (response.success) {
         await fetchAddresses();
         return true;

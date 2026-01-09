@@ -48,13 +48,15 @@ Uygulama ilk etapta sadece Canvas701 aktif olacak şekilde tasarlanır. Creators
 \`\`\`
 lib/
  ├─ canvas701/
- │   ├─ api/        → sadece Canvas701 backend
- │   ├─ theme/      → Canvas701’e özel UI
+ │   ├─ constants/  → API sabitleri
+ │   ├─ services/   → API servisleri (auth, user, address, product, cart, location, general)
+ │   ├─ theme/      → Canvas701'e özel UI
  │   ├─ view/
  │   ├─ viewmodel/
  │   └─ model/
  ├─ creators/
- │   ├─ api/        → sadece Creators backend
+ │   ├─ constants/  → API sabitleri
+ │   ├─ services/   → API servisleri
  │   ├─ theme/      → Creators’a özel UI
  │   ├─ view/
  │   ├─ viewmodel/
@@ -76,17 +78,26 @@ lib/
 
 ### 1. API Endpoints
 - **Base URL**: \`https://api.canvas701.com/c701/v1.0.0/\`
-- **Tüm endpoint'ler** `lib/canvas701/api/api_constants.dart` içinde tanımlanır.
+- **Tüm endpoint'ler** `lib/canvas701/constants/api_constants.dart` içinde tanımlanır.
 - Asla view veya service içinde hardcode endpoint yazmayın.
 
 ### 2. Models
 - Her API isteği için **Request** ve **Response** modeli oluşturun.
 - \`toJson()\` ve \`fromJson()\` metodlarını ekleyin.
-- Modeller ilgili modülün (canvas701 veya creators) \`model/\` klasörü altında veya genel ise \`lib/models/\` altında kategorize edilir.
+- Modeller ilgili modülün (canvas701 veya creators) \`model/\` klasörü altında kategorize edilir.
 
 ### 3. Services
 - API çağrıları sadece **Service** sınıflarında yapılır.
-- Her domain için ayrı service (AuthService, ProductService, etc.).
+- **Her domain için ayrı service**:
+  - \`AuthService\`: Login, register, kod doğrulama, şifre sıfırlama
+  - \`UserService\`: Kullanıcı bilgileri, profil güncelleme, şifre değiştirme
+  - \`AddressService\`: Adres CRUD işlemleri
+  - \`ProductService\`: Ürün listeleme, detay, filtreler, favoriler
+  - \`CartService\`: Sepet işlemleri
+  - \`LocationService\`: Şehir ve ilçe bilgileri
+  - \`GeneralService\`: KVKK ve diğer genel işlemler
+- **TokenManager**: Tüm token işlemleri merkezi olarak yönetilir.
+- **BaseService**: Tüm servisler bu sınıftan türer, ortak HTTP header ve loglama işlemleri.
 - Singleton pattern kullanın.
 
 ### 4. ViewModels

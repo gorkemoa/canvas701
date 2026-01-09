@@ -4,7 +4,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
-import '../api/auth_service.dart';
+import '../services/auth_service.dart';
 import '../model/login_models.dart';
 import 'profile_viewmodel.dart';
 

@@ -1,4 +1,5 @@
-import 'package:canvas701/canvas701/api/cart_service.dart';
+import 'package:canvas701/canvas701/services/cart_service.dart';
+import 'package:canvas701/canvas701/model/basket_models.dart';
 import 'package:flutter/material.dart';
 import '../../theme/canvas701_theme_data.dart';
 
