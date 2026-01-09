@@ -45,7 +45,7 @@ class _ProductListPageState extends State<ProductListPage> {
   // Filter states
   String? _selectedSortKey;
   String? _selectedTypeKey;
-  int? _selectedCategoryId;
+  List<int> _selectedCategoryIds = [];
   int _activeFilterCount = 0;
 
   @override
@@ -54,7 +54,8 @@ class _ProductListPageState extends State<ProductListPage> {
     _searchController.text = widget.searchText ?? '';
     _selectedSortKey = widget.sortKey;
     _selectedTypeKey = widget.typeKey;
-    _selectedCategoryId = widget.categoryId;
+    _selectedCategoryIds =
+        widget.categoryId != null ? [widget.categoryId!] : [];
     _updateActiveFilterCount();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -88,10 +89,17 @@ class _ProductListPageState extends State<ProductListPage> {
     int count = 0;
     if (_selectedSortKey != null && _selectedSortKey != 'sortDefault') count++;
     if (_selectedTypeKey != null && _selectedTypeKey!.isNotEmpty) count++;
-    if (_selectedCategoryId != null &&
-        _selectedCategoryId != 0 &&
-        _selectedCategoryId != widget.categoryId)
+
+    // Kategori kontrolü
+    final bool hasDifferentCategory =
+        _selectedCategoryIds.length != (widget.categoryId != null ? 1 : 0) ||
+            (widget.categoryId != null &&
+                !_selectedCategoryIds.contains(widget.categoryId));
+
+    if (_selectedCategoryIds.isNotEmpty && hasDifferentCategory) {
       count++;
+    }
+
     setState(() => _activeFilterCount = count);
   }
 
@@ -103,13 +111,13 @@ class _ProductListPageState extends State<ProductListPage> {
       builder: (context) => _FilterBottomSheet(
         selectedSortKey: _selectedSortKey,
         selectedTypeKey: _selectedTypeKey,
-        selectedCategoryId: _selectedCategoryId,
+        selectedCategoryIds: _selectedCategoryIds,
         initialCategoryId: widget.categoryId,
-        onApply: (sortKey, typeKey, categoryId) {
+        onApply: (sortKey, typeKey, categoryIds) {
           setState(() {
             _selectedSortKey = sortKey;
             _selectedTypeKey = typeKey;
-            _selectedCategoryId = categoryId;
+            _selectedCategoryIds = categoryIds;
           });
           _updateActiveFilterCount();
           _fetchProducts(refresh: true);
@@ -118,7 +126,8 @@ class _ProductListPageState extends State<ProductListPage> {
           setState(() {
             _selectedSortKey = widget.sortKey;
             _selectedTypeKey = widget.typeKey;
-            _selectedCategoryId = widget.categoryId;
+            _selectedCategoryIds =
+                widget.categoryId != null ? [widget.categoryId!] : [];
           });
           _updateActiveFilterCount();
           _fetchProducts(refresh: true);
@@ -146,7 +155,9 @@ class _ProductListPageState extends State<ProductListPage> {
 
     try {
       final response = await _productService.getAllProducts(
-        catID: _selectedCategoryId ?? widget.categoryId ?? 0,
+        catID: _selectedCategoryIds.isNotEmpty
+            ? _selectedCategoryIds
+            : (widget.categoryId != null ? [widget.categoryId!] : []),
         sortKey: _selectedSortKey ?? widget.sortKey ?? 'sortDefault',
         typeKey: _selectedTypeKey ?? widget.typeKey ?? '',
         searchText: _searchController.text,
@@ -394,33 +405,44 @@ class _ProductListPageState extends State<ProductListPage> {
             }
           }
 
-          // Category chip
-          if (_selectedCategoryId != null &&
-              _selectedCategoryId != 0 &&
-              _selectedCategoryId != widget.categoryId) {
-            final category = categoryVm.categories.firstWhere(
-              (c) => c.catID == _selectedCategoryId,
-              orElse: () => ApiCategory(
-                catID: 0,
-                catName: '',
-                catMainImage: '',
-                catThumbImage: '',
-                catThumbImage1: '',
-                catThumbImage2: '',
-              ),
-            );
-            if (category.catName.isNotEmpty) {
-              chips.add(
-                _buildFilterChip(
-                  label: category.catName,
-                  icon: Icons.category_rounded,
-                  onRemove: () {
-                    setState(() => _selectedCategoryId = widget.categoryId);
-                    _updateActiveFilterCount();
-                    _fetchProducts(refresh: true);
-                  },
+          // Category Chips
+          final bool hasDifferentCategory = _selectedCategoryIds.length !=
+                  (widget.categoryId != null ? 1 : 0) ||
+              (widget.categoryId != null &&
+                  !_selectedCategoryIds.contains(widget.categoryId));
+
+          if (hasDifferentCategory && _selectedCategoryIds.isNotEmpty) {
+            for (final catId in _selectedCategoryIds) {
+              final category = categoryVm.categories.firstWhere(
+                (c) => c.catID == catId,
+                orElse: () => ApiCategory(
+                  catID: 0,
+                  catName: '',
+                  catMainImage: '',
+                  catThumbImage: '',
+                  catThumbImage1: '',
+                  catThumbImage2: '',
                 ),
               );
+              if (category.catName.isNotEmpty) {
+                chips.add(
+                  _buildFilterChip(
+                    label: category.catName,
+                    icon: Icons.category_rounded,
+                    onRemove: () {
+                      setState(() {
+                        _selectedCategoryIds.remove(catId);
+                        if (_selectedCategoryIds.isEmpty &&
+                            widget.categoryId != null) {
+                          _selectedCategoryIds = [widget.categoryId!];
+                        }
+                      });
+                      _updateActiveFilterCount();
+                      _fetchProducts(refresh: true);
+                    },
+                  ),
+                );
+              }
             }
           }
 
@@ -442,7 +464,8 @@ class _ProductListPageState extends State<ProductListPage> {
                     setState(() {
                       _selectedSortKey = widget.sortKey;
                       _selectedTypeKey = widget.typeKey;
-                      _selectedCategoryId = widget.categoryId;
+                      _selectedCategoryIds =
+                          widget.categoryId != null ? [widget.categoryId!] : [];
                     });
                     _updateActiveFilterCount();
                     _fetchProducts(refresh: true);
@@ -535,15 +558,15 @@ class _ProductListPageState extends State<ProductListPage> {
 class _FilterBottomSheet extends StatefulWidget {
   final String? selectedSortKey;
   final String? selectedTypeKey;
-  final int? selectedCategoryId;
+  final List<int> selectedCategoryIds;
   final int? initialCategoryId;
-  final Function(String?, String?, int?) onApply;
+  final Function(String?, String?, List<int>) onApply;
   final VoidCallback onReset;
 
   const _FilterBottomSheet({
     this.selectedSortKey,
     this.selectedTypeKey,
-    this.selectedCategoryId,
+    required this.selectedCategoryIds,
     this.initialCategoryId,
     required this.onApply,
     required this.onReset,
@@ -556,7 +579,7 @@ class _FilterBottomSheet extends StatefulWidget {
 class _FilterBottomSheetState extends State<_FilterBottomSheet> {
   late String? _sortKey;
   late String? _typeKey;
-  late int? _categoryId;
+  late List<int> _categoryIds;
   int _selectedTabIndex = 0;
 
   @override
@@ -564,7 +587,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
     super.initState();
     _sortKey = widget.selectedSortKey;
     _typeKey = widget.selectedTypeKey;
-    _categoryId = widget.selectedCategoryId;
+    _categoryIds = List.from(widget.selectedCategoryIds);
   }
 
   @override
@@ -785,22 +808,38 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
           separatorBuilder: (_, __) => const Divider(height: 1),
           itemBuilder: (context, index) {
             if (index == 0) {
-              final isSelected = _categoryId == null || _categoryId == 0;
+              final isAllSelected = _categoryIds.isEmpty ||
+                  (_categoryIds.length == 1 && _categoryIds.first == 0);
               return _buildFilterTile(
                 title: 'Tüm Kategoriler',
                 icon: Icons.category_rounded,
-                isSelected: isSelected,
-                onTap: () => setState(() => _categoryId = 0),
+                isSelected: isAllSelected,
+                onTap: () => setState(() => _categoryIds = [0]),
               );
             }
 
             final category = categories[index - 1];
-            final isSelected = _categoryId == category.catID;
+            final isSelected = _categoryIds.contains(category.catID);
 
             return _buildCategoryTile(
               category: category,
               isSelected: isSelected,
-              onTap: () => setState(() => _categoryId = category.catID),
+              onTap: () {
+                setState(() {
+                  if (_categoryIds.contains(0)) {
+                    _categoryIds.clear();
+                  }
+
+                  if (isSelected) {
+                    _categoryIds.remove(category.catID);
+                    if (_categoryIds.isEmpty) {
+                      _categoryIds.add(0);
+                    }
+                  } else {
+                    _categoryIds.add(category.catID);
+                  }
+                });
+              },
             );
           },
         );
@@ -1017,7 +1056,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
             flex: 2,
             child: ElevatedButton.icon(
               onPressed: () {
-                widget.onApply(_sortKey, _typeKey, _categoryId);
+                widget.onApply(_sortKey, _typeKey, _categoryIds);
                 Navigator.pop(context);
               },
               icon: const Icon(Icons.check_rounded, size: 20),

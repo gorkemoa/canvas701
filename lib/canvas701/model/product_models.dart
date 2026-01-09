@@ -381,7 +381,7 @@ class ApiProductSize {
 
 class ProductListRequest {
   final String? userToken;
-  final int catID;
+  final List<int> catID;
   final String typeKey;
   final String sortKey;
   final String searchText;
@@ -389,7 +389,7 @@ class ProductListRequest {
 
   ProductListRequest({
     this.userToken,
-    this.catID = 0,
+    this.catID = const [],
     this.typeKey = '',
     this.sortKey = '',
     this.searchText = '',

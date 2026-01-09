@@ -29,17 +29,44 @@ class _HomePageState extends State<HomePage> {
   final PageController _bannerController = PageController();
   final TextEditingController _searchController = TextEditingController();
   int _currentBannerIndex = 0;
+  Timer? _bannerTimer;
 
   @override
   void initState() {
     super.initState();
+    _startBannerTimer();
   }
 
   @override
   void dispose() {
+    _bannerTimer?.cancel();
     _bannerController.dispose();
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _startBannerTimer() {
+    _bannerTimer?.cancel();
+    _bannerTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      if (!mounted) return;
+      
+      final viewModel = Provider.of<GeneralViewModel>(context, listen: false);
+      if (viewModel.banners.isEmpty) return;
+
+      if (_currentBannerIndex < viewModel.banners.length - 1) {
+        _currentBannerIndex++;
+      } else {
+        _currentBannerIndex = 0;
+      }
+
+      if (_bannerController.hasClients) {
+        _bannerController.animateToPage(
+          _currentBannerIndex,
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
   }
 
   void _onSearch(String value) {

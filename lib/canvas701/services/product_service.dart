@@ -49,7 +49,7 @@ class ProductService extends BaseService {
 
   /// Tüm ürünleri getir (filtreleme ve sayfalama destekli)
   Future<ProductListResponse> getAllProducts({
-    int catID = 0,
+    List<int> catID = const [],
     String typeKey = '',
     String sortKey = '',
     String searchText = '',
