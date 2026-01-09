@@ -2,29 +2,36 @@ import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:firebase_core/firebase_core.dart';
-import '../../../firebase_options.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'navigation_service.dart';
 
 /// Top-level function to handle background messages
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   developer.log('📬 Background message received', name: 'FCM');
+  developer.log('Message ID: ${message.messageId}', name: 'FCM');
 }
 
 /// Firebase Cloud Messaging service for handling push notifications
 class FirebaseMessagingService {
   static final FirebaseMessaging _firebaseMessaging =
       FirebaseMessaging.instance;
+  static final FlutterLocalNotificationsPlugin _localNotifications =
+      FlutterLocalNotificationsPlugin();
 
-  /// Initialize Firebase Messaging
+  static const AndroidNotificationChannel _channel = AndroidNotificationChannel(
+    'high_importance_channel',
+    'High Importance Notifications',
+    description: 'This channel is used for important notifications.',
+    importance: Importance.max,
+    playSound: true,
+    enableVibration: true,
+  );
+
+  /// Initialize Firebase Messaging and Local Notifications
   static Future<void> initialize() async {
     try {
       developer.log('🚀 Initializing Firebase Messaging', name: 'FCM');
-
-      // Register background handler
-      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
       // 1. Request notification permissions (iOS & Android 13+)
       final settings = await _firebaseMessaging.requestPermission(
@@ -42,7 +49,40 @@ class FirebaseMessagingService {
         name: 'FCM',
       );
 
-      // 2. iOS: Foreground presentation options
+      // 2. Initialize Flutter Local Notifications for Android Foreground
+      if (Platform.isAndroid) {
+        const androidInitialize = AndroidInitializationSettings(
+          '@mipmap/launcher_icon',
+        );
+        const initializationSettings = InitializationSettings(
+          android: androidInitialize,
+        );
+
+        await _localNotifications.initialize(
+          initializationSettings,
+          onDidReceiveNotificationResponse: (NotificationResponse response) {
+            // Foreground notification tap logic
+            if (response.payload != null) {
+              try {
+                final Map<String, dynamic> data = jsonDecode(response.payload!);
+                _processNavigation(data, null);
+              } catch (e) {
+                developer.log('❌ Error parsing payload: $e', name: 'FCM');
+              }
+            }
+          },
+        );
+
+        await _localNotifications
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >()
+            ?.createNotificationChannel(_channel);
+
+        developer.log('✅ Android Notification Channel Created', name: 'FCM');
+      }
+
+      // 3. iOS: Foreground presentation options
       if (Platform.isIOS) {
         await _firebaseMessaging.setForegroundNotificationPresentationOptions(
           alert: true,
@@ -51,13 +91,35 @@ class FirebaseMessagingService {
         );
       }
 
-      // 3. Handle Foreground Messages
+      // 4. Handle Foreground Messages
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         developer.log('📨 Foreground message received', name: 'FCM');
-        // Handle foreground message if needed (e.g. show in-app banner)
+
+        RemoteNotification? notification = message.notification;
+        AndroidNotification? android = message.notification?.android;
+
+        if (notification != null && Platform.isAndroid) {
+          _localNotifications.show(
+            notification.hashCode,
+            notification.title,
+            notification.body,
+            NotificationDetails(
+              android: AndroidNotificationDetails(
+                _channel.id,
+                _channel.name,
+                channelDescription: _channel.description,
+                icon: android?.smallIcon ?? '@mipmap/launcher_icon',
+                importance: Importance.max,
+                priority: Priority.high,
+                ticker: 'ticker',
+              ),
+            ),
+            payload: jsonEncode(message.data),
+          );
+        }
       });
 
-      // 4. Handle notification taps (Background / Terminated)
+      // 5. Handle notification taps (Background / Terminated)
       FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageNavigation);
 
       RemoteMessage? initialMessage = await _firebaseMessaging

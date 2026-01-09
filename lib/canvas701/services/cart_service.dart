@@ -76,6 +76,67 @@ class CartService extends BaseService {
     }
   }
 
+  /// Sepeti güncelle (adet veya varyant)
+  Future<AddBasketResponse> updateBasket({
+    required int basketId,
+    required String variant,
+    required int quantity,
+  }) async {
+    final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.updateBasket}');
+    final userToken = await _tokenManager.getUserToken();
+
+    final request = UpdateBasketRequest(
+      userToken: userToken ?? '',
+      basketID: basketId,
+      quantity: quantity,
+      variant: variant,
+    );
+
+    debugPrint('--- UPDATE BASKET REQUEST ---');
+    debugPrint('URL: $url');
+    debugPrint('Body: ${jsonEncode(request.toJson())}');
+
+    try {
+      final response = await http.put(
+        url,
+        headers: getHeaders(),
+        body: jsonEncode(request.toJson()),
+      );
+
+      debugPrint('--- UPDATE BASKET RESPONSE ---');
+      debugPrint('Status Code: ${response.statusCode}');
+      debugPrint('Body: ${response.body}');
+
+      if (response.statusCode == 403) {
+        await _tokenManager.clearAll();
+        _tokenManager.redirectToLogin();
+        return AddBasketResponse(
+          error: true,
+          success: false,
+          message: 'Oturum süreniz doldu. Lütfen tekrar giriş yapın.',
+        );
+      }
+
+      if (isHtmlResponse(response.body)) {
+        return AddBasketResponse(
+          error: true,
+          success: false,
+          message: 'Bir hata oluştu. Lütfen tekrar deneyin.',
+        );
+      }
+
+      final responseData = jsonDecode(response.body);
+      return AddBasketResponse.fromJson(responseData);
+    } catch (e) {
+      debugPrint('--- UPDATE BASKET ERROR: $e ---');
+      return AddBasketResponse(
+        error: true,
+        success: false,
+        message: 'Bağlantı hatası. Lütfen tekrar deneyin.',
+      );
+    }
+  }
+
   /// Sepet listesini getir
   Future<GetBasketsResponse> getUserBaskets() async {
     final userToken = await _tokenManager.getUserToken();

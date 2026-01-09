@@ -34,4 +34,5 @@ class GeneralService extends BaseService {
       return KvkkResponse(error: true, success: false);
     }
   }
+
 }

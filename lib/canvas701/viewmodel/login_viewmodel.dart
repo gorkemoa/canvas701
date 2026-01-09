@@ -5,6 +5,7 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import '../services/auth_service.dart';
+import '../services/firebase_messaging_service.dart';
 import '../model/login_models.dart';
 import 'profile_viewmodel.dart';
 
@@ -77,6 +78,13 @@ class LoginViewModel extends ChangeNotifier {
       final response = await _authService.loginSocial(request);
 
       if (response.success) {
+        // Subscribe to FCM topic immediately after login
+        if (response.data?.userID != null) {
+          FirebaseMessagingService.subscribeToUserTopic(
+            response.data!.userID.toString(),
+          );
+        }
+
         await ProfileViewModel().fetchUser();
         _isLoading = false;
         notifyListeners();
@@ -116,6 +124,13 @@ class LoginViewModel extends ChangeNotifier {
       final response = await _authService.login(request);
 
       if (response.success) {
+        // Subscribe to FCM topic immediately after login
+        if (response.data?.userID != null) {
+          FirebaseMessagingService.subscribeToUserTopic(
+            response.data!.userID.toString(),
+          );
+        }
+
         // Giriş başarılı olduktan sonra kullanıcı bilgilerini çek
         await ProfileViewModel().fetchUser();
 

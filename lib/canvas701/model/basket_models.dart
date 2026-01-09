@@ -24,6 +24,30 @@ class AddBasketRequest {
   }
 }
 
+/// Sepet Güncelleme İstek Modeli
+class UpdateBasketRequest {
+  final String userToken;
+  final int basketID;
+  final int quantity;
+  final String variant;
+
+  UpdateBasketRequest({
+    required this.userToken,
+    required this.basketID,
+    required this.quantity,
+    required this.variant,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'userToken': userToken,
+      'basketID': basketID,
+      'quantity': quantity,
+      'variant': variant,
+    };
+  }
+}
+
 /// Sepete Ekleme Cevap Modeli
 class AddBasketResponse {
   final bool error;

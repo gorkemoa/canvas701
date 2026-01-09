@@ -27,9 +27,15 @@ class NavigationService {
   }) {
     debugPrint('🚀 NavigationService: type=$type, typeId=$typeId, url=$url');
 
-    // typeId -1 veya 0 ise ve url varsa, harici URL'e yönlendir
+    // typeId -1 veya 0 ise ve url varsa, harici URL'e veya web sayfasina yönlendir
     if ((typeId == -1 || typeId == 0) && url != null && url.isNotEmpty) {
-      _launchUrl(url);
+      if (url.startsWith('http')) {
+        _launchUrl(url);
+      } else {
+        // http ile başlamıyorsa ve özel bir route ise (örn: marketing)
+        // Burada internal route handle edilebilir
+        debugPrint('ℹ️ NavigationService: $url bir iç route veya geçersiz URL.');
+      }
       return;
     }
 

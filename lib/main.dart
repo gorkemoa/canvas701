@@ -28,6 +28,7 @@ Future<void> main() async {
 
   // Initialize Navigation and Firebase Messaging Service
   NavigationService.navigatorKey = navigatorKey;
+  // Initialize Firebase Messaging Service
   await FirebaseMessagingService.initialize();
 
   // Status bar style

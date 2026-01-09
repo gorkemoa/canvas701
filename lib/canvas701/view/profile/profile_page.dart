@@ -186,7 +186,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: TextButton(
                         onPressed: () async {
-                          await AuthService().logout();
+                          await ProfileViewModel().logout();
                           if (context.mounted) {
                             Navigator.of(context).pushAndRemoveUntil(
                               MaterialPageRoute(
