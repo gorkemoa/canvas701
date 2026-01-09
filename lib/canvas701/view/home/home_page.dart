@@ -1,12 +1,16 @@
+import 'dart:async';
 import 'package:canvas701/canvas701/theme/canvas701_theme_data.dart';
 import 'package:canvas701/canvas701/view/product/product_detail_page.dart';
 import 'package:canvas701/canvas701/view/product/product_list_page.dart';
 import 'package:canvas701/canvas701/viewmodel/favorites_viewmodel.dart';
+import 'package:canvas701/canvas701/viewmodel/general_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 import '../../model/model.dart';
 import '../../model/category_response.dart';
+import '../../model/product_models.dart';
+import '../../model/banner_response.dart';
 import '../../viewmodel/category_viewmodel.dart';
 import '../../viewmodel/product_viewmodel.dart';
 import '../widgets/widgets.dart';
@@ -26,14 +30,9 @@ class _HomePageState extends State<HomePage> {
   final TextEditingController _searchController = TextEditingController();
   int _currentBannerIndex = 0;
 
-  final List<String> _banners = [];
-
   @override
   void initState() {
     super.initState();
-    // Veriler Splash sayfasında yüklendiği için burada tekrar yüklemeye gerek yok.
-    // Ancak sayfa her açıldığında güncel veri istenirse burası kalabilir.
-    // Kullanıcı isteğine göre Splash'te yüklendiği için burayı boş bırakıyoruz.
   }
 
   @override
@@ -55,6 +54,47 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
+  }
+
+  void _handleBannerTap(ApiBanner banner) {
+    if (banner.postDeeplinkKey == 'product' && 
+        banner.postDeeplinkValue != null && 
+        banner.postDeeplinkValue!.isNotEmpty) {
+      final productId = banner.postDeeplinkValue!;
+      
+      // Detay sayfası için minimal product objesi
+      // Bu obje API'den detaylar gelene kadar placeholder görevi görecek
+      final dummyProduct = Product(
+        id: productId,
+        code: '',
+        name: banner.postTitle ?? '',
+        description: banner.postExcerpt ?? '',
+        price: 0,
+        images: [banner.postMainImage ?? ''],
+        thumbnailUrl: banner.postThumbImage ?? '',
+        collectionId: '',
+        categoryIds: [],
+        availableSizes: [
+          const ProductSize(
+            id: 'default',
+            name: '50x70 cm', // Varsayılan boyut
+            width: 50,
+            height: 70,
+            price: 0,
+          ),
+        ],
+        createdAt: DateTime.now(),
+      );
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ProductDetailPage(product: dummyProduct),
+        ),
+      );
+    } else if (banner.postDeeplinkKey == 'categories') {
+      widget.onSeeAllCategories?.call();
+    }
   }
 
   @override
@@ -208,103 +248,126 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildHeroBanner() {
-    if (_banners.isEmpty) return const SizedBox.shrink();
-    return Column(
-      children: [
-        SizedBox(
-          height: 250,
-          width: double.infinity,
-          child: PageView.builder(
-            controller: _bannerController,
-            onPageChanged: (index) {
-              setState(() {
-                _currentBannerIndex = index;
-              });
-            },
-            itemCount: _banners.length,
-            itemBuilder: (context, index) {
-              return Container(
-                margin: const EdgeInsets.only(bottom: Canvas701Spacing.md),
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: NetworkImage(_banners[index]),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                child: Stack(
-                  children: [
-                    Positioned(
-                      left: Canvas701Spacing.lg,
-                      bottom: Canvas701Spacing.lg,
-                      right: Canvas701Spacing.lg,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Canvas701\nyine çok çekici!',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                              fontWeight: FontWeight.w900,
-                              height: 1,
-                              shadows: [
-                                Shadow(
-                                  color: Colors.black.withOpacity(0.9),
-                                  offset: const Offset(0, 2),
-                                  blurRadius: 10,
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: Canvas701Spacing.md),
-                          const Text(
-                            'Sanatın ve tasarımın buluşma noktası.\nDetaylar: canvas701.com.tr',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                                shadows: [
-                                  Shadow(
-                              
-                                    offset: Offset(0, 2),
-                                    blurRadius: 10,
-                                  ),
-                                ]
+    return Consumer<GeneralViewModel>(
+      builder: (context, viewModel, _) {
+        final banners = viewModel.banners;
+        if (banners.isEmpty) {
+          if (viewModel.isLoading) {
+            return Container(
+              height: 250,
+              width: double.infinity,
+              margin: const EdgeInsets.only(bottom: Canvas701Spacing.md),
+              color: Canvas701Colors.surfaceVariant,
+              child: const Center(child: CircularProgressIndicator()),
+            );
+          }
+          return const SizedBox.shrink();
+        }
 
+        return Column(
+          children: [
+            SizedBox(
+              height: 250,
+              width: double.infinity,
+              child: PageView.builder(
+                controller: _bannerController,
+                onPageChanged: (index) {
+                  setState(() {
+                    _currentBannerIndex = index;
+                  });
+                },
+                itemCount: banners.length,
+                itemBuilder: (context, index) {
+                  final banner = banners[index];
+                  return GestureDetector(
+                    onTap: () => _handleBannerTap(banner),
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: Canvas701Spacing.md),
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: NetworkImage(banner.postMainImage ?? ''),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      child: Stack(
+                        children: [
+                          Positioned(
+                            left: Canvas701Spacing.lg,
+                            bottom: Canvas701Spacing.lg,
+                            right: Canvas701Spacing.lg,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (banner.postTitle != null)
+                                  Text(
+                                    banner.postTitle!,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w900,
+                                      height: 1.1,
+                                      shadows: [
+                                        Shadow(
+                                          color: Colors.black.withOpacity(0.9),
+                                          offset: const Offset(0, 2),
+                                          blurRadius: 10,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                if (banner.postExcerpt != null) ...[
+                                  const SizedBox(height: Canvas701Spacing.xs),
+                                  Text(
+                                    banner.postExcerpt!,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      shadows: [
+                                        Shadow(
+                                          color: Colors.black.withOpacity(0.9),
+                                          offset: const Offset(0, 2),
+                                          blurRadius: 10,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
                           ),
                         ],
                       ),
                     ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-        // Page Indicator
-        Padding(
-          padding: const EdgeInsets.only(bottom: Canvas701Spacing.md),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(_banners.length, (index) {
-              final isSelected = _currentBannerIndex == index;
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                width: isSelected ? 24 : 8,
-                height: 8,
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(4),
-                  color: isSelected 
-                      ? Canvas701Colors.primary 
-                      : Canvas701Colors.primary.withOpacity(0.2),
-                ),
-              );
-            }),
-          ),
-        ),
-      ],
+                  );
+                },
+              ),
+            ),
+            // Page Indicator
+            Padding(
+              padding: const EdgeInsets.only(bottom: Canvas701Spacing.md),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(banners.length, (index) {
+                  final isSelected = _currentBannerIndex == index;
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    width: isSelected ? 24 : 8,
+                    height: 8,
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(4),
+                      color: isSelected
+                          ? Canvas701Colors.primary
+                          : Canvas701Colors.primary.withOpacity(0.2),
+                    ),
+                  );
+                }),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

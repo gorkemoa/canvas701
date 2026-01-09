@@ -4,6 +4,7 @@ import 'package:canvas701/canvas701/model/basket_models.dart';
 import 'package:canvas701/canvas701/model/product_models.dart';
 import 'package:flutter/material.dart';
 import '../../theme/canvas701_theme_data.dart';
+import '../product/product_detail_page.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({super.key});
@@ -142,25 +143,32 @@ class _CartPageState extends State<CartPage> {
       appBar: AppBar(
         automaticallyImplyLeading: true,
         backgroundColor: Canvas701Colors.primary,
-        foregroundColor: Colors.white,
+        foregroundColor: Canvas701Colors.textPrimary,
         elevation: 0,
+        centerTitle: true,
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: Canvas701Colors.surface,
+            color: Canvas701Colors.background,
+            size: 20,
           ),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: const Text(
           'Sepetim',
-          style: TextStyle(color: Canvas701Colors.textOnPrimary, fontSize: 18),
+          style: TextStyle(
+            color: Canvas701Colors.background,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         actions: [
           if (!_isEmpty)
             IconButton(
               icon: const Icon(
-                Icons.delete_sweep_outlined,
-                color: Canvas701Colors.surface,
+                Icons.delete_outline_rounded,
+                color: Canvas701Colors.background,
+                size: 22,
               ),
               onPressed: () {
                 showDialog(
@@ -318,67 +326,59 @@ class _CartPageState extends State<CartPage> {
 
   Widget _buildOrderSummary() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Ödeme Detayı', style: Canvas701Typography.titleSmall),
-
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12),
-            child: Divider(color: Canvas701Colors.divider, thickness: 1),
+          Text(
+            'Sipariş Özeti',
+            style: Canvas701Typography.titleSmall.copyWith(
+              color: Canvas701Colors.textPrimary,
+              fontSize: 13,
+            ),
           ),
+          const SizedBox(height: 12),
           _buildSummaryRow('Sepet Toplamı', _basketData!.cartTotal),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
 
           // Ara Toplam
           _buildSummaryRow('Ara Toplam', _basketData!.subtotal),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
 
           _buildSummaryRow(
             'KDV (${_basketData!.vatRate})',
             _basketData!.vatAmount,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
 
           // Kargo
           Padding(
-            padding: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.only(bottom: 6),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   'Kargo',
                   style: Canvas701Typography.bodySmall.copyWith(
-                    color: Canvas701Colors.textSecondary,
+                    color: Canvas701Colors.textTertiary,
+                    fontSize: 12,
                   ),
                 ),
                 _basketData!.cargoPrice == '0,00 TL'
-                    ? Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.local_shipping_outlined,
-                            size: 14,
-                            color: Canvas701Colors.success,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'ÜCRETSİZ',
-                            style: Canvas701Typography.bodySmall.copyWith(
-                              color: Canvas701Colors.success,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 10,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ],
+                    ? Text(
+                        'ÜCRETSİZ',
+                        style: Canvas701Typography.bodySmall.copyWith(
+                          color: Canvas701Colors.success,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 11,
+                        ),
                       )
                     : Text(
                         _basketData!.cargoPrice,
                         style: Canvas701Typography.bodySmall.copyWith(
                           color: Canvas701Colors.textSecondary,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 12,
                         ),
                       ),
               ],
@@ -388,7 +388,7 @@ class _CartPageState extends State<CartPage> {
           // İndirim
           if (_basketData!.discountAmount != '0,00 TL')
             Padding(
-              padding: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.only(bottom: 6),
               child: _buildSummaryRow(
                 'İndirim',
                 '-${_basketData!.discountAmount}',
@@ -397,8 +397,8 @@ class _CartPageState extends State<CartPage> {
             ),
 
           const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12),
-            child: Divider(color: Canvas701Colors.divider, thickness: 1),
+            padding: EdgeInsets.symmetric(vertical: 8),
+            child: Divider(color: Canvas701Colors.divider, thickness: 0.8),
           ),
 
           // Toplam
@@ -406,12 +406,12 @@ class _CartPageState extends State<CartPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Toplam (${_basketData!.activeItems} ürün)',
-                style: Canvas701Typography.titleMedium,
+                'Genel Toplam',
+                style: Canvas701Typography.titleMedium.copyWith(fontSize: 14),
               ),
               Text(
                 _basketData!.grandTotal,
-                style: Canvas701Typography.price.copyWith(fontSize: 18),
+                style: Canvas701Typography.price.copyWith(fontSize: 16),
               ),
             ],
           ),
@@ -427,7 +427,8 @@ class _CartPageState extends State<CartPage> {
         Text(
           label,
           style: Canvas701Typography.bodySmall.copyWith(
-            color: Canvas701Colors.textSecondary,
+            color: Canvas701Colors.textTertiary,
+            fontSize: 12,
           ),
         ),
         Text(
@@ -435,6 +436,7 @@ class _CartPageState extends State<CartPage> {
           style: Canvas701Typography.bodySmall.copyWith(
             color: valueColor ?? Canvas701Colors.textSecondary,
             fontWeight: FontWeight.w500,
+            fontSize: 12,
           ),
         ),
       ],
@@ -444,81 +446,65 @@ class _CartPageState extends State<CartPage> {
   Widget _buildCheckoutBar() {
     return Container(
       padding: EdgeInsets.fromLTRB(
-        16,
-        8,
-        16,
-        MediaQuery.of(context).padding.bottom + 12,
+        20,
+        10,
+        20,
+        MediaQuery.of(context).padding.bottom + 10,
       ),
-      decoration: const BoxDecoration(color: Colors.transparent),
-      child: Container(
-        height: 56,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Canvas701Colors.favorite, Canvas701Colors.primary],
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
+      decoration: BoxDecoration(
+        color: Canvas701Colors.background,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
           ),
-          borderRadius: BorderRadius.circular(Canvas701Radius.lg),
-          boxShadow: [
-            BoxShadow(
-              color: Canvas701Colors.primary.withOpacity(0.3),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+        ],
+      ),
+      child: SizedBox(
+        height: 50,
+        child: ElevatedButton(
+          onPressed: () {
+            // TODO: Ödeme sayfasına git
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Canvas701Colors.primary,
+            foregroundColor: Canvas701Colors.textOnPrimary,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
-          ],
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () {
-              // TODO: Ödeme sayfasına git
-            },
-            borderRadius: BorderRadius.circular(Canvas701Radius.lg),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: Canvas701Spacing.md,
-              ),
-              child: Row(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Ödemeye Geç',
-                          style: TextStyle(
-                            color: Canvas701Colors.textOnPrimary,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        Text(
-                          '${_basketData!.activeItems} Ürün | ${_basketData!.grandTotal}',
-                          style: TextStyle(
-                            color: Canvas701Colors.textOnPrimary.withOpacity(
-                              0.9,
-                            ),
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
+                  Text(
+                    'Ödemeye Geç',
+                    style: Canvas701Typography.titleMedium.copyWith(
+                      color: Canvas701Colors.textOnPrimary,
+                      fontSize: 14,
                     ),
                   ),
-                  const VerticalDivider(
-                    color: Colors.white24,
-                    indent: 16,
-                    endIndent: 16,
-                    width: 32,
-                  ),
-                  const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    color: Canvas701Colors.textOnPrimary,
-                    size: 16,
+                  Text(
+                    '${_basketData!.activeItems} Ürün | ${_basketData!.grandTotal}',
+                    style: TextStyle(
+                      color: Canvas701Colors.textOnPrimary.withOpacity(0.8),
+                      fontSize: 11,
+                    ),
                   ),
                 ],
               ),
-            ),
+              const Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: Canvas701Colors.textOnPrimary,
+                size: 14,
+              ),
+            ],
           ),
         ),
       ),
@@ -564,179 +550,214 @@ class _CartItemTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Opacity(
-      opacity: item.isActive ? 1.0 : 0.5,
+      opacity: item.isActive ? 1.0 : 0.6,
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        padding: const EdgeInsets.all(12),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: Canvas701Colors.surface,
           borderRadius: BorderRadius.circular(Canvas701Radius.md),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          border: Border.all(color: Canvas701Colors.border.withOpacity(0.5)),
         ),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // Checkbox for active/inactive
-            Checkbox(
-              value: item.isActive,
-              onChanged: (value) => onToggleActive(
-                item.cartID,
-                item.variant,
-                item.cartQuantity,
-                item.isActive,
-              ),
-              activeColor: Canvas701Colors.primary,
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              visualDensity: VisualDensity.compact,
-            ),
-            // Ürün Görseli
-            Container(
-              width: 75,
-              height: 75,
-              decoration: BoxDecoration(
-                color: Canvas701Colors.surfaceVariant,
-                borderRadius: BorderRadius.circular(Canvas701Radius.md),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(Canvas701Radius.md),
-                child: Image.network(
-                  item.productImage,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => const Icon(
-                    Icons.image_outlined,
-                    color: Canvas701Colors.textTertiary,
-                  ),
+            SizedBox(
+              width: 32,
+              child: Checkbox(
+                value: item.isActive,
+                onChanged: (value) => onToggleActive(
+                  item.cartID,
+                  item.variant,
+                  item.cartQuantity,
+                  item.isActive,
                 ),
+                activeColor: Canvas701Colors.primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                visualDensity: VisualDensity.compact,
               ),
             ),
-            const SizedBox(width: 12),
-            // Ürün Bilgileri
+            const SizedBox(width: 4),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          item.productTitle,
-                          style: Canvas701Typography.titleMedium,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+              child: InkWell(
+                onTap: () {
+                  final apiProduct = ApiProduct(
+                    productID: item.productID,
+                    productCode: item.productCode,
+                    productName: item.productTitle,
+                    productImage: item.productImage,
+                    productPrice: item.unitPrice,
+                    productPriceOriginal: item.unitPrice,
+                    productDiscountIcon: '',
+                    isDiscount: false,
+                    isFavorite: false,
+                  );
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ProductDetailPage(
+                        product: Product.fromApi(apiProduct),
                       ),
-                      IconButton(
-                        icon: const Icon(
-                          Icons.close,
-                          size: 18,
-                          color: Canvas701Colors.textTertiary,
-                        ),
-                        onPressed: () => onDelete(item.cartID),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-
-                  // Ölçü Değiştirme
-                  InkWell(
-                    onTap: () => _showSizePicker(context),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 2,
-                      ),
+                    ),
+                  );
+                },
+                child: Row(
+                  children: [
+                    // Ürün Görseli
+                    Container(
+                      width: 70,
+                      height: 70,
                       decoration: BoxDecoration(
                         color: Canvas701Colors.surfaceVariant,
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: BorderRadius.circular(Canvas701Radius.sm),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(Canvas701Radius.sm),
+                        child: Image.network(
+                          item.productImage,
+                          fit: BoxFit.cover,
+                          errorBuilder:
+                              (context, error, stackTrace) => const Icon(
+                                Icons.image_outlined,
+                                color: Canvas701Colors.textTertiary,
+                                size: 20,
+                              ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // Ürün Bilgileri
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            item.variant,
-                            style: Canvas701Typography.bodySmall.copyWith(
-                              color: Canvas701Colors.textSecondary,
-                              fontWeight: FontWeight.w600,
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  item.productTitle,
+                                  style: Canvas701Typography.titleSmall
+                                      .copyWith(fontSize: 13),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              GestureDetector(
+                                onTap: () => onDelete(item.cartID),
+                                child: const Icon(
+                                  Icons.close_rounded,
+                                  size: 16,
+                                  color: Canvas701Colors.textTertiary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+
+                          // Ölçü Değiştirme
+                          InkWell(
+                            onTap: () => _showSizePicker(context),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 1,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Canvas701Colors.surfaceVariant,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    item.variant,
+                                    style: Canvas701Typography.bodySmall
+                                        .copyWith(
+                                          color: Canvas701Colors.textSecondary,
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 10,
+                                        ),
+                                  ),
+                                  const SizedBox(width: 2),
+                                  const Icon(
+                                    Icons.keyboard_arrow_down,
+                                    size: 10,
+                                    color: Canvas701Colors.textSecondary,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                          const SizedBox(width: 2),
-                          const Icon(
-                            Icons.keyboard_arrow_down,
-                            size: 12,
-                            color: Canvas701Colors.textSecondary,
+
+                          const SizedBox(height: 6),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                item.unitPrice,
+                                style: Canvas701Typography.priceSmall.copyWith(
+                                  fontSize: 14,
+                                ),
+                              ),
+
+                              // Adet Kontrolü
+                              Container(
+                                height: 28,
+                                decoration: BoxDecoration(
+                                  color: Canvas701Colors.surfaceVariant
+                                      .withOpacity(0.5),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    _buildQuantityBtn(
+                                      icon: Icons.remove,
+                                      onPressed: () {
+                                        if (item.cartQuantity > 1) {
+                                          onUpdate(
+                                            item.cartID,
+                                            item.variant,
+                                            item.cartQuantity - 1,
+                                          );
+                                        } else {
+                                          onDelete(item.cartID);
+                                        }
+                                      },
+                                    ),
+                                    Text(
+                                      '${item.cartQuantity}',
+                                      style: Canvas701Typography.titleSmall
+                                          .copyWith(fontSize: 13),
+                                    ),
+                                    _buildQuantityBtn(
+                                      icon: Icons.add,
+                                      onPressed: () {
+                                        onUpdate(
+                                          item.cartID,
+                                          item.variant,
+                                          item.cartQuantity + 1,
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
-                  ),
-
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        item.unitPrice,
-                        style: Canvas701Typography.priceSmall.copyWith(
-                          fontSize: 15,
-                        ),
-                      ),
-
-                      // Adet Kontrolü
-                      Container(
-                        height: 32,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Canvas701Colors.divider),
-                          borderRadius: BorderRadius.circular(
-                            Canvas701Radius.sm,
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            _buildQuantityBtn(
-                              icon: Icons.remove,
-                              onPressed: () {
-                                if (item.cartQuantity > 1) {
-                                  onUpdate(
-                                    item.cartID,
-                                    item.variant,
-                                    item.cartQuantity - 1,
-                                  );
-                                } else {
-                                  onDelete(item.cartID);
-                                }
-                              },
-                            ),
-                            Text(
-                              '${item.cartQuantity}',
-                              style: Canvas701Typography.titleSmall,
-                            ),
-                            _buildQuantityBtn(
-                              icon: Icons.add,
-                              onPressed: () {
-                                onUpdate(
-                                  item.cartID,
-                                  item.variant,
-                                  item.cartQuantity + 1,
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],
@@ -751,10 +772,10 @@ class _CartItemTile extends StatelessWidget {
   }) {
     return InkWell(
       onTap: onPressed,
-      borderRadius: BorderRadius.circular(Canvas701Radius.sm),
+      borderRadius: BorderRadius.circular(20),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        child: Icon(icon, size: 14, color: Canvas701Colors.textPrimary),
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Icon(icon, size: 12, color: Canvas701Colors.textPrimary),
       ),
     );
   }

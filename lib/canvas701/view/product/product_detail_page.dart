@@ -214,6 +214,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       ),
                       const SizedBox(height: 32),
                       _buildSizeSelection(productDetail),
+                      const SizedBox(height: 32),
+                      _buildCargoInfo(productDetail),
                       const SizedBox(height: 40),
                       ProductDescriptionTabs(
                         productDetail: productDetail,
@@ -260,6 +262,52 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     );
   }
 
+  Widget _buildCargoInfo(ApiProductDetail? productDetail) {
+    if (productDetail == null || productDetail.cargoInfo.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Canvas701Colors.surfaceVariant,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.local_shipping_outlined,
+            color: Canvas701Colors.textPrimary,
+            size: 16,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  productDetail.cargoInfo,
+                  style: Canvas701Typography.labelSmall.copyWith(
+                    color: Canvas701Colors.textPrimary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (productDetail.cargoDetail.isNotEmpty)
+                  Text(
+                    productDetail.cargoDetail,
+                    style: Canvas701Typography.labelSmall.copyWith(
+                      color: Canvas701Colors.textSecondary,
+                      fontSize: 10,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSizeSelection(ApiProductDetail? productDetail) {
     final List<dynamic> sizes =
         productDetail?.sizes ?? widget.product.availableSizes;
@@ -285,7 +333,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         ),
         const SizedBox(height: 12),
         SizedBox(
-          height: 38,
+          height: 48,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: sizes.length,
@@ -294,20 +342,21 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               final size = sizes[index];
               bool isSelected = false;
               String name = '';
-              String price='';
+              String price = '';
 
               if (size is ApiProductSize) {
                 isSelected =
                     _selectedSize is ApiProductSize &&
                     (_selectedSize as ApiProductSize).sizeID == size.sizeID;
                 name = size.sizeName;
-                price=size.sizePrice;
+                price = size.sizePrice;
               } else if (size is ProductSize) {
                 isSelected =
                     _selectedSize is ProductSize &&
                     (_selectedSize as ProductSize).id == size.id;
                 name = size.name;
-                price='${size.price.toStringAsFixed(2).replaceAll('.', ',')} TL';
+                price =
+                    '${size.price.toStringAsFixed(2).replaceAll('.', ',')} TL';
               }
 
               return GestureDetector(
@@ -316,10 +365,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   duration: const Duration(milliseconds: 200),
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
-                    color: isSelected
-                        ? Canvas701Colors.primary
-                        : Colors.white,
-                    borderRadius: BorderRadius.circular(8),
+                    color: isSelected ? Canvas701Colors.primary : Colors.white,
+                    borderRadius: BorderRadius.circular(10),
                     border: Border.all(
                       color: isSelected
                           ? Canvas701Colors.primary
@@ -330,22 +377,29 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                   child: Text.rich(
                     TextSpan(
                       children: [
-                        TextSpan(text: '$name\n',style: const TextStyle(
-                          fontSize: 12,
-                        ),),
+                        TextSpan(
+                          text: '$name\n',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight:
+                                isSelected ? FontWeight.w600 : FontWeight.w500,
+                          ),
+                        ),
                         TextSpan(
                           text: price,
-                          style: const TextStyle(fontSize: 9),
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight:
+                                isSelected ? FontWeight.w700 : FontWeight.w600,
+                          ),
                         ),
                       ],
                     ),
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: isSelected ? Colors.white : Canvas701Colors.textPrimary,
-                      fontWeight: isSelected
-                          ? FontWeight.w600
-                          : FontWeight.w400,
-                      fontSize: 12,
+                      color: isSelected
+                          ? Colors.white
+                          : Canvas701Colors.textPrimary,
                     ),
                   ),
                 ),
@@ -633,29 +687,13 @@ class ProductInfoSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String currentPrice = '';
-    String? oldPrice;
 
     if (selectedSize != null) {
       if (selectedSize is ApiProductSize) {
-        final size = selectedSize as ApiProductSize;
-        currentPrice = size.sizePriceDiscount != '0,00 TL'
-            ? size.sizePriceDiscount
-            : size.sizePrice;
-        oldPrice = size.sizePriceDiscount != '0,00 TL' ? size.sizePrice : null;
       } else if (selectedSize is ProductSize) {
         // Fallback for ProductSize model
-        final size = selectedSize as ProductSize;
-        currentPrice =
-            '${size.price.toStringAsFixed(2).replaceAll('.', ',')} TL';
       }
     } else if (productDetail != null) {
-      currentPrice = productDetail!.productPriceDiscount != '0,00 TL'
-          ? productDetail!.productPriceDiscount
-          : productDetail!.productPrice;
-      oldPrice = productDetail!.productPriceDiscount != '0,00 TL'
-          ? productDetail!.productPrice
-          : null;
     }
 
     return Column(
@@ -772,74 +810,6 @@ class ProductInfoSection extends StatelessWidget {
               ),
           ],
         ),
-        const SizedBox(height: 24),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.baseline,
-          textBaseline: TextBaseline.alphabetic,
-          children: [
-            Text(
-              currentPrice,
-              style: Canvas701Typography.displaySmall.copyWith(
-                color: Canvas701Colors.primary,
-                fontWeight: FontWeight.w700,
-                fontSize: 24,
-              ),
-            ),
-            if (oldPrice != null) ...[
-              const SizedBox(width: 12),
-              Text(
-                oldPrice,
-                style: Canvas701Typography.bodyMedium.copyWith(
-                  color: Canvas701Colors.textTertiary,
-                  decoration: TextDecoration.lineThrough,
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ],
-        ),
-        if (productDetail != null && productDetail!.cargoInfo.isNotEmpty) ...[
-          const SizedBox(height: 20),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: Canvas701Colors.surfaceVariant,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.local_shipping_outlined,
-                  color: Canvas701Colors.textPrimary,
-                  size: 16,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        productDetail!.cargoInfo,
-                        style: Canvas701Typography.labelSmall.copyWith(
-                          color: Canvas701Colors.textPrimary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      if (productDetail!.cargoDetail.isNotEmpty)
-                        Text(
-                          productDetail!.cargoDetail,
-                          style: Canvas701Typography.labelSmall.copyWith(
-                            color: Canvas701Colors.textSecondary,
-                            fontSize: 10,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ],
     );
   }

@@ -4,6 +4,7 @@ import '../../viewmodel/category_viewmodel.dart';
 import '../../viewmodel/product_viewmodel.dart';
 import '../../viewmodel/profile_viewmodel.dart';
 import '../../viewmodel/favorites_viewmodel.dart';
+import '../../viewmodel/general_viewmodel.dart';
 
 class SplashPage extends StatefulWidget {
   final VoidCallback onInitializationComplete;
@@ -37,6 +38,7 @@ class _SplashPageState extends State<SplashPage> {
         context.read<ProductViewModel>().fetchAllProducts(refresh: true),
         context.read<ProfileViewModel>().fetchUser(),
         context.read<FavoritesViewModel>().fetchFavorites(),
+        context.read<GeneralViewModel>().fetchBanners(),
       ]);
 
       // Verilerin UI'da işlenmesi için çok kısa bir bekleme (opsiyonel)
