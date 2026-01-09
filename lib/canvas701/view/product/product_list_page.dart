@@ -808,13 +808,12 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
           separatorBuilder: (_, __) => const Divider(height: 1),
           itemBuilder: (context, index) {
             if (index == 0) {
-              final isAllSelected = _categoryIds.isEmpty ||
-                  (_categoryIds.length == 1 && _categoryIds.first == 0);
+              final isAllSelected = _categoryIds.isEmpty;
               return _buildFilterTile(
                 title: 'Tüm Kategoriler',
                 icon: Icons.category_rounded,
                 isSelected: isAllSelected,
-                onTap: () => setState(() => _categoryIds = [0]),
+                onTap: () => setState(() => _categoryIds = []),
               );
             }
 
@@ -826,15 +825,8 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
               isSelected: isSelected,
               onTap: () {
                 setState(() {
-                  if (_categoryIds.contains(0)) {
-                    _categoryIds.clear();
-                  }
-
                   if (isSelected) {
                     _categoryIds.remove(category.catID);
-                    if (_categoryIds.isEmpty) {
-                      _categoryIds.add(0);
-                    }
                   } else {
                     _categoryIds.add(category.catID);
                   }
