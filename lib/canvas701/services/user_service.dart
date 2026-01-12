@@ -6,6 +6,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../constants/api_constants.dart';
 import '../model/user_models.dart';
 import '../model/coupon_model.dart';
+import '../model/ticket_model.dart';
 import 'base_service.dart';
 import 'token_manager.dart';
 
@@ -180,6 +181,187 @@ class UserService extends BaseService {
         success: false,
         data: UpdatePasswordData(status: 'error', message: e.toString()),
       );
+    }
+  }
+
+  /// Destek taleplerini getir
+  Future<TicketResponse> getTickets() async {
+    final token = await _tokenManager.getAuthToken();
+
+    if (token == null) {
+      return TicketResponse(error: true, success: false);
+    }
+
+    final url =
+        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.getTickets}?userToken=$token');
+
+    logRequest('GET', url.toString(), null);
+
+    try {
+      final response = await http.get(
+        url,
+        headers: getHeaders(),
+      );
+
+      logResponse(response.statusCode, response.body);
+
+      if (response.statusCode == 403) {
+        await _tokenManager.clearAll();
+        _tokenManager.redirectToLogin();
+        return TicketResponse(error: true, success: false);
+      }
+
+      final responseData = jsonDecode(response.body);
+      return TicketResponse.fromJson(responseData);
+    } catch (e) {
+      return TicketResponse(error: true, success: false);
+    }
+  }
+
+  /// Destek talebi detaylarını getir
+  Future<TicketDetailResponse> getTicketDetail(int ticketId) async {
+    final token = await _tokenManager.getAuthToken();
+
+    if (token == null) {
+      return TicketDetailResponse(error: true, success: false);
+    }
+
+    final url = Uri.parse(
+        '${ApiConstants.baseUrl}${ApiConstants.getTicketDetail}?userToken=$token&ticketID=$ticketId');
+
+    logRequest('GET', url.toString(), null);
+
+    try {
+      final response = await http.get(
+        url,
+        headers: getHeaders(),
+      );
+
+      logResponse(response.statusCode, response.body);
+
+      if (response.statusCode == 403) {
+        await _tokenManager.clearAll();
+        _tokenManager.redirectToLogin();
+        return TicketDetailResponse(error: true, success: false);
+      }
+
+      final responseData = jsonDecode(response.body);
+      return TicketDetailResponse.fromJson(responseData);
+    } catch (e) {
+      return TicketDetailResponse(error: true, success: false);
+    }
+  }
+
+  /// Destek konusu listesini getir
+  Future<TicketSubjectResponse> getTicketSubjects() async {
+    final url =
+        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.getTicketSubjects}');
+
+    logRequest('GET', url.toString(), null);
+
+    try {
+      final response = await http.get(
+        url,
+        headers: getHeaders(),
+      );
+
+      logResponse(response.statusCode, response.body);
+
+      final responseData = jsonDecode(response.body);
+      return TicketSubjectResponse.fromJson(responseData);
+    } catch (e) {
+      return TicketSubjectResponse(error: true, success: false, subjects: []);
+    }
+  }
+
+  /// Yeni destek talebi oluştur
+  Future<CreateTicketResponse> addTicket({
+    required String title,
+    required int subjectId,
+    required String message,
+  }) async {
+    final token = await _tokenManager.getAuthToken();
+
+    if (token == null) {
+      return CreateTicketResponse(error: true, success: false);
+    }
+
+    final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.addTicket}');
+
+    final body = {
+      'userToken': token,
+      'ticketTitle': title,
+      'subjectID': subjectId,
+      'ticketMessage': message,
+    };
+
+    logRequest('POST', url.toString(), body);
+
+    try {
+      final response = await http.post(
+        url,
+        headers: getHeaders(),
+        body: jsonEncode(body),
+      );
+
+      logResponse(response.statusCode, response.body);
+
+      if (response.statusCode == 403) {
+        await _tokenManager.clearAll();
+        _tokenManager.redirectToLogin();
+        return CreateTicketResponse(error: true, success: false);
+      }
+
+      final responseData = jsonDecode(response.body);
+      return CreateTicketResponse.fromJson(responseData);
+    } catch (e) {
+      return CreateTicketResponse(error: true, success: false);
+    }
+  }
+
+  /// Destek talebine mesaj gönder
+  Future<CreateTicketResponse> sendTicketMessage({
+    required int ticketId,
+    required String message,
+    List<String> files = const [],
+  }) async {
+    final token = await _tokenManager.getAuthToken();
+
+    if (token == null) {
+      return CreateTicketResponse(error: true, success: false);
+    }
+
+    final url =
+        Uri.parse('${ApiConstants.baseUrl}${ApiConstants.sendTicketMessage}');
+
+    final body = {
+      'userToken': token,
+      'ticketID': ticketId,
+      'ticketMessage': message,
+      'files': files,
+    };
+
+    logRequest('POST', url.toString(), body);
+
+    try {
+      final response = await http.post(
+        url,
+        headers: getHeaders(),
+        body: jsonEncode(body),
+      );
+
+      logResponse(response.statusCode, response.body);
+
+      if (response.statusCode == 403) {
+        await _tokenManager.clearAll();
+        _tokenManager.redirectToLogin();
+        return CreateTicketResponse(error: true, success: false);
+      }
+
+      final responseData = jsonDecode(response.body);
+      return CreateTicketResponse.fromJson(responseData);
+    } catch (e) {
+      return CreateTicketResponse(error: true, success: false);
     }
   }
 }

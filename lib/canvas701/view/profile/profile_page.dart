@@ -11,6 +11,7 @@ import 'change_password_page.dart';
 import 'address_page.dart';
 import 'coupons_page.dart';
 import 'orders_page.dart';
+import 'ticket/tickets_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -192,8 +193,15 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         _MenuItem(
                           icon: Icons.chat_bubble_outline,
-                          title: 'Canlı Destek',
-                          onTap: () {},
+                          title: 'Destek Talebi Oluştur',
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const TicketsPage(),
+                              ),
+                            );
+                          },
                         ),
                         _MenuItem(
                           icon: Icons.info_outline,

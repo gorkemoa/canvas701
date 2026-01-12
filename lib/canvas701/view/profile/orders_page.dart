@@ -366,16 +366,7 @@ class _OrdersPageState extends State<OrdersPage> {
                     ),
                   ),
                 ),
-                // Kargo takip butonu
-                if (order.canTrack)
-                  _buildOutlinedButton(
-                    'Kargo Takip',
-                    Icons.local_shipping_outlined,
-                    Canvas701Colors.info,
-                    () {
-                      // TODO: Open tracking link
-                    },
-                  ),
+
                 // Değerlendir butonu (teslim edildiyse)
                 if (order.isDelivered && !order.canTrack)
                   _buildOutlinedButton(

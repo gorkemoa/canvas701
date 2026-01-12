@@ -50,6 +50,7 @@ dependencies:
   sign_in_with_apple: ^6.1.3
   firebase_messaging: ^16.1.0
   flutter_local_notifications: any
+  file_picker: ^10.3.8
 
 dev_dependencies:
   flutter_test:
