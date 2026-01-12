@@ -10,6 +10,7 @@ import 'profile_info_page.dart';
 import 'change_password_page.dart';
 import 'address_page.dart';
 import 'coupons_page.dart';
+import 'orders_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -94,7 +95,14 @@ class _ProfilePageState extends State<ProfilePage> {
                         _MenuItem(
                           icon: Icons.shopping_bag_outlined,
                           title: 'Tüm Siparişlerim',
-                          onTap: () {},
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const OrdersPage(),
+                              ),
+                            );
+                          },
                         ),
                         _MenuItem(
                           icon: Icons.local_shipping_outlined,

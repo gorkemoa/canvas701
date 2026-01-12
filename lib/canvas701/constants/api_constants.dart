@@ -52,4 +52,9 @@ class ApiConstants {
   static const String getUserBaskets = 'service/user/account/basket/list';
   static const String useCoupon = 'service/user/account/coupon/use';
   static const String cancelCoupon = 'service/user/account/coupon/cancel';
+
+  // Orders
+  static const String getUserOrders = 'service/user/account/order/list';
+  static const String getOrderStatusList = 'service/general/general/order/statusList';
+  static const String getOrderDetail = 'service/user/account/order/detail';
 }
