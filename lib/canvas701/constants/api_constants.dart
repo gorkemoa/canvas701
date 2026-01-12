@@ -34,6 +34,7 @@ class ApiConstants {
   static const String updateAddress = 'service/user/account/address/update';
   static const String deleteAddress = 'service/user/account/address/delete';
   static const String getUserAddresses = 'service/user/account/address/list';
+  static const String getUserCoupons = 'service/user/account/coupon/list';
   static const String getCities = 'service/general/general/cities/all';
   static String getDistrictsByCity(int cityId) =>
       'service/general/general/$cityId/districts';
@@ -49,4 +50,6 @@ class ApiConstants {
   static const String deleteBasket = 'service/user/account/basket/delete';
   static const String clearBasket = 'service/user/account/basket/clear';
   static const String getUserBaskets = 'service/user/account/basket/list';
+  static const String useCoupon = 'service/user/account/coupon/use';
+  static const String cancelCoupon = 'service/user/account/coupon/cancel';
 }

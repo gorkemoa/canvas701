@@ -9,6 +9,7 @@ import '../code_verification_page.dart';
 import 'profile_info_page.dart';
 import 'change_password_page.dart';
 import 'address_page.dart';
+import 'coupons_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -144,6 +145,18 @@ class _ProfilePageState extends State<ProfilePage> {
                               context,
                               MaterialPageRoute(
                                 builder: (context) => const AddressPage(),
+                              ),
+                            );
+                          },
+                        ),
+                        _MenuItem(
+                          icon: Icons.confirmation_number_outlined,
+                          title: 'Kuponlarım',
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const CouponsPage(),
                               ),
                             );
                           },

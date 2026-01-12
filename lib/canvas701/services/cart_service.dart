@@ -266,4 +266,90 @@ class CartService extends BaseService {
       );
     }
   }
+
+  /// Kupon kullan
+  Future<CouponActionResponse> useCoupon(String couponCode) async {
+    final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.useCoupon}');
+    final userToken = await _tokenManager.getUserToken();
+
+    final body = {
+      'userToken': userToken ?? '',
+      'couponCode': couponCode,
+    };
+
+    logRequest('POST', url.toString(), body);
+
+    try {
+      final response = await http.post(
+        url,
+        headers: getHeaders(),
+        body: jsonEncode(body),
+      );
+
+      logResponse(response.statusCode, response.body);
+
+      if (response.statusCode == 403) {
+        await _tokenManager.clearAll();
+        _tokenManager.redirectToLogin();
+        return CouponActionResponse(
+          error: true,
+          success: false,
+          message: 'Oturum süreniz doldu.',
+        );
+      }
+
+      final responseData = jsonDecode(response.body);
+      return CouponActionResponse.fromJson(responseData);
+    } catch (e) {
+      debugPrint('--- USE COUPON ERROR: $e ---');
+      return CouponActionResponse(
+        error: true,
+        success: false,
+        message: 'Bağlantı hatası.',
+      );
+    }
+  }
+
+  /// Kupon iptal et
+  Future<CouponActionResponse> cancelCoupon() async {
+    final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.cancelCoupon}');
+    final userToken = await _tokenManager.getUserToken();
+
+    final body = {
+      'userToken': userToken ?? '',
+    };
+
+    logRequest('POST', url.toString(), body);
+
+    try {
+      final response = await http.put(
+        url,
+        headers: getHeaders(),
+        body: jsonEncode(body),
+      );
+
+      logResponse(response.statusCode, response.body);
+
+      if (response.statusCode == 403) {
+        await _tokenManager.clearAll();
+        _tokenManager.redirectToLogin();
+        return CouponActionResponse(
+          error: true,
+          success: false,
+          message: 'Oturum süreniz doldu.',
+        );
+      }
+
+      final responseData = jsonDecode(response.body);
+      return CouponActionResponse.fromJson(responseData);
+    } catch (e) {
+      debugPrint('--- CANCEL COUPON ERROR: $e ---');
+      return CouponActionResponse(
+        error: true,
+        success: false,
+        message: 'Bağlantı hatası.',
+      );
+    }
+  }
 }
+

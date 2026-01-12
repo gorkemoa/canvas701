@@ -84,6 +84,72 @@ class ClearBasketRequest {
   }
 }
 
+/// Kupon Kullanma İstek Modeli
+class UseCouponRequest {
+  final String userToken;
+  final String couponCode;
+
+  UseCouponRequest({
+    required this.userToken,
+    required this.couponCode,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'userToken': userToken,
+      'couponCode': couponCode,
+    };
+  }
+}
+
+/// Kupon İptal İstek Modeli
+class CancelCouponRequest {
+  final String userToken;
+
+  CancelCouponRequest({
+    required this.userToken,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'userToken': userToken,
+    };
+  }
+}
+
+/// Kupon İşlem Cevap Modeli
+class CouponActionResponse {
+  final bool error;
+  final bool success;
+  final String? message;
+
+  CouponActionResponse({
+    required this.error,
+    required this.success,
+    this.message,
+  });
+
+  factory CouponActionResponse.fromJson(Map<String, dynamic> json) {
+    String? message;
+    if (json['data'] != null) {
+      if (json['data'] is String) {
+        message = json['data'];
+      } else if (json['data'] is Map) {
+        message = json['data']['message'];
+      }
+    }
+    
+    // Alt seviyede veya hata durumunda farklı alanlarda gelebilir
+    message ??= json['message'] ?? json['error_message'];
+
+    return CouponActionResponse(
+      error: json['error'] ?? true,
+      success: json['success'] ?? false,
+      message: message,
+    );
+  }
+}
+
 /// Sepet İşlem Cevap Modeli (Silme, Temizleme vb.)
 class BasketActionResponse {
   final bool error;

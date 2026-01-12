@@ -2,7 +2,9 @@ import 'package:canvas701/canvas701/services/cart_service.dart';
 import 'package:canvas701/canvas701/services/product_service.dart';
 import 'package:canvas701/canvas701/model/basket_models.dart';
 import 'package:canvas701/canvas701/model/product_models.dart';
+import 'package:canvas701/canvas701/viewmodel/profile_viewmodel.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../theme/canvas701_theme_data.dart';
 import '../product/product_detail_page.dart';
 
@@ -19,6 +21,8 @@ class _CartPageState extends State<CartPage> {
   bool _isLoading = true;
   String? _errorMessage;
   GetBasketsData? _basketData;
+  final TextEditingController _couponController = TextEditingController();
+  bool _isCouponLoading = false;
 
   @override
   void initState() {
@@ -129,6 +133,64 @@ class _CartPageState extends State<CartPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(response.message ?? 'Sepet temizlenemedi')),
+        );
+      }
+    }
+  }
+
+  Future<void> _useCoupon(String code) async {
+    if (code.isEmpty) return;
+
+    setState(() => _isCouponLoading = true);
+    final response = await _cartService.useCoupon(code);
+    setState(() => _isCouponLoading = false);
+
+    if (response.success) {
+      _couponController.clear();
+      await _fetchBaskets();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Kupon başarıyla uygulandı'),
+            backgroundColor: Canvas701Colors.success,
+          ),
+        );
+      }
+    } else {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Kupon Hatası'),
+            content: Text(response.message ?? 'Kupon uygulanamadı'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Tamam'),
+              ),
+            ],
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _cancelCoupon() async {
+    setState(() => _isCouponLoading = true);
+    final response = await _cartService.cancelCoupon();
+    setState(() => _isCouponLoading = false);
+
+    if (response.success) {
+      await _fetchBaskets();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Kupon kaldırıldı')),
+        );
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(response.message ?? 'Kupon kaldırılamadı')),
         );
       }
     }
@@ -317,10 +379,369 @@ class _CartPageState extends State<CartPage> {
             ),
           ),
           const SizedBox(height: 16),
+          _buildCouponSection(),
+          const SizedBox(height: 16),
           _buildOrderSummary(),
           const SizedBox(height: 16),
         ],
       ),
+    );
+  }
+
+  Widget _buildCouponSection() {
+    final hasCoupon = _basketData?.discountAmount != '0,00 TL';
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'İndirim Kodu',
+                style: Canvas701Typography.titleSmall.copyWith(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              if (!hasCoupon)
+                InkWell(
+                  onTap: () {
+                    context.read<ProfileViewModel>().fetchCoupons();
+                    _showAvailableCoupons();
+                  },
+                  child: Text(
+                    'Kuponlarımı Gör',
+                    style: TextStyle(
+                      color: Canvas701Colors.primary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Canvas701Colors.surface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Canvas701Colors.divider.withOpacity(0.5)),
+            ),
+            child: Column(
+              children: [
+                if (hasCoupon)
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Canvas701Colors.success.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.confirmation_number_rounded,
+                          color: Canvas701Colors.success,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Kupon Uygulandı',
+                              style: Canvas701Typography.bodySmall.copyWith(
+                                color: Canvas701Colors.textSecondary,
+                                fontSize: 11,
+                              ),
+                            ),
+                            Text(
+                              '${_basketData!.discountAmount} İndirim',
+                              style: Canvas701Typography.bodyMedium.copyWith(
+                                color: Canvas701Colors.success,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: _isCouponLoading ? null : _cancelCoupon,
+                        style: TextButton.styleFrom(
+                          foregroundColor: Canvas701Colors.error,
+                        ),
+                        child: _isCouponLoading
+                            ? const SizedBox(
+                                height: 18,
+                                width: 18,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: Canvas701Colors.error),
+                              )
+                            : const Text(
+                                'İptal Et',
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                              ),
+                      ),
+                    ],
+                  )
+                else
+                  Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: 30,
+                          child: TextField(
+                            controller: _couponController,
+                            style: const TextStyle(fontSize: 13),
+                            decoration: InputDecoration(
+                              hintText: 'İndirim Kodu Girin',
+                              hintStyle: TextStyle(color: Canvas701Colors.textTertiary, fontSize: 13),
+                              isDense: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 6,
+                              ),
+                              filled: true,
+                              fillColor: Canvas701Colors.background,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(color: Canvas701Colors.divider.withOpacity(0.5)),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(color: Canvas701Colors.divider.withOpacity(0.5)),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(color: Canvas701Colors.primary),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      SizedBox(
+                        height: 34,
+                        child: ElevatedButton(
+                          onPressed: _isCouponLoading
+                              ? null
+                              : () => _useCoupon(_couponController.text),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Canvas701Colors.primary,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: _isCouponLoading
+                              ? const SizedBox(
+                                  height: 10,
+                                  width: 10,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text(
+                                  'Ekle',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAvailableCoupons() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Canvas701Colors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Consumer<ProfileViewModel>(
+          builder: (context, viewModel, child) {
+            return Container(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Kullanılabilir Kuponlarım',
+                        style: Canvas701Typography.titleLarge,
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close),
+                      ),
+                    ],
+                  ),
+                  const Divider(),
+                  if (viewModel.isLoading)
+                    const Center(child: CircularProgressIndicator())
+                  else if (viewModel.coupons.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 20),
+                      child: Center(child: Text('Tanımlı kuponunuz bulunmuyor.')),
+                    )
+                  else
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight: MediaQuery.of(context).size.height * 0.6,
+                      ),
+                      child: ListView.separated(
+                        shrinkWrap: true,
+                        padding: const EdgeInsets.only(bottom: 20, top: 10),
+                        itemCount: viewModel.coupons.length,
+                        separatorBuilder: (context, index) => const SizedBox(height: 12),
+                        itemBuilder: (context, index) {
+                          final coupon = viewModel.coupons[index];
+                          final isActive = coupon.couponStatus == '1' && !coupon.isUsed;
+
+                          return Opacity(
+                            opacity: isActive ? 1.0 : 0.6,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Canvas701Colors.surface,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: isActive ? Canvas701Colors.primary.withOpacity(0.1) : Canvas701Colors.divider,
+                                  width: 1,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.02),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: IntrinsicHeight(
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 5,
+                                        color: isActive ? Canvas701Colors.primary : Canvas701Colors.textTertiary,
+                                      ),
+                                      Expanded(
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(12),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                children: [
+                                                  Expanded(
+                                                    child: Text(
+                                                      coupon.couponDiscountType == '%'
+                                                          ? '%${coupon.couponDiscount} İndirim'
+                                                          : '${coupon.couponDiscount} TL İndirim',
+                                                      style: Canvas701Typography.titleMedium.copyWith(
+                                                        color: isActive ? Canvas701Colors.primary : Canvas701Colors.textPrimary,
+                                                        fontWeight: FontWeight.w800,
+                                                        fontSize: 15,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  if (isActive)
+                                                    ElevatedButton(
+                                                      onPressed: () {
+                                                        Navigator.pop(context);
+                                                        _useCoupon(coupon.couponCode);
+                                                      },
+                                                      style: ElevatedButton.styleFrom(
+                                                        backgroundColor: Canvas701Colors.primary,
+                                                        foregroundColor: Colors.white,
+                                                        elevation: 0,
+                                                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                                                        minimumSize: const Size(0, 32),
+                                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                                        shape: RoundedRectangleBorder(
+                                                          borderRadius: BorderRadius.circular(20),
+                                                        ),
+                                                      ),
+                                                      child: const Text('Uygula', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                                    )
+                                                  else
+                                                    Text(
+                                                      coupon.isUsed ? 'Kullanıldı' : 'Pasif',
+                                                      style: TextStyle(
+                                                        fontSize: 10,
+                                                        fontWeight: FontWeight.bold,
+                                                        color: coupon.isUsed ? Canvas701Colors.success : Canvas701Colors.error,
+                                                      ),
+                                                    ),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                coupon.couponDesc.isNotEmpty 
+                                                    ? coupon.couponDesc 
+                                                    : 'Min. Sepet: ${coupon.minBasketAmount}',
+                                                style: Canvas701Typography.bodySmall.copyWith(
+                                                  color: Canvas701Colors.textSecondary,
+                                                  fontSize: 11,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 8),
+                                              Row(
+                                                children: [
+                                                  const Icon(Icons.access_time_rounded, size: 12, color: Canvas701Colors.textTertiary),
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    'Son Gün: ${coupon.couponEndDate.split(' ').first}',
+                                                    style: Canvas701Typography.labelSmall.copyWith(fontSize: 10),
+                                                  ),
+                                                  const Spacer(),
+                                                  Text(
+                                                    coupon.couponCode,
+                                                    style: Canvas701Typography.labelSmall.copyWith(
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Canvas701Colors.textTertiary,
+                                                      letterSpacing: 0.5,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 

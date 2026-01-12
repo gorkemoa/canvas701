@@ -3,6 +3,7 @@ import '../services/user_service.dart';
 import '../services/auth_service.dart';
 import '../services/firebase_messaging_service.dart';
 import '../model/user_models.dart';
+import '../model/coupon_model.dart';
 
 class ProfileViewModel extends ChangeNotifier {
   static final ProfileViewModel _instance = ProfileViewModel._internal();
@@ -13,6 +14,9 @@ class ProfileViewModel extends ChangeNotifier {
 
   User? _user;
   User? get user => _user;
+
+  List<Coupon> _coupons = [];
+  List<Coupon> get coupons => _coupons;
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -57,6 +61,26 @@ class ProfileViewModel extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
       debugPrint('--- ProfileViewModel.fetchUser() FINISHED ---');
+    }
+  }
+
+  Future<void> fetchCoupons() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await _userService.getCoupons();
+      if (response.success && response.data != null) {
+        _coupons = response.data!.coupons;
+      } else {
+        _errorMessage = response.message ?? 'Kuponlar alınamadı';
+      }
+    } catch (e) {
+      _errorMessage = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 

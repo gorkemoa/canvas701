@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import '../constants/api_constants.dart';
 import '../model/user_models.dart';
+import '../model/coupon_model.dart';
 import 'base_service.dart';
 import 'token_manager.dart';
 
@@ -70,6 +71,40 @@ class UserService extends BaseService {
     } catch (e) {
       debugPrint('--- GET USER EXCEPTION: $e ---');
       return UserResponse(error: true, success: false);
+    }
+  }
+
+  /// Kullanıcı kuponlarını getir
+  Future<CouponResponse> getCoupons() async {
+    final token = await _tokenManager.getAuthToken();
+
+    if (token == null) {
+      return CouponResponse(error: true, success: false);
+    }
+
+    final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.getUserCoupons}?userToken=$token');
+
+    logRequest('GET', url.toString(), null);
+
+    try {
+      final response = await http.get(
+        url,
+        headers: getHeaders(),
+      );
+
+      logResponse(response.statusCode, response.body);
+
+      if (response.statusCode == 403) {
+        await _tokenManager.clearAll();
+        _tokenManager.redirectToLogin();
+        return CouponResponse(error: true, success: false);
+      }
+
+      final responseData = jsonDecode(response.body);
+      return CouponResponse.fromJson(responseData);
+    } catch (e) {
+      debugPrint('--- GET COUPONS EXCEPTION: $e ---');
+      return CouponResponse(error: true, success: false);
     }
   }
 

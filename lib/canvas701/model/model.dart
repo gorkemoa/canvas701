@@ -4,3 +4,4 @@ export 'cart.dart';
 export 'order.dart';
 export 'login_models.dart';
 export 'user_models.dart';
+export 'coupon_model.dart';
