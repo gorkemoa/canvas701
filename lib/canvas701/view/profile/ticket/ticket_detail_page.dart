@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:convert';
 import 'dart:io';
 import '../../../theme/canvas701_theme_data.dart';
@@ -50,9 +51,22 @@ class _TicketDetailPageState extends State<TicketDetailPage> {
             final bytes = await f.readAsBytes();
             final base64String = base64Encode(bytes);
 
+            // Determine mime type for base64
+            final extension = file.extension?.toLowerCase() ?? '';
+            String mimeType = 'image/jpeg';
+            if (extension == 'pdf') {
+              mimeType = 'application/pdf';
+            } else if (extension == 'png') {
+              mimeType = 'image/png';
+            } else if (extension == 'jpg' || extension == 'jpeg') {
+              mimeType = 'image/jpeg';
+            }
+
+            final formattedBase64 = 'data:$mimeType;base64,$base64String';
+
             setState(() {
               _selectedFiles.add(f);
-              _base64Files.add(base64String);
+              _base64Files.add(formattedBase64);
             });
           }
         }
@@ -77,13 +91,13 @@ class _TicketDetailPageState extends State<TicketDetailPage> {
         title: const Text(
           'Talep Detayı',
           style: TextStyle(
-            color: Canvas701Colors.background,
-            fontSize: 16,
+            color: Colors.white,
+            fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
         ),
         backgroundColor: Canvas701Colors.primary,
-        iconTheme: const IconThemeData(color: Canvas701Colors.background),
+        iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
         centerTitle: true,
       ),
@@ -190,6 +204,16 @@ class _TicketDetailPageState extends State<TicketDetailPage> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
+                if (ticket.files.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    children: ticket.files
+                        .map((file) => _buildTicketFileChip(file))
+                        .toList(),
+                  ),
+                ],
               ],
             ),
           ),
@@ -211,6 +235,40 @@ class _TicketDetailPageState extends State<TicketDetailPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTicketFileChip(TicketFile file) {
+    return GestureDetector(
+      onTap: () async {
+        final uri = Uri.parse(file.fileUrl);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Canvas701Colors.surfaceVariant,
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: Canvas701Colors.divider),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.attach_file, size: 12, color: Canvas701Colors.primary),
+            const SizedBox(width: 4),
+            Text(
+              file.fileName,
+              style: const TextStyle(
+                fontSize: 11,
+                color: Canvas701Colors.textPrimary,
+                decoration: TextDecoration.underline,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -291,19 +349,23 @@ class _TicketDetailPageState extends State<TicketDetailPage> {
       ),
       child: Row(
         children: [
-          GestureDetector(
-            onTap: _pickFiles,
-            child: Container(
-              height: 44,
-              width: 44,
-              decoration: BoxDecoration(
-                color: Canvas701Colors.surfaceVariant,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(
-                Icons.add_photo_alternate_outlined,
-                color: Canvas701Colors.textSecondary,
-                size: 22,
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: _pickFiles,
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                height: 44,
+                width: 44,
+                decoration: BoxDecoration(
+                  color: Canvas701Colors.surfaceVariant,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.add_photo_alternate_outlined,
+                  color: Canvas701Colors.textSecondary,
+                  size: 22,
+                ),
               ),
             ),
           ),
@@ -465,15 +527,72 @@ class _MessageBubble extends StatelessWidget {
               ],
               border: isMe ? null : Border.all(color: Canvas701Colors.divider),
             ),
-            child: Text(
-              message.message,
-              style: Canvas701Typography.bodyMedium.copyWith(
-                color: isMe ? Colors.white : Canvas701Colors.textPrimary,
-                height: 1.4,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  message.message,
+                  style: Canvas701Typography.bodyMedium.copyWith(
+                    color: isMe ? Colors.white : Canvas701Colors.textPrimary,
+                    height: 1.4,
+                  ),
+                ),
+                if (message.files.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  const Divider(color: Colors.white24, height: 1),
+                  const SizedBox(height: 8),
+                  ...message.files.map((file) => _buildFileItem(file, isMe)),
+                ],
+              ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFileItem(TicketFile file, bool isMe) {
+    final bool isImage = file.fileName.toLowerCase().endsWith('.jpg') ||
+        file.fileName.toLowerCase().endsWith('.jpeg') ||
+        file.fileName.toLowerCase().endsWith('.png');
+
+    return GestureDetector(
+      onTap: () async {
+        final uri = Uri.parse(file.fileUrl);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 6),
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: isMe ? Colors.black12 : Canvas701Colors.surfaceVariant,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isImage ? Icons.image : Icons.insert_drive_file,
+              size: 16,
+              color: isMe ? Colors.white : Canvas701Colors.primary,
+            ),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                file.fileName,
+                style: TextStyle(
+                  color: isMe ? Colors.white : Canvas701Colors.textPrimary,
+                  fontSize: 12,
+                  decoration: TextDecoration.underline,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

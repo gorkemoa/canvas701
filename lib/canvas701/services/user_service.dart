@@ -279,6 +279,7 @@ class UserService extends BaseService {
     required String title,
     required int subjectId,
     required String message,
+    List<String> files = const [],
   }) async {
     final token = await _tokenManager.getAuthToken();
 
@@ -291,8 +292,9 @@ class UserService extends BaseService {
     final body = {
       'userToken': token,
       'ticketTitle': title,
-      'subjectID': subjectId,
+      'ticketSubject': subjectId,
       'ticketMessage': message,
+      'files': files,
     };
 
     logRequest('POST', url.toString(), body);

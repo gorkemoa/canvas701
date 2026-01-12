@@ -36,6 +36,7 @@ class ApiConstants {
   static const String getUserAddresses = 'service/user/account/address/list';
   static const String getUserCoupons = 'service/user/account/coupon/list';
   static const String getCities = 'service/general/general/cities/all';
+  static const String getSizeList = 'service/general/general/sizes/list';
   static String getDistrictsByCity(int cityId) =>
       'service/general/general/$cityId/districts';
 
@@ -58,10 +59,13 @@ class ApiConstants {
   static const String getOrderStatusList = 'service/general/general/order/statusList';
   static const String getOrderDetail = 'service/user/account/order/detail';
 
+  // Special Table
+  static const String addSpecialTable = 'service/user/account/special/add';
+
   // Tickets
   static const String getTickets = 'service/user/account/tickets/list';
   static const String getTicketDetail = 'service/user/account/tickets/detail';
-  static const String addTicket = 'service/user/account/tickets/add';
+  static const String addTicket = 'service/user/account/tickets/create';
   static const String sendTicketMessage = 'service/user/account/tickets/sendMessage';
-  static const String getTicketSubjects = 'service/user/account/tickets/subjectList';
+  static const String getTicketSubjects = 'service/general/general/contact/subjects';
 }

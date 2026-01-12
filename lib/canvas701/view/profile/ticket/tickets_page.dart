@@ -27,9 +27,16 @@ class _TicketsPageState extends State<TicketsPage> {
     return Scaffold(
       backgroundColor: Canvas701Colors.background,
       appBar: AppBar(
-        title: const Text('Destek Taleplerim'),
-        backgroundColor: Canvas701Colors.surface,
-        foregroundColor: Canvas701Colors.textPrimary,
+        title: const Text(
+          'Destek Taleplerim',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        backgroundColor: Canvas701Colors.primary,
+        iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
         centerTitle: true,
       ),

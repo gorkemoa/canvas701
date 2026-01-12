@@ -76,6 +76,7 @@ class TicketViewModel extends ChangeNotifier {
     required String title,
     required int subjectId,
     required String message,
+    List<String> files = const [],
   }) async {
     _isLoading = true;
     notifyListeners();
@@ -85,6 +86,7 @@ class TicketViewModel extends ChangeNotifier {
         title: title,
         subjectId: subjectId,
         message: message,
+        files: files,
       );
       if (response.success) {
         await fetchTickets(); // Refresh list after creation

@@ -53,7 +53,7 @@ class Ticket {
   final String createDate;
   final String lastActionDate;
   final List<TicketMessage> messages;
-  final List<String> files;
+  final List<TicketFile> files;
 
   Ticket({
     required this.ticketId,
@@ -86,7 +86,30 @@ class Ticket {
               ?.map((e) => TicketMessage.fromJson(e))
               .toList() ??
           [],
-      files: (json['files'] as List?)?.map((e) => e.toString()).toList() ?? [],
+      files: (json['files'] as List?)
+              ?.map((e) => TicketFile.fromJson(e))
+              .toList() ??
+          [],
+    );
+  }
+}
+
+class TicketFile {
+  final int fileId;
+  final String fileName;
+  final String fileUrl;
+
+  TicketFile({
+    required this.fileId,
+    required this.fileName,
+    required this.fileUrl,
+  });
+
+  factory TicketFile.fromJson(Map<String, dynamic> json) {
+    return TicketFile(
+      fileId: json['fileID'] ?? 0,
+      fileName: json['fileName'] ?? '',
+      fileUrl: json['fileURL'] ?? '',
     );
   }
 }
@@ -97,6 +120,7 @@ class TicketMessage {
   final String createDate;
   final bool isAdmin;
   final String senderName;
+  final List<TicketFile> files;
 
   TicketMessage({
     required this.msgId,
@@ -104,6 +128,7 @@ class TicketMessage {
     required this.createDate,
     required this.isAdmin,
     required this.senderName,
+    required this.files,
   });
 
   factory TicketMessage.fromJson(Map<String, dynamic> json) {
@@ -113,6 +138,10 @@ class TicketMessage {
       createDate: json['createDate'] ?? '',
       isAdmin: json['isAdmin'] ?? false,
       senderName: json['senderName'] ?? '',
+      files: (json['files'] as List?)
+              ?.map((e) => TicketFile.fromJson(e))
+              .toList() ??
+          [],
     );
   }
 }
@@ -154,7 +183,7 @@ class TicketSubjectResponse {
     return TicketSubjectResponse(
       error: json['error'] ?? true,
       success: json['success'] ?? false,
-      subjects: (json['data']?['subjects'] as List?)
+      subjects: (json['data'] as List?)
               ?.map((e) => TicketSubject.fromJson(e))
               .toList() ??
           [],
@@ -174,7 +203,7 @@ class TicketSubject {
   factory TicketSubject.fromJson(Map<String, dynamic> json) {
     return TicketSubject(
       subjectId: json['subjectID'] ?? 0,
-      title: json['subjectTitle'] ?? '',
+      title: json['subjectName'] ?? '',
     );
   }
 }

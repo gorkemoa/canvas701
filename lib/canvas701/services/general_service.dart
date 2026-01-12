@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import '../constants/api_constants.dart';
 import '../model/banner_response.dart';
 import '../model/kvkk_response.dart';
+import '../model/size_model.dart';
 import 'base_service.dart';
 
 /// Genel amaçlı servis (KVKK, ayarlar vb.)
@@ -11,6 +12,25 @@ class GeneralService extends BaseService {
   static final GeneralService _instance = GeneralService._internal();
   factory GeneralService() => _instance;
   GeneralService._internal();
+
+  /// Boyut listesini getir
+  Future<SizeResponse> getSizes() async {
+    final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.getSizeList}');
+
+    logRequest('GET', url.toString());
+
+    try {
+      final response = await http.get(url, headers: getHeaders());
+
+      logResponse(response.statusCode, response.body);
+
+      final responseData = jsonDecode(response.body);
+      return SizeResponse.fromJson(responseData);
+    } catch (e) {
+      debugPrint('--- API ERROR: $e ---');
+      return SizeResponse(error: true, success: false);
+    }
+  }
 
   /// KVKK metnini getir
   Future<KvkkResponse> getKvkkPolicy() async {

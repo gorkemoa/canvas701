@@ -1,3 +1,7 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../theme/canvas701_theme_data.dart';
@@ -16,6 +20,8 @@ class _CreateTicketPageState extends State<CreateTicketPage> {
   final _titleController = TextEditingController();
   final _messageController = TextEditingController();
   TicketSubject? _selectedSubject;
+  final List<File> _selectedFiles = [];
+  final List<String> _base64Files = [];
 
   @override
   void initState() {
@@ -39,6 +45,7 @@ class _CreateTicketPageState extends State<CreateTicketPage> {
         title: _titleController.text,
         subjectId: _selectedSubject!.subjectId,
         message: _messageController.text,
+        files: _base64Files,
       );
 
       if (mounted) {
@@ -63,14 +70,67 @@ class _CreateTicketPageState extends State<CreateTicketPage> {
     }
   }
 
+  Future<void> _pickFiles() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
+        allowMultiple: true,
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        for (var file in result.files) {
+          if (file.path != null) {
+            final f = File(file.path!);
+            final bytes = await f.readAsBytes();
+            final base64String = base64Encode(bytes);
+
+            final extension = file.extension?.toLowerCase() ?? '';
+            String mimeType = 'image/jpeg';
+            if (extension == 'pdf') {
+              mimeType = 'application/pdf';
+            } else if (extension == 'png') {
+              mimeType = 'image/png';
+            } else if (extension == 'jpg' || extension == 'jpeg') {
+              mimeType = 'image/jpeg';
+            }
+
+            final formattedBase64 = 'data:$mimeType;base64,$base64String';
+
+            setState(() {
+              _selectedFiles.add(f);
+              _base64Files.add(formattedBase64);
+            });
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error picking files: $e');
+    }
+  }
+
+  void _removeFile(int index) {
+    setState(() {
+      _selectedFiles.removeAt(index);
+      _base64Files.removeAt(index);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Canvas701Colors.background,
       appBar: AppBar(
-        title: const Text('Yeni Destek Talebi'),
-        backgroundColor: Canvas701Colors.surface,
-        foregroundColor: Canvas701Colors.textPrimary,
+        title: const Text(
+          'Yeni Destek Talebi',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        backgroundColor: Canvas701Colors.primary,
+        iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
         centerTitle: true,
       ),
@@ -182,6 +242,86 @@ class _CreateTicketPageState extends State<CreateTicketPage> {
                       return null;
                     },
                   ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Dosya Ekleri',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Canvas701Colors.textPrimary,
+                        ),
+                      ),
+                      TextButton.icon(
+                        onPressed: _pickFiles,
+                        icon: const Icon(Icons.attach_file, size: 20),
+                        label: const Text('Dosya Ekle'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: Canvas701Colors.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (_selectedFiles.isNotEmpty)
+                    Container(
+                      height: 100,
+                      margin: const EdgeInsets.only(top: 8),
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _selectedFiles.length,
+                        itemBuilder: (context, index) {
+                          final file = _selectedFiles[index];
+                          final isPdf = file.path.toLowerCase().endsWith('.pdf');
+
+                          return Container(
+                            width: 100,
+                            margin: const EdgeInsets.only(right: 12),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Canvas701Colors.divider),
+                            ),
+                            child: Stack(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: isPdf
+                                      ? const Center(
+                                          child: Icon(Icons.picture_as_pdf,
+                                              size: 40, color: Colors.red),
+                                        )
+                                      : Image.file(
+                                          file,
+                                          width: 100,
+                                          height: 100,
+                                          fit: BoxFit.cover,
+                                        ),
+                                ),
+                                Positioned(
+                                  top: 4,
+                                  right: 4,
+                                  child: GestureDetector(
+                                    onTap: () => _removeFile(index),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: const BoxDecoration(
+                                        color: Colors.black54,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.close,
+                                        size: 16,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
                   const SizedBox(height: 40),
                   ElevatedButton(
                     onPressed: viewModel.isLoading ? null : _submit,
