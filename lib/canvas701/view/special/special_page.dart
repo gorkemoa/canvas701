@@ -128,8 +128,9 @@ class _SpecialPageContent extends StatelessWidget {
                           index: index,
                           selectedSize: variant.sizeTitle,
                           imagePath: variant.image?.path,
-                          onTap: () => viewModel.pickImage(index),
+                          onTap: () => viewModel.pickImage(index, context),
                           onRemove: () => viewModel.removeSlot(index),
+                          onEdit: () => viewModel.editImage(index, context),
                           onSizeChanged: (val) => viewModel.updateSize(index, val),
                           availableSizes: viewModel.availableSizes,
                         ),
@@ -469,6 +470,7 @@ class _ImageUploadCard extends StatelessWidget {
   final String? imagePath;
   final VoidCallback onTap;
   final VoidCallback onRemove;
+  final VoidCallback onEdit;
   final Function(String) onSizeChanged;
   final List<CanvasSize> availableSizes;
 
@@ -478,6 +480,7 @@ class _ImageUploadCard extends StatelessWidget {
     this.imagePath,
     required this.onTap,
     required this.onRemove,
+    required this.onEdit,
     required this.onSizeChanged,
     required this.availableSizes,
   });
@@ -653,13 +656,34 @@ class _ImageUploadCard extends StatelessWidget {
             ),
           ),
 
-          // Delete Button
-          IconButton(
-            onPressed: onRemove,
-            icon: Icon(
-              CupertinoIcons.trash,
-              size: 20,
-              color: Canvas701Colors.error.withOpacity(0.7),
+          // Action Buttons
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (hasImage)
+                  IconButton(
+                    onPressed: onEdit,
+                    constraints: const BoxConstraints(minHeight: 36, minWidth: 36),
+                    icon: Icon(
+                      CupertinoIcons.slider_horizontal_3,
+                      size: 20,
+                      color: Canvas701Colors.primary.withOpacity(0.8),
+                    ),
+                    tooltip: 'Düzenle',
+                  ),
+                IconButton(
+                  onPressed: onRemove,
+                  constraints: const BoxConstraints(minHeight: 36, minWidth: 36),
+                  icon: Icon(
+                    CupertinoIcons.trash,
+                    size: 18,
+                    color: Canvas701Colors.error.withOpacity(0.7),
+                  ),
+                  tooltip: 'Kaldır',
+                ),
+              ],
             ),
           ),
         ],
@@ -856,6 +880,65 @@ class _ContactFormSection extends StatelessWidget {
                   keyboardType: TextInputType.emailAddress,
                   prefixIcon: CupertinoIcons.mail,
                 ),
+                if (viewModel.userAddresses.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: 44,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: viewModel.userAddresses.length + 1,
+                      itemBuilder: (context, index) {
+                        if (index == 0) {
+                          final isManual = viewModel.selectedUserAddress == null;
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: ChoiceChip(
+                              label: const Text('Yeni Adres'),
+                              selected: isManual,
+                              onSelected: (selected) {
+                                if (selected) viewModel.selectAddress(null);
+                              },
+                              selectedColor: Canvas701Colors.primary.withOpacity(0.1),
+                              checkmarkColor: Canvas701Colors.primary,
+                              labelStyle: Canvas701Typography.labelSmall.copyWith(
+                                color: isManual ? Canvas701Colors.primary : Canvas701Colors.textSecondary,
+                                fontWeight: isManual ? FontWeight.bold : FontWeight.normal,
+                              ),
+                              backgroundColor: Canvas701Colors.surfaceVariant,
+                              side: BorderSide(
+                                color: isManual ? Canvas701Colors.primary : Colors.transparent,
+                              ),
+                            ),
+                          );
+                        }
+                        
+                        final address = viewModel.userAddresses[index - 1];
+                        final isSelected = viewModel.selectedUserAddress?.addressId == address.addressId;
+                        
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: ChoiceChip(
+                            label: Text(address.addressTitle),
+                            selected: isSelected,
+                            onSelected: (selected) {
+                              if (selected) viewModel.selectAddress(address);
+                            },
+                            selectedColor: Canvas701Colors.primary.withOpacity(0.1),
+                            checkmarkColor: Canvas701Colors.primary,
+                            labelStyle: Canvas701Typography.labelSmall.copyWith(
+                              color: isSelected ? Canvas701Colors.primary : Canvas701Colors.textSecondary,
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            ),
+                            backgroundColor: Canvas701Colors.surfaceVariant,
+                            side: BorderSide(
+                              color: isSelected ? Canvas701Colors.primary : Colors.transparent,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 16),
                 _FormField(
                   controller: viewModel.addressController,
@@ -892,51 +975,38 @@ class _FormField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: Canvas701Typography.labelSmall.copyWith(
-            color: Canvas701Colors.textSecondary,
-            fontWeight: FontWeight.w500,
-          ),
+    return TextField(
+      controller: controller,
+      maxLines: maxLines,
+      keyboardType: keyboardType,
+      style: Canvas701Typography.bodyMedium,
+      decoration: InputDecoration(
+        prefixIcon: prefixIcon != null
+            ? Icon(prefixIcon, size: 18, color: Canvas701Colors.textTertiary)
+            : null,
+        filled: true,
+        fillColor: Canvas701Colors.surfaceVariant,
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: prefixIcon != null ? 0 : 14,
+          vertical: maxLines > 1 ? 14 : 12,
         ),
-        const SizedBox(height: 6),
-        TextField(
-          controller: controller,
-          maxLines: maxLines,
-          keyboardType: keyboardType,
-          style: Canvas701Typography.bodyMedium,
-          decoration: InputDecoration(
-            prefixIcon: prefixIcon != null
-                ? Icon(prefixIcon, size: 18, color: Canvas701Colors.textTertiary)
-                : null,
-            filled: true,
-            fillColor: Canvas701Colors.surfaceVariant,
-            contentPadding: EdgeInsets.symmetric(
-              horizontal: prefixIcon != null ? 0 : 14,
-              vertical: maxLines > 1 ? 14 : 12,
-            ),
-            hintText: hint,
-            hintStyle: Canvas701Typography.bodyMedium.copyWith(
-              color: Canvas701Colors.textTertiary,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide.none,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Canvas701Colors.primary, width: 1.5),
-            ),
-          ),
+        hintText: label,
+        hintStyle: Canvas701Typography.bodyMedium.copyWith(
+          color: Canvas701Colors.textTertiary,
         ),
-      ],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Canvas701Colors.primary, width: 1.5),
+        ),
+      ),
     );
   }
 }

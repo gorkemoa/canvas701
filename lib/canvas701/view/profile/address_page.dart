@@ -411,7 +411,7 @@ class _AddressViewState extends State<_AddressView> {
                                     Padding(
                                       padding: const EdgeInsets.only(left: 28),
                                       child: Text(
-                                        address.address,
+                                        address.address.replaceAll('\\n', '\n'),
                                         style: Canvas701Typography.bodyMedium
                                             .copyWith(
                                               color:
@@ -446,7 +446,7 @@ class _AddressViewState extends State<_AddressView> {
                                             ),
                                             const SizedBox(height: 4),
                                             Text(
-                                              address.invoiceAddress,
+                                              address.invoiceAddress.replaceAll('\\n', '\n'),
                                               style: Canvas701Typography
                                                   .bodySmall
                                                   .copyWith(

@@ -1,18 +1,26 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/special_service.dart';
 import '../services/general_service.dart';
+import '../services/address_service.dart';
 import '../services/token_manager.dart';
 import '../model/special_models.dart';
 import '../model/size_model.dart';
+import '../model/address_models.dart';
+import '../theme/canvas701_theme_data.dart';
+import '../view/widgets/image_filter_sheet.dart';
 import 'profile_viewmodel.dart';
 
 class SpecialViewModel extends ChangeNotifier {
   final SpecialService _specialService = SpecialService();
   final GeneralService _generalService = GeneralService();
+  final AddressService _addressService = AddressService();
   final TokenManager _tokenManager = TokenManager();
   final ImagePicker _picker = ImagePicker();
 
@@ -46,10 +54,46 @@ class SpecialViewModel extends ChangeNotifier {
   final List<SelectedVariantData> _selectedVariants = [SelectedVariantData()];
   List<SelectedVariantData> get selectedVariants => _selectedVariants;
 
+  // Saved Addresses
+  List<UserAddress> _userAddresses = [];
+  List<UserAddress> get userAddresses => _userAddresses;
+  UserAddress? _selectedUserAddress;
+  UserAddress? get selectedUserAddress => _selectedUserAddress;
+
   SpecialViewModel() {
     _prefillFromProfile();
     fetchSizes();
     checkOnboarding();
+    fetchUserAddresses();
+  }
+
+  Future<void> fetchUserAddresses() async {
+    try {
+      final response = await _addressService.getUserAddresses();
+      if (response.success) {
+        _userAddresses = response.addresses;
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Error fetching user addresses: $e');
+    }
+  }
+
+  void selectAddress(UserAddress? address) {
+    _selectedUserAddress = address;
+    if (address != null) {
+      firstNameController.text = address.addressFirstName;
+      lastNameController.text = address.addressLastName;
+      phoneController.text = address.addressPhone;
+      emailController.text = address.addressEmail;
+      // API'den gelen literal \n karakterlerini gerçek alt satıra dönüştürüyoruz
+      final formattedAddress = address.address.replaceAll('\\n', '\n');
+      addressController.text = '${address.addressDistrict} / ${address.addressCity} (${address.postalCode})\n$formattedAddress';
+    } else {
+      _prefillFromProfile();
+      addressController.text = '';
+    }
+    notifyListeners();
   }
 
   Future<void> checkOnboarding() async {
@@ -133,19 +177,68 @@ class SpecialViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> pickImage(int index) async {
+  Future<void> pickImage(int index, BuildContext context) async {
     try {
       final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
-        imageQuality: 70,
+        imageQuality: 100,
       );
       if (image != null) {
-        _selectedVariants[index].image = image;
-        notifyListeners();
+        if (!context.mounted) return;
+        await _processImage(index, image.path, context);
       }
     } catch (e) {
       debugPrint('Error picking image: $e');
     }
+  }
+
+  Future<void> editImage(int index, BuildContext context) async {
+    final imagePath = _selectedVariants[index].image?.path;
+    if (imagePath == null) return;
+    await _processImage(index, imagePath, context);
+  }
+
+  Future<void> _processImage(int index, String path, BuildContext context) async {
+    final croppedFile = await _cropImage(path);
+    if (croppedFile != null) {
+      if (!context.mounted) return;
+      
+      final filteredFile = await showCupertinoModalPopup<File>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => ImageFilterSheet(imageFile: File(croppedFile.path)),
+      );
+
+      if (filteredFile != null) {
+        _selectedVariants[index].image = XFile(filteredFile.path);
+        notifyListeners();
+      }
+    }
+  }
+
+  Future<CroppedFile?> _cropImage(String path) async {
+    return await ImageCropper().cropImage(
+      sourcePath: path,
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: 'Görseli Düzenle',
+          toolbarColor: Canvas701Colors.primary,
+          toolbarWidgetColor: Colors.white,
+          initAspectRatio: CropAspectRatioPreset.original,
+          lockAspectRatio: false,
+          activeControlsWidgetColor: Canvas701Colors.primary,
+        ),
+        IOSUiSettings(
+          title: 'Görseli Düzenle',
+          aspectRatioLockEnabled: false,
+          resetButtonHidden: false,
+          rotateButtonsHidden: false,
+          rotateClockwiseButtonHidden: false,
+          cancelButtonTitle: 'Vazgeç',
+          doneButtonTitle: 'Bitti',
+        ),
+      ],
+    );
   }
 
   void updateSize(int index, String sizeTitle) {
