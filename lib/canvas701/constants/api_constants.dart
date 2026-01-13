@@ -58,7 +58,9 @@ class ApiConstants {
   // Orders
   static const String getUserOrders = 'service/user/account/order/list';
   static const String getOrderStatusList = 'service/general/general/order/statusList';
+  static const String getOrderCancelTypes = 'service/general/general/order/cancelTypes';
   static const String getOrderDetail = 'service/user/account/order/detail';
+  static const String cancelOrder = 'service/user/account/order/cancel/';
 
   // Special Table
   static const String addSpecialTable = 'service/user/account/special/add';

@@ -21,7 +21,9 @@ class OrderDetailPage extends StatefulWidget {
 
 class _OrderDetailPageState extends State<OrderDetailPage> {
   final OrderService _orderService = OrderService();
+  final TextEditingController _cancelDescController = TextEditingController();
   UserOrderDetail? _orderDetail;
+  List<OrderCancelType> _cancelTypes = [];
   bool _isLoading = true;
   String? _errorMessage;
 
@@ -29,6 +31,26 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   void initState() {
     super.initState();
     _fetchOrderDetail();
+    _fetchCancelTypes();
+  }
+
+  @override
+  void dispose() {
+    _cancelDescController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _fetchCancelTypes() async {
+    try {
+      final response = await _orderService.getCancelTypes();
+      if (mounted && response.isSuccess) {
+        setState(() {
+          _cancelTypes = response.types;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching cancel types: $e');
+    }
   }
 
   Future<void> _fetchOrderDetail() async {
@@ -348,13 +370,11 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             const SizedBox(height: 16),
           ],
           // Aksiyon Butonları
-          if (order.isCancelable) ...[
+          if (!order.isCanceled) ...[
             SizedBox(
               width: double.infinity,
               child: OutlinedButton(
-                onPressed: () {
-                  // TODO: Sipariş iptal
-                },
+                onPressed: () => _showCancelOrderDialog(order),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Canvas701Colors.primary,
                   side: const BorderSide(color: Canvas701Colors.primary),
@@ -1132,6 +1152,356 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         ),
       ),
     );
+  }
+
+  void _showCancelOrderDialog(UserOrderDetail order) {
+    if (_cancelTypes.isEmpty) {
+      _fetchCancelTypes().then((_) {
+        if (mounted && _cancelTypes.isNotEmpty) {
+          _showCancelOrderDialog(order);
+        } else if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('İptal nedenleri yüklenemedi.')),
+          );
+        }
+      });
+      return;
+    }
+
+    // İptal edilebilir ürünleri her bir adet için ayrı bir öğe olarak düzleştir
+    // Örn: Üründen 3 adet varsa, listede 3 ayrı satır görünür
+    final List<Map<String, dynamic>> flatProducts = [];
+    for (var p in order.products) {
+      if (!p.isCanceled && p.quantities.isNotEmpty) {
+        // En yüksek miktar kadar (veya currentQuantity kadar) satır ekle
+        final int count = p.productCurrentQuantity;
+        for (int i = 0; i < count; i++) {
+          flatProducts.add({
+            'product': p,
+            'uid': '${p.productID}_$i', // Benzersiz ID
+            'selected': false,
+            'reason': _cancelTypes.isNotEmpty ? _cancelTypes.last.typeID : null,
+            'desc': '',
+          });
+        }
+      }
+    }
+
+    if (flatProducts.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('İptal edilebilecek ürün bulunamadı.')),
+      );
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) {
+          final selectedItems = flatProducts.where((item) => item['selected']).toList();
+
+          return Container(
+            height: MediaQuery.of(context).size.height * 0.85,
+            decoration: const BoxDecoration(
+              color: Color(0xFFF8F9FA),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: Column(
+              children: [
+                // Handle bar
+                Container(
+                  margin: const EdgeInsets.symmetric(vertical: 12),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                // Header
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      const Expanded(
+                        child: Text(
+                          'Ürün İptal İşlemi',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      const SizedBox(width: 40),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: flatProducts.length,
+                    itemBuilder: (context, index) {
+                      final item = flatProducts[index];
+                      final product = item['product'] as OrderDetailProduct;
+                      final isSelected = item['selected'] as bool;
+
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        margin: const EdgeInsets.only(bottom: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isSelected ? Canvas701Colors.primary : Colors.grey[200]!,
+                            width: isSelected ? 1.5 : 1,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.03),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            // Ürün Üst Bilgisi (Her zaman görünür)
+                            InkWell(
+                              onTap: () => setModalState(() => item['selected'] = !isSelected),
+                              borderRadius: BorderRadius.circular(16),
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Row(
+                                  children: [
+                                    Stack(
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(10),
+                                          child: Image.network(
+                                            product.productImage,
+                                            width: 60,
+                                            height: 60,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (_, __, ___) => Container(
+                                              width: 60, height: 60, color: Colors.grey[100],
+                                              child: const Icon(Icons.image, color: Colors.grey),
+                                            ),
+                                          ),
+                                        ),
+                                        if (isSelected)
+                                          Positioned(
+                                            right: 0, top: 0,
+                                            child: Container(
+                                              padding: const EdgeInsets.all(2),
+                                              decoration: const BoxDecoration(color: Canvas701Colors.primary, shape: BoxShape.circle),
+                                              child: const Icon(Icons.check, color: Colors.white, size: 14),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            product.productName,
+                                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            '${product.productVariants} • ${product.productPrice}',
+                                            style: TextStyle(color: Colors.grey[600], fontSize: 11),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Icon(
+                                      isSelected ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                                      color: isSelected ? Canvas701Colors.primary : Colors.grey[400],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            // İptal Formu (Akordiyon - Sadece seçiliyse açılır)
+                            if (isSelected) ...[
+                              const Divider(height: 1),
+                              Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'İptal Bilgileri',
+                                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Canvas701Colors.primary),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    DropdownButtonFormField<int>(
+                                      value: item['reason'],
+                                      isDense: true,
+                                      decoration: InputDecoration(
+                                        labelText: 'İptal Nedeni',
+                                        labelStyle: const TextStyle(fontSize: 12),
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                        filled: true,
+                                        fillColor: Colors.grey[50],
+                                      ),
+                                      items: _cancelTypes.map((t) => DropdownMenuItem(
+                                        value: t.typeID,
+                                        child: Text(t.typeName, style: const TextStyle(fontSize: 13)),
+                                      )).toList(),
+                                      onChanged: (val) => setModalState(() => item['reason'] = val),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    TextField(
+                                      onChanged: (val) => item['desc'] = val,
+                                      maxLines: 2,
+                                      style: const TextStyle(fontSize: 13),
+                                      decoration: InputDecoration(
+                                        hintText: 'Açıklama giriniz...',
+                                        hintStyle: const TextStyle(fontSize: 12),
+                                        contentPadding: const EdgeInsets.all(12),
+                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                        filled: true,
+                                        fillColor: Colors.grey[50],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                // Footer
+                Padding(
+                  padding: EdgeInsets.fromLTRB(20, 16, 20, MediaQuery.of(context).viewInsets.bottom + 24),
+                  child: ElevatedButton(
+                    onPressed: selectedItems.isEmpty
+                        ? null
+                        : () {
+                            Navigator.pop(context);
+                            _handleBulkCancelOrder(order, selectedItems);
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Canvas701Colors.primary,
+                      minimumSize: const Size(double.infinity, 52),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      selectedItems.isEmpty 
+                        ? 'Lütfen Ürün Seçin' 
+                        : '${selectedItems.length} Ürünü İptal Et',
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _handleBulkCancelOrder(
+    UserOrderDetail order,
+    List<Map<String, dynamic>> selectedItems,
+  ) async {
+    // Aynı productID'ye sahip satırları gruplayabilirdik ama API her satırı ayrı bir iptal kaydı olarak bekliyor 
+    // veya biz her birini 1 adet olarak göndereceğiz.
+    final List<CancelOrderProduct> cancelProducts = [];
+
+    // Aynı ürünleri gruplayalım (Çünkü API products dizisi içinde her productID'den bir tane bekleyebilir)
+    // Eğer API her satırı ayrı obje olarak kabul ediyorsa düz liste de olur.
+    // Ancak standart yapı gereği aynı ID'li ürünleri adetleriyle birleştirmek daha güvenli:
+    final Map<int, List<Map<String, dynamic>>> grouped = {};
+    for (var item in selectedItems) {
+      final pid = (item['product'] as OrderDetailProduct).productID;
+      grouped.putIfAbsent(pid, () => []).add(item);
+    }
+
+    // Gruplanmış her bir "iptal satırı" için ayrı bir CancelOrderProduct nesnesi oluşturulacak 
+    // ama API bizden List<CancelOrderProduct> bekliyor.
+    // Kullanıcı her adet için farklı form doldurduğu için, teknik olarak her birini 1 adet olarak ayrı öğe veya tek öğe (ilk form geçerli) gönderebiliriz.
+    // Sizin istediğiniz "her adet için ayrı form" olduğu için, her seçili öğeyi 1 adet olarak gönderiyorum:
+    for (var item in selectedItems) {
+      final p = item['product'] as OrderDetailProduct;
+      cancelProducts.add(CancelOrderProduct(
+        productID: p.productID,
+        productQuantity: 1, // Her satır 1 adet temsil ediyor
+        cancelType: item['reason'] ?? _cancelTypes.last.typeID,
+        cancelDesc: item['desc'].toString().isEmpty ? 'Kullanıcı tarafından iptal edildi.' : item['desc'],
+      ));
+    }
+
+    // Loading göster
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(color: Canvas701Colors.primary),
+      ),
+    );
+
+    try {
+      final response = await _orderService.cancelOrder(
+        orderID: order.orderID,
+        products: cancelProducts,
+      );
+
+      if (mounted) {
+        Navigator.pop(context); // Loading kapat
+
+        if (response.isSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(response.message),
+              backgroundColor: Canvas701Colors.success,
+            ),
+          );
+
+          if (response.updatedOrder != null) {
+            setState(() {
+              _orderDetail = response.updatedOrder;
+            });
+          } else {
+            _fetchOrderDetail(); // Yedek olarak API'den tekrar çek
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(response.message),
+              backgroundColor: Canvas701Colors.error,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // Loading kapat
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Bir hata oluştu.'),
+            backgroundColor: Canvas701Colors.error,
+          ),
+        );
+      }
+    }
   }
 
   Color _getStatusColor(String status) {

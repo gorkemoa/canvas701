@@ -379,6 +379,7 @@ class OrderDetailProduct {
   final bool isCanceled;
   final bool isCommented;
   final bool isCustomTable;
+  final List<int> quantities;
 
   OrderDetailProduct({
     required this.productID,
@@ -397,6 +398,7 @@ class OrderDetailProduct {
     required this.isCanceled,
     required this.isCommented,
     required this.isCustomTable,
+    required this.quantities,
   });
 
   factory OrderDetailProduct.fromJson(Map<String, dynamic> json) {
@@ -417,6 +419,9 @@ class OrderDetailProduct {
       isCanceled: json['isCanceled'] ?? false,
       isCommented: json['isCommented'] ?? false,
       isCustomTable: json['isCustomTable'] ?? false,
+      quantities: (json['quantities'] as List<dynamic>?)
+          ?.map((e) => e as int)
+          .toList() ?? [],
     );
   }
 }
@@ -465,6 +470,145 @@ class OrderAddress {
       realCompanyName: json['realCompanyName'] ?? '',
       taxNumber: json['taxNumber'] ?? '',
       taxAdministration: json['taxAdministration'] ?? '',
+    );
+  }
+}
+
+// ==================== CANCEL ORDER MODELS ====================
+
+/// İptal edilecek ürün modeli
+class CancelOrderProduct {
+  final int productID;
+  final int productQuantity;
+  final int cancelType;
+  final String cancelDesc;
+
+  CancelOrderProduct({
+    required this.productID,
+    required this.productQuantity,
+    required this.cancelType,
+    required this.cancelDesc,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'productID': productID,
+      'productQuantity': productQuantity,
+      'cancelType': cancelType,
+      'cancelDesc': cancelDesc,
+    };
+  }
+}
+
+/// Sipariş İptal Talebi Model
+class CancelOrderRequest {
+  final String userToken;
+  final int orderID;
+  final List<CancelOrderProduct> products;
+
+  CancelOrderRequest({
+    required this.userToken,
+    required this.orderID,
+    required this.products,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'userToken': userToken,
+      'orderID': orderID,
+      'products': products.map((p) => p.toJson()).toList(),
+    };
+  }
+}
+
+/// Sipariş İptal API Yanıtı
+class CancelOrderResponse {
+  final bool error;
+  final bool success;
+  final String message;
+  final UserOrderDetail? updatedOrder;
+
+  CancelOrderResponse({
+    required this.error,
+    required this.success,
+    required this.message,
+    this.updatedOrder,
+  });
+
+  bool get isSuccess => success && !error;
+
+  factory CancelOrderResponse.fromJson(Map<String, dynamic> json) {
+    String extractMessage() {
+      if (json['message'] != null && json['message'].toString().isNotEmpty) {
+        return json['message'].toString();
+      }
+      if (json['data'] != null) {
+        if (json['data'] is String && json['data'].toString().isNotEmpty) {
+          return json['data'].toString();
+        }
+        if (json['data'] is Map && json['data']['message'] != null) {
+          return json['data']['message'].toString();
+        }
+      }
+      return 'Bir hata oluştu.';
+    }
+
+    return CancelOrderResponse(
+      error: json['error'] ?? true,
+      success: json['success'] ?? false,
+      message: extractMessage(),
+      updatedOrder: json['data'] != null &&
+              json['data'] is Map &&
+              json['data']['order'] != null
+          ? UserOrderDetail.fromJson(json['data']['order'])
+          : null,
+    );
+  }
+}
+
+// ==================== CANCEL TYPES MODELS ====================
+
+/// İptal Tipi Modeli
+class OrderCancelType {
+  final int typeID;
+  final String typeName;
+
+  OrderCancelType({
+    required this.typeID,
+    required this.typeName,
+  });
+
+  factory OrderCancelType.fromJson(Map<String, dynamic> json) {
+    return OrderCancelType(
+      typeID: json['typeID'] ?? 0,
+      typeName: json['typeName'] ?? '',
+    );
+  }
+}
+
+/// İptal Tipleri API Yanıtı
+class OrderCancelTypesResponse {
+  final bool error;
+  final bool success;
+  final List<OrderCancelType> types;
+
+  OrderCancelTypesResponse({
+    required this.error,
+    required this.success,
+    required this.types,
+  });
+
+  bool get isSuccess => success && !error;
+
+  factory OrderCancelTypesResponse.fromJson(Map<String, dynamic> json) {
+    return OrderCancelTypesResponse(
+      error: json['error'] ?? true,
+      success: json['success'] ?? false,
+      types: (json['data'] != null && json['data']['types'] != null)
+          ? (json['data']['types'] as List)
+              .map((e) => OrderCancelType.fromJson(e))
+              .toList()
+          : [],
     );
   }
 }

@@ -93,6 +93,34 @@ class OrderService extends BaseService {
     }
   }
 
+  /// Sipariş iptal türlerini getir
+  Future<OrderCancelTypesResponse> getCancelTypes() async {
+    debugPrint('--- OrderService.getCancelTypes() CALLED ---');
+
+    final url = Uri.parse(
+      '${ApiConstants.baseUrl}${ApiConstants.getOrderCancelTypes}',
+    );
+
+    logRequest('GET', url.toString());
+
+    try {
+      final response = await http.get(url, headers: getHeaders());
+
+      logResponse(response.statusCode, response.body);
+
+      // HTML yanıt kontrolü
+      if (isHtmlResponse(response.body)) {
+        return OrderCancelTypesResponse(error: true, success: false, types: []);
+      }
+
+      final responseData = jsonDecode(response.body);
+      return OrderCancelTypesResponse.fromJson(responseData);
+    } catch (e) {
+      debugPrint('--- OrderService.getCancelTypes() ERROR: $e ---');
+      return OrderCancelTypesResponse(error: true, success: false, types: []);
+    }
+  }
+
   /// Sipariş detayını getir
   Future<UserOrderDetailResponse> getOrderDetail(int orderID) async {
     debugPrint('--- OrderService.getOrderDetail($orderID) CALLED ---');
@@ -132,6 +160,74 @@ class OrderService extends BaseService {
     } catch (e) {
       debugPrint('--- OrderService.getOrderDetail() ERROR: $e ---');
       return UserOrderDetailResponse(error: true, success: false);
+    }
+  }
+
+  /// Siparişi iptal et
+  Future<CancelOrderResponse> cancelOrder({
+    required int orderID,
+    required List<CancelOrderProduct> products,
+  }) async {
+    debugPrint('--- OrderService.cancelOrder($orderID) CALLED ---');
+
+    final token = await _tokenManager.getAuthToken();
+
+    if (token == null) {
+      debugPrint('--- CANCEL ORDER ABORTED: token is missing ---');
+      return CancelOrderResponse(
+        error: true,
+        success: false,
+        message: 'Oturum süresi dolmuş.',
+      );
+    }
+
+    final request = CancelOrderRequest(
+      userToken: token,
+      orderID: orderID,
+      products: products,
+    );
+
+    final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.cancelOrder}');
+
+    logRequest('POST', url.toString(), request.toJson());
+
+    try {
+      final response = await http.post(
+        url,
+        headers: getHeaders(),
+        body: jsonEncode(request.toJson()),
+      );
+
+      logResponse(response.statusCode, response.body);
+
+      // HTML yanıt kontrolü
+      if (isHtmlResponse(response.body)) {
+        return CancelOrderResponse(
+          error: true,
+          success: false,
+          message: 'API tarafında bir sorun oluştu.',
+        );
+      }
+
+      // 403 - Token geçersiz
+      if (response.statusCode == 403) {
+        _tokenManager.redirectToLogin();
+        return CancelOrderResponse(
+          error: true,
+          success: false,
+          message: 'Oturum süresi dolmuş.',
+        );
+      }
+
+      final responseData = jsonDecode(response.body);
+      return CancelOrderResponse.fromJson(responseData);
+    } catch (e) {
+      debugPrint('--- OrderService.cancelOrder() ERROR: $e ---');
+      return CancelOrderResponse(
+        error: true,
+        success: false,
+        message: 'Bağlantı hatası oluştu.',
+      );
     }
   }
 }
