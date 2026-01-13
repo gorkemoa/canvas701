@@ -5,6 +5,7 @@ import '../constants/api_constants.dart';
 import '../model/banner_response.dart';
 import '../model/kvkk_response.dart';
 import '../model/size_model.dart';
+import '../model/specials_model.dart';
 import 'base_service.dart';
 
 /// Genel amaçlı servis (KVKK, ayarlar vb.)
@@ -77,6 +78,25 @@ class GeneralService extends BaseService {
     } catch (e) {
       debugPrint('--- API ERROR: $e ---');
       return BannerResponse(error: true, success: false);
+    }
+  }
+
+  /// Sana Özel onboarding görsellerini getir
+  Future<SpecialsResponse> getSpecials() async {
+    final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.getSpecials}');
+
+    logRequest('GET', url.toString());
+
+    try {
+      final response = await http.get(url, headers: getHeaders());
+
+      logResponse(response.statusCode, response.body);
+
+      final responseData = jsonDecode(response.body);
+      return SpecialsResponse.fromJson(responseData);
+    } catch (e) {
+      debugPrint('--- API ERROR: $e ---');
+      return SpecialsResponse(error: true, success: false);
     }
   }
 

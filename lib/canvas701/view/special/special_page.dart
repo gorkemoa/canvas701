@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../theme/canvas701_theme_data.dart';
 import '../widgets/widgets.dart';
 import '../../../core/widgets/app_mode_switcher.dart';
@@ -27,123 +28,381 @@ class _SpecialPageContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final viewModel = context.watch<SpecialViewModel>();
 
-    return Scaffold(
-      backgroundColor: Canvas701Colors.background,
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            backgroundColor: Canvas701Colors.primary,
-            elevation: 0,
-            toolbarHeight: 45,
-            titleSpacing: 0,
-            automaticallyImplyLeading: false,
-            pinned: true,
-            title: const AppModeSwitcher(),
-            bottom: const PreferredSize(
-              preferredSize: Size.fromHeight(60),
-              child: Canvas701SearchBar(),
-            ),
-          ),
-          const SliverToBoxAdapter(
-            child: _HeroSection(),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: Canvas701Colors.background,
+          body: CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                backgroundColor: Canvas701Colors.primary,
+                elevation: 0,
+                toolbarHeight: 45,
+                titleSpacing: 0,
+                automaticallyImplyLeading: false,
+                pinned: true,
+                title: const AppModeSwitcher(),
+                bottom: const PreferredSize(
+                  preferredSize: Size.fromHeight(60),
+                  child: Canvas701SearchBar(),
+                ),
+              ),
+              const SliverToBoxAdapter(
+                child: _HeroSection(),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
+                       Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Container(
-                            width: 28,
-                            height: 28,
-                            decoration: BoxDecoration(
-                              color: Canvas701Colors.primary,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Center(
-                              child: Text(
-                                '1',
-                                style: TextStyle(
-                                  color: Colors.white,
+                          Row(
+                            children: [
+                              Container(
+                                width: 28,
+                                height: 28,
+                                decoration: BoxDecoration(
+                                  color: Canvas701Colors.primary,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Center(
+                                  child: Text(
+                                    '1',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                'Görsel ve Boyut Seçin',
+                                style: Canvas701Typography.titleMedium.copyWith(
                                   fontWeight: FontWeight.w600,
-                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (viewModel.selectedVariants.length < 5)
+                            TextButton.icon(
+                              onPressed: () => viewModel.addSlot(),
+                              icon: const Icon(CupertinoIcons.add_circled, size: 18),
+                              label: const Text('Ekle'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Canvas701Colors.primary,
+                                textStyle: Canvas701Typography.labelSmall.copyWith(
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            'Görsel ve Boyut Seçin',
-                            style: Canvas701Typography.titleMedium.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
                         ],
                       ),
-                      if (viewModel.selectedVariants.length < 5)
-                        TextButton.icon(
-                          onPressed: () => viewModel.addSlot(),
-                          icon: const Icon(CupertinoIcons.add_circled, size: 18),
-                          label: const Text('Ekle'),
-                          style: TextButton.styleFrom(
-                            foregroundColor: Canvas701Colors.primary,
-                            textStyle: Canvas701Typography.labelSmall.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
+                      const SizedBox(height: 6),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 40),
+                        child: Text(
+                          'İstediğiniz boyutlar için görselleri yükleyin',
+                          style: Canvas701Typography.bodySmall.copyWith(
+                            color: Canvas701Colors.textTertiary,
                           ),
                         ),
+                      ),
                     ],
                   ),
-                  const SizedBox(height: 6),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 40),
-                    child: Text(
-                      'İstediğiniz boyutlar için görselleri yükleyin',
-                      style: Canvas701Typography.bodySmall.copyWith(
-                        color: Canvas701Colors.textTertiary,
-                      ),
+                ),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final variant = viewModel.selectedVariants[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _ImageUploadCard(
+                          index: index,
+                          selectedSize: variant.sizeTitle,
+                          imagePath: variant.image?.path,
+                          onTap: () => viewModel.pickImage(index),
+                          onRemove: () => viewModel.removeSlot(index),
+                          onSizeChanged: (val) => viewModel.updateSize(index, val),
+                          availableSizes: viewModel.availableSizes,
+                        ),
+                      );
+                    },
+                    childCount: viewModel.selectedVariants.length,
+                  ),
+                ),
+              ),
+              const SliverToBoxAdapter(
+                child: _ContactFormSection(),
+              ),
+              const SliverToBoxAdapter(
+                child: _SubmitSection(),
+              ),
+              const SliverToBoxAdapter(
+                child: SizedBox(height: 100),
+              ),
+            ],
+          ),
+        ),
+        if (viewModel.showOnboarding)
+          _SpecialOnboarding(
+            images: viewModel.onboardingImages,
+            onClose: (dontShowAgain) => viewModel.completeOnboarding(dontShowAgain: dontShowAgain),
+          ),
+      ],
+    );
+  }
+}
+
+class _SpecialOnboarding extends StatefulWidget {
+  final List<String> images;
+  final Function(bool) onClose;
+
+  const _SpecialOnboarding({
+    required this.images,
+    required this.onClose,
+  });
+
+  @override
+  State<_SpecialOnboarding> createState() => _SpecialOnboardingState();
+}
+
+class _SpecialOnboardingState extends State<_SpecialOnboarding> {
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+  bool _dontShowAgain = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.black,
+      child: Stack(
+        children: [
+          // Fullscreen PageView
+          PageView.builder(
+            controller: _pageController,
+            itemCount: widget.images.length,
+            onPageChanged: (index) {
+              setState(() {
+                _currentPage = index;
+              });
+            },
+            itemBuilder: (context, index) {
+              return CachedNetworkImage(
+                imageUrl: widget.images[index],
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+                placeholder: (context, url) => const Center(
+                  child: CupertinoActivityIndicator(color: Colors.white),
+                ),
+                errorWidget: (context, url, error) => const Icon(
+                  CupertinoIcons.photo,
+                  color: Colors.white,
+                  size: 40,
+                ),
+              );
+            },
+          ),
+
+          // Top Gradient
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 150,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withOpacity(0.7),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // Bottom Gradient
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 300,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [
+                    Colors.black.withOpacity(0.9),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // Progress Bars
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 10,
+            left: 10,
+            right: 10,
+            child: Row(
+              children: List.generate(
+                widget.images.length,
+                (index) => Expanded(
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 2),
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: _currentPage >= index ? Colors.white : Colors.white.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                ],
+                ),
               ),
             ),
           ),
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final variant = viewModel.selectedVariants[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: _ImageUploadCard(
-                      index: index,
-                      selectedSize: variant.sizeTitle,
-                      imagePath: variant.image?.path,
-                      onTap: () => viewModel.pickImage(index),
-                      onRemove: () => viewModel.removeSlot(index),
-                      onSizeChanged: (val) => viewModel.updateSize(index, val),
-                      availableSizes: viewModel.availableSizes,
+
+          // Close Button
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 20,
+            right: 16,
+            child: IconButton(
+              onPressed: () => widget.onClose(_dontShowAgain),
+              icon: const Icon(CupertinoIcons.xmark, color: Colors.white, size: 28),
+            ),
+          ),
+
+          // Navigation Taps
+          Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    if (_currentPage > 0) {
+                      _pageController.previousPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      );
+                    }
+                  },
+                  child: Container(color: Colors.transparent),
+                ),
+              ),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    if (_currentPage < widget.images.length - 1) {
+                      _pageController.nextPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      );
+                    } else {
+                      widget.onClose(_dontShowAgain);
+                    }
+                  },
+                  child: Container(color: Colors.transparent),
+                ),
+              ),
+            ],
+          ),
+
+          // Content at Bottom
+          Positioned(
+            bottom: MediaQuery.of(context).padding.bottom + 20,
+            left: 24,
+            right: 24,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Sana Özel Siparişler',
+                  style: Canvas701Typography.headlineMedium.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Diğer kullanıcılarımızın yaptırdığı bazı tabloları inceleyin. Kalitemizi keşfedin.',
+                  style: Canvas701Typography.bodyMedium.copyWith(
+                    color: Colors.white.withOpacity(0.8),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                // Don't show again toggle
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _dontShowAgain = !_dontShowAgain;
+                    });
+                  },
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 20,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.white70),
+                          borderRadius: BorderRadius.circular(4),
+                          color: _dontShowAgain ? Colors.white : Colors.transparent,
+                        ),
+                        child: _dontShowAgain
+                            ? const Icon(Icons.check, size: 16, color: Colors.black)
+                            : null,
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        'İleride bir daha gösterme',
+                        style: Canvas701Typography.labelSmall.copyWith(
+                          color: Colors.white70,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  height: 54,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (_currentPage < widget.images.length - 1) {
+                        _pageController.nextPage(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
+                      } else {
+                        widget.onClose(_dontShowAgain);
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                  );
-                },
-                childCount: viewModel.selectedVariants.length,
-              ),
+                    child: Text(
+                      _currentPage == widget.images.length - 1 ? 'BAŞLA' : 'SIRADAKİ',
+                      style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.2),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-          const SliverToBoxAdapter(
-            child: _ContactFormSection(),
-          ),
-          const SliverToBoxAdapter(
-            child: _SubmitSection(),
-          ),
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 100),
           ),
         ],
       ),
@@ -159,7 +418,7 @@ class _HeroSection extends StatelessWidget {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Canvas701Colors.primary.withOpacity(0.06),
+        color: Canvas701Colors.textSecondary.withOpacity(0.07),
         border: Border(
           bottom: BorderSide(
             color: Canvas701Colors.primary.withOpacity(0.12),
@@ -170,44 +429,30 @@ class _HeroSection extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              boxShadow: [
-                BoxShadow(
-                  color: Canvas701Colors.primary.withOpacity(0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 1),
-                ),
-              ],
-            ),
-            child: const Icon(
-              CupertinoIcons.paintbrush_fill,
-              color: Canvas701Colors.primary,
-              size: 16,
-            ),
+          const Icon(
+            CupertinoIcons.paintbrush_fill,
+            color: Canvas701Colors.secondary,
+            size: 18,
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 16),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Kişiye Özel Tablo Tasarımı',
-                style: Canvas701Typography.titleSmall.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: Canvas701Colors.primary,
-                  fontSize: 14,
+                'Kendi Tablonu Tasarla',
+                style: Canvas701Typography.titleMedium.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: Canvas701Colors.textPrimary,
                 ),
               ),
-              const SizedBox(height: 1),
+              const SizedBox(height: 2),
               Text(
-                'Kendi görselinizi yükleyin, biz basalım.',
+                'En sevdiğiniz anıları kaliteli birer sanat eserine dönüştürün.',
                 style: Canvas701Typography.labelSmall.copyWith(
                   color: Canvas701Colors.textSecondary,
-                  fontSize: 10,
+                  fontSize: 11,
+                  letterSpacing: 0,
                 ),
               ),
             ],

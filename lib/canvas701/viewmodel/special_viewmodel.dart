@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/special_service.dart';
 import '../services/general_service.dart';
 import '../services/token_manager.dart';
@@ -24,6 +25,12 @@ class SpecialViewModel extends ChangeNotifier {
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
 
+  // Onboarding
+  bool _showOnboarding = false;
+  bool get showOnboarding => _showOnboarding;
+  List<String> _onboardingImages = [];
+  List<String> get onboardingImages => _onboardingImages;
+
   // Sizes from API
   List<CanvasSize> _availableSizes = [];
   List<CanvasSize> get availableSizes => _availableSizes;
@@ -42,6 +49,30 @@ class SpecialViewModel extends ChangeNotifier {
   SpecialViewModel() {
     _prefillFromProfile();
     fetchSizes();
+    checkOnboarding();
+  }
+
+  Future<void> checkOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isDismissed = prefs.getBool('special_onboarding_dismissed') ?? false;
+    
+    if (!isDismissed) {
+      final response = await _generalService.getSpecials();
+      if (response.success && response.data != null && response.data!.images.isNotEmpty) {
+        _onboardingImages = response.data!.images;
+        _showOnboarding = true;
+        notifyListeners();
+      }
+    }
+  }
+
+  Future<void> completeOnboarding({bool dontShowAgain = false}) async {
+    if (dontShowAgain) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('special_onboarding_dismissed', true);
+    }
+    _showOnboarding = false;
+    notifyListeners();
   }
 
   Future<void> fetchSizes() async {

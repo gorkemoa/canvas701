@@ -37,23 +37,45 @@ class Canvas701BottomNav extends StatelessWidget {
           selectedFontSize: 11,
           unselectedFontSize: 11,
           iconSize: 24,
-          items: const [
-            BottomNavigationBarItem(
+          items: [
+            const BottomNavigationBarItem(
               icon: Icon(Icons.home_outlined),
               activeIcon: Icon(Icons.home),
               label: 'Ana Sayfa',
             ),
-            BottomNavigationBarItem(
+            const BottomNavigationBarItem(
               icon: Icon(Icons.grid_view_outlined),
               activeIcon: Icon(Icons.grid_view),
               label: 'Kategoriler',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.auto_awesome_outlined),
-              activeIcon: Icon(Icons.auto_awesome),
+              icon: ShaderMask(
+                shaderCallback: (bounds) => const LinearGradient(
+                  colors: [
+                    Canvas701Colors.primary,
+                    Canvas701Colors.favorite,
+                    Canvas701Colors.warning,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ).createShader(bounds),
+                child: const Icon(Icons.auto_awesome_outlined, color: Colors.white),
+              ),
+              activeIcon: ShaderMask(
+                shaderCallback: (bounds) => const LinearGradient(
+                  colors: [
+                    Canvas701Colors.primary,
+                    Canvas701Colors.favorite,
+                    Canvas701Colors.warning,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ).createShader(bounds),
+                child: const Icon(Icons.auto_awesome, color: Colors.white),
+              ),
               label: 'Sana Özel',
             ),
-            BottomNavigationBarItem(
+            const BottomNavigationBarItem(
               icon: Icon(Icons.person_outline),
               activeIcon: Icon(Icons.person),
               label: 'Profil',
