@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../theme/canvas701_theme_data.dart';
 import '../../services/user_service.dart';
 import '../../model/user_models.dart';
+import '../../model/product_models.dart';
+import '../product/product_detail_page.dart';
 
 class UserCommentsPage extends StatefulWidget {
   const UserCommentsPage({super.key});
@@ -44,11 +46,12 @@ class _UserCommentsPageState extends State<UserCommentsPage> {
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: Canvas701Colors.background,
+            color: Colors.white,
           ),
         ),
         backgroundColor: Canvas701Colors.primary,
-        foregroundColor: Canvas701Colors.background,
+        foregroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
         centerTitle: true,
       ),
@@ -134,41 +137,49 @@ class _UserCommentsPageState extends State<UserCommentsPage> {
             padding: const EdgeInsets.all(12),
             child: Row(
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.network(
-                    comment.productImage,
-                    width: 50,
-                    height: 50,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) =>
-                        const Icon(Icons.image_not_supported, size: 30, color: Colors.grey),
+                GestureDetector(
+                  onTap: () => _navigateToProduct(comment),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      comment.productImage,
+                      width: 50,
+                      height: 50,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Icon(Icons.image_not_supported, size: 30, color: Colors.grey),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        comment.productTitle,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: Canvas701Colors.textPrimary,
+                  child: GestureDetector(
+                    onTap: () => _navigateToProduct(comment),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          comment.productTitle,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: Canvas701Colors.textPrimary,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        comment.commentDate,
-                        style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-                      ),
-                    ],
+                        const SizedBox(height: 4),
+                        Text(
+                          comment.commentDate,
+                          style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 _buildStatusBadge(comment.commentApproval),
+                const SizedBox(width: 4),
+                _buildPopupMenu(comment),
               ],
             ),
           ),
@@ -212,6 +223,297 @@ class _UserCommentsPageState extends State<UserCommentsPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _navigateToProduct(UserComment comment) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProductDetailPage(
+          product: Product(
+            id: comment.productID.toString(),
+            code: '',
+            name: comment.productTitle,
+            description: '',
+            price: 0.0,
+            images: [comment.productImage],
+            thumbnailUrl: comment.productImage,
+            collectionId: '',
+            categoryIds: [],
+            availableSizes: [
+              ProductSize(
+                id: 'default',
+                name: 'Standart',
+                width: 0,
+                height: 0,
+                price: 0,
+              ),
+            ],
+            createdAt: DateTime.now(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPopupMenu(UserComment comment) {
+    return PopupMenuButton<String>(
+      icon: const Icon(Icons.more_vert, color: Colors.grey, size: 20),
+      padding: EdgeInsets.zero,
+      onSelected: (value) {
+        if (value == 'edit') {
+          _showEditCommentBottomSheet(comment);
+        } else if (value == 'delete') {
+          _showDeleteConfirmation(comment);
+        }
+      },
+      itemBuilder: (context) => [
+        const PopupMenuItem(
+          value: 'edit',
+          child: Row(
+            children: [
+              Icon(Icons.edit_outlined, size: 18),
+              SizedBox(width: 8),
+              Text('Düzenle'),
+            ],
+          ),
+        ),
+        const PopupMenuItem(
+          value: 'delete',
+          child: Row(
+            children: [
+              Icon(Icons.delete_outline, size: 18, color: Colors.red),
+              SizedBox(width: 8),
+              Text('Sil', style: TextStyle(color: Colors.red)),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showDeleteConfirmation(UserComment comment) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Yorumu Sil'),
+        content: const Text('Bu yorumu silmek istediğinize emin misiniz?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Vazgeç'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              _handleDeleteComment(comment.commentID);
+            },
+            child: const Text('Sil', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _handleDeleteComment(int commentID) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator(color: Canvas701Colors.primary)),
+    );
+
+    final response = await _userService.deleteComment(commentID);
+
+    if (mounted) {
+      Navigator.pop(context); // Loading kapat
+      if (response.success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(response.message), backgroundColor: Canvas701Colors.success),
+        );
+        _fetchComments();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(response.message), backgroundColor: Canvas701Colors.error),
+        );
+      }
+    }
+  }
+
+  void _showEditCommentBottomSheet(UserComment comment) {
+    int rating = comment.commentRating;
+    bool showName = comment.showName;
+    final TextEditingController commentController = TextEditingController(text: comment.commentDesc);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) {
+          return Container(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  margin: const EdgeInsets.only(top: 12),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                Flexible(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Yorumu Düzenle',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
+                                color: Canvas701Colors.textPrimary,
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () => Navigator.pop(context),
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[100],
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.close, size: 20, color: Colors.grey),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(5, (index) {
+                            final isSelected = index < rating;
+                            return GestureDetector(
+                              onTap: () {
+                                setModalState(() {
+                                  rating = index + 1;
+                                });
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 6),
+                                child: Icon(
+                                  isSelected ? Icons.star_rounded : Icons.star_outline_rounded,
+                                  color: isSelected ? const Color(0xFFFFB300) : Colors.grey[300],
+                                  size: 48,
+                                ),
+                              ),
+                            );
+                          }),
+                        ),
+                        const SizedBox(height: 32),
+                        TextField(
+                          controller: commentController,
+                          maxLines: 4,
+                          decoration: InputDecoration(
+                            hintText: 'Yorumunuzu güncelleyin...',
+                            filled: true,
+                            fillColor: Colors.grey[50],
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide(color: Colors.grey[200]!),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide(color: Colors.grey[200]!),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: const BorderSide(color: Canvas701Colors.primary, width: 1.5),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        GestureDetector(
+                          onTap: () => setModalState(() => showName = !showName),
+                          child: Row(
+                            children: [
+                              Checkbox(
+                                value: showName,
+                                activeColor: Canvas701Colors.primary,
+                                onChanged: (v) => setModalState(() => showName = v ?? true),
+                              ),
+                              const Text('İsmimi göster'),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              if (commentController.text.trim().isEmpty) return;
+
+                              showDialog(
+                                context: context,
+                                barrierDismissible: false,
+                                builder: (context) => const Center(child: CircularProgressIndicator(color: Canvas701Colors.primary)),
+                              );
+
+                              final response = await _userService.updateComment(
+                                productID: comment.productID,
+                                commentID: comment.commentID,
+                                comment: commentController.text.trim(),
+                                commentRating: rating,
+                                showName: showName,
+                              );
+
+                              if (mounted) {
+                                Navigator.pop(context); // Loading kapat
+                                if (response.success) {
+                                  Navigator.pop(context); // BottomSheet kapat
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(response.message), backgroundColor: Canvas701Colors.success),
+                                  );
+                                  _fetchComments();
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(response.message), backgroundColor: Canvas701Colors.error),
+                                  );
+                                }
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Canvas701Colors.primary,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            ),
+                            child: const Text('Güncelle', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

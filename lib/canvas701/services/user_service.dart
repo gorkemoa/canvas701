@@ -460,4 +460,94 @@ class UserService extends BaseService {
       return UserCommentsResponse(error: true, success: false);
     }
   }
+
+  /// Yorum güncelle
+  Future<CommonResponse> updateComment({
+    required int productID,
+    required int commentID,
+    required String comment,
+    required int commentRating,
+    required bool showName,
+  }) async {
+    debugPrint('--- UserService.updateComment() CALLED ---');
+
+    final token = await _tokenManager.getAuthToken();
+    if (token == null) {
+      return CommonResponse(error: true, success: false, message: 'Oturum açmalısınız.');
+    }
+
+    final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.updateComment}');
+
+    final body = {
+      'userToken': token,
+      'productID': productID,
+      'commentID': commentID,
+      'comment': comment,
+      'commentRating': commentRating,
+      'showName': showName,
+    };
+
+    logRequest('PUT', url.toString(), body);
+
+    try {
+      final response = await http.put(
+        url,
+        headers: getHeaders(),
+        body: jsonEncode(body),
+      );
+
+      logResponse(response.statusCode, response.body);
+
+      if (response.statusCode == 403) {
+        _tokenManager.redirectToLogin();
+        return CommonResponse(error: true, success: false, message: 'Oturum süresi doldu.');
+      }
+
+      final responseData = jsonDecode(response.body);
+      return CommonResponse.fromJson(responseData);
+    } catch (e) {
+      debugPrint('--- UserService.updateComment() ERROR: $e ---');
+      return CommonResponse(error: true, success: false, message: 'Bir hata oluştu.');
+    }
+  }
+
+  /// Yorum sil
+  Future<CommonResponse> deleteComment(int commentID) async {
+    debugPrint('--- UserService.deleteComment() CALLED ---');
+
+    final token = await _tokenManager.getAuthToken();
+    if (token == null) {
+      return CommonResponse(error: true, success: false, message: 'Oturum açmalısınız.');
+    }
+
+    final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.deleteComment}');
+
+    final body = {
+      'userToken': token,
+      'commentID': commentID,
+    };
+
+    logRequest('DELETE', url.toString(), body);
+
+    try {
+      final response = await http.delete(
+        url,
+        headers: getHeaders(),
+        body: jsonEncode(body),
+      );
+
+      logResponse(response.statusCode, response.body);
+
+      if (response.statusCode == 403) {
+        _tokenManager.redirectToLogin();
+        return CommonResponse(error: true, success: false, message: 'Oturum süresi doldu.');
+      }
+
+      final responseData = jsonDecode(response.body);
+      return CommonResponse.fromJson(responseData);
+    } catch (e) {
+      debugPrint('--- UserService.deleteComment() ERROR: $e ---');
+      return CommonResponse(error: true, success: false, message: 'Bir hata oluştu.');
+    }
+  }
 }
