@@ -366,4 +366,66 @@ class UserService extends BaseService {
       return CreateTicketResponse(error: true, success: false);
     }
   }
+
+  /// Ürüne yorum ekle
+  Future<CommonResponse> addComment({
+    required int productID,
+    required String comment,
+    required int commentRating,
+    required bool showName,
+  }) async {
+    debugPrint('--- UserService.addComment() CALLED ---');
+
+    final token = await _tokenManager.getAuthToken();
+    if (token == null) {
+      return CommonResponse(
+        error: true,
+        success: false,
+        message: 'Oturum açmanız gerekiyor.',
+      );
+    }
+
+    final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.addComment}');
+
+    final body = {
+      'userToken': token,
+      'productID': productID,
+      'comment': comment,
+      'commentRating': commentRating,
+      'showName': showName,
+    };
+
+    logRequest('POST', url.toString(), body);
+
+    try {
+      final response = await http.post(
+        url,
+        headers: getHeaders(),
+        body: jsonEncode(body),
+      );
+// ...
+
+      logResponse(response.statusCode, response.body);
+
+      // 403 - Token geçersiz
+      if (response.statusCode == 403) {
+        _tokenManager.redirectToLogin();
+        return CommonResponse(
+          error: true,
+          success: false,
+          message: 'Oturum süresi doldu.',
+        );
+      }
+
+      final responseData = jsonDecode(response.body);
+      return CommonResponse.fromJson(responseData);
+    } catch (e) {
+      debugPrint('--- UserService.addComment() ERROR: $e ---');
+      return CommonResponse(
+        error: true,
+        success: false,
+        message: 'Bir hata oluştu.',
+      );
+    }
+  }
 }

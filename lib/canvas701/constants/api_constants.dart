@@ -35,6 +35,7 @@ class ApiConstants {
   static const String deleteAddress = 'service/user/account/address/delete';
   static const String getUserAddresses = 'service/user/account/address/list';
   static const String getUserCoupons = 'service/user/account/coupon/list';
+  static const String addComment = 'service/user/account/comment/add';
   static const String getCities = 'service/general/general/cities/all';
   static const String getSizeList = 'service/general/general/sizes/list';
   static String getDistrictsByCity(int cityId) =>

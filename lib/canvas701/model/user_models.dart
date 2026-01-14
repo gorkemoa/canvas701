@@ -222,3 +222,29 @@ class UpdatePasswordData {
     );
   }
 }
+
+class CommonResponse {
+  final bool error;
+  final bool success;
+  final String message;
+
+  CommonResponse({
+    required this.error,
+    required this.success,
+    required this.message,
+  });
+
+  factory CommonResponse.fromJson(Map<String, dynamic> json) {
+    String msg = '';
+    if (json['data'] != null && json['data']['message'] != null) {
+      msg = json['data']['message'];
+    } else if (json['message'] != null) {
+      msg = json['message'];
+    }
+    return CommonResponse(
+      error: json['error'] ?? true,
+      success: json['success'] ?? false,
+      message: msg,
+    );
+  }
+}

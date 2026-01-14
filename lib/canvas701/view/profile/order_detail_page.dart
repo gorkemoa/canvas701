@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../theme/canvas701_theme_data.dart';
 import '../../services/order_service.dart';
+import '../../services/user_service.dart';
 import '../../model/order_models.dart';
+import '../../model/user_models.dart';
 
 class OrderDetailPage extends StatefulWidget {
   final int orderID;
@@ -21,6 +23,7 @@ class OrderDetailPage extends StatefulWidget {
 
 class _OrderDetailPageState extends State<OrderDetailPage> {
   final OrderService _orderService = OrderService();
+  final UserService _userService = UserService();
   final TextEditingController _cancelDescController = TextEditingController();
   UserOrderDetail? _orderDetail;
   List<OrderCancelType> _cancelTypes = [];
@@ -611,9 +614,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  // TODO: Ürün değerlendirme
-                },
+                onPressed: () => _showAddCommentBottomSheet(product),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Canvas701Colors.primary,
                   foregroundColor: Colors.white,
@@ -1511,5 +1512,329 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     if (status.contains('yeni')) return Canvas701Colors.info;
     if (status.contains('hazırlanıyor')) return Canvas701Colors.warning;
     return Canvas701Colors.textSecondary;
+  }
+
+  void _showAddCommentBottomSheet(OrderDetailProduct product) {
+    int rating = 5;
+    bool showName = true;
+    final TextEditingController commentController = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) {
+          return Container(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Drag Handle
+                Container(
+                  margin: const EdgeInsets.only(top: 12),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                Flexible(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Ürünü Değerlendir',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
+                                color: Canvas701Colors.textPrimary,
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () => Navigator.pop(context),
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[100],
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.close, size: 20, color: Colors.grey),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        // Ürün Kartı (Daha şık)
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[50],
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.grey[100]!),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 64,
+                                height: 64,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.05),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: product.productImage.isNotEmpty
+                                      ? Image.network(
+                                          product.productImage,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (context, error, stackTrace) =>
+                                              const Icon(Icons.image_not_supported, color: Colors.grey),
+                                        )
+                                      : const Icon(Icons.image_not_supported, color: Colors.grey),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      product.productName,
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700,
+                                        color: Canvas701Colors.textPrimary,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    if (product.productVariants.isNotEmpty) ...[
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        product.productVariants,
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.grey[500],
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+                        const Center(
+                          child: Text(
+                            'Ürünü puanla',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Canvas701Colors.textSecondary,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(5, (index) {
+                            final isSelected = index < rating;
+                            return GestureDetector(
+                              onTap: () {
+                                setModalState(() {
+                                  rating = index + 1;
+                                });
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 6),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  child: Icon(
+                                    isSelected ? Icons.star_rounded : Icons.star_outline_rounded,
+                                    color: isSelected ? const Color(0xFFFFB300) : Colors.grey[300],
+                                    size: 48,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }),
+                        ),
+                        const SizedBox(height: 32),
+                        const Text(
+                          'Deneyimlerinizi paylaşın',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: Canvas701Colors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: commentController,
+                          maxLines: 4,
+                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                          decoration: InputDecoration(
+                            hintText: 'Ürün nasıl? Kalitesi, rengi beklediğin gibi mi?',
+                            hintStyle: TextStyle(color: Colors.grey[400], fontSize: 13),
+                            filled: true,
+                            fillColor: Colors.grey[50],
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide(color: Colors.grey[200]!),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide(color: Colors.grey[200]!),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: const BorderSide(color: Canvas701Colors.primary, width: 1.5),
+                            ),
+                            contentPadding: const EdgeInsets.all(16),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        GestureDetector(
+                          onTap: () {
+                            setModalState(() {
+                              showName = !showName;
+                            });
+                          },
+                          child: Row(
+                            children: [
+                              SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: Checkbox(
+                                  value: showName,
+                                  activeColor: Canvas701Colors.primary,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                                  side: BorderSide(color: Colors.grey[300]!, width: 1.5),
+                                  onChanged: (value) {
+                                    setModalState(() {
+                                      showName = value ?? true;
+                                    });
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              const Text(
+                                'İsmimi göster',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Canvas701Colors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              if (commentController.text.trim().isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Lütfen bir yorum yazın.'),
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                                return;
+                              }
+
+                              showDialog(
+                                context: context,
+                                barrierDismissible: false,
+                                builder: (context) => const Center(
+                                  child: CircularProgressIndicator(color: Canvas701Colors.primary),
+                                ),
+                              );
+
+                              final response = await _userService.addComment(
+                                productID: product.productID,
+                                comment: commentController.text.trim(),
+                                commentRating: rating,
+                                showName: showName,
+                              );
+
+                              if (mounted) {
+                                Navigator.pop(context);
+                                if (response.success) {
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(response.message),
+                                      backgroundColor: Canvas701Colors.success,
+                                      behavior: SnackBarBehavior.floating,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                      margin: const EdgeInsets.all(12),
+                                    ),
+                                  );
+                                  _fetchOrderDetail();
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(response.message),
+                                      backgroundColor: Canvas701Colors.error,
+                                      behavior: SnackBarBehavior.floating,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                      margin: const EdgeInsets.all(12),
+                                    ),
+                                  );
+                                }
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Canvas701Colors.primary,
+                              foregroundColor: Colors.white,
+                              elevation: 4,
+                              shadowColor: Canvas701Colors.primary.withOpacity(0.3),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            child: const Text(
+                              'Değerlendirmeyi Gönder',
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
   }
 }
