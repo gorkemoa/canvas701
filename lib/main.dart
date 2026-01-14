@@ -16,6 +16,7 @@ import 'canvas701/viewmodel/product_viewmodel.dart';
 import 'canvas701/viewmodel/favorites_viewmodel.dart';
 import 'canvas701/viewmodel/general_viewmodel.dart';
 import 'canvas701/viewmodel/ticket_viewmodel.dart';
+import 'canvas701/viewmodel/about_viewmodel.dart';
 import 'creators/view/creators_home_page.dart';
 import 'firebase_options.dart';
 
@@ -52,6 +53,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => FavoritesViewModel()),
         ChangeNotifierProvider(create: (_) => GeneralViewModel()),
         ChangeNotifierProvider(create: (_) => TicketViewModel()),
+        ChangeNotifierProvider(create: (_) => AboutViewModel()),
       ],
       child: const Canvas701App(),
     ),

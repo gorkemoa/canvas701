@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../constants/api_constants.dart';
+import '../model/about_info_model.dart';
 import '../model/banner_response.dart';
 import '../model/faq_model.dart';
 import '../model/kvkk_response.dart';
@@ -75,6 +76,25 @@ class GeneralService extends BaseService {
     } catch (e) {
       debugPrint('--- API ERROR: $e ---');
       return KvkkResponse(error: true, success: false);
+    }
+  }
+
+  /// Hakkımızda bilgilerini getir
+  Future<AboutInfoResponse> getAboutInfo() async {
+    final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.aboutInfo}');
+
+    logRequest('GET', url.toString());
+
+    try {
+      final response = await http.get(url, headers: getHeaders());
+
+      logResponse(response.statusCode, response.body);
+
+      final responseData = jsonDecode(response.body);
+      return AboutInfoResponse.fromJson(responseData);
+    } catch (e) {
+      debugPrint('--- API ERROR: $e ---');
+      return AboutInfoResponse(error: true, success: false);
     }
   }
 

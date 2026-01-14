@@ -13,6 +13,7 @@ import 'coupons_page.dart';
 import 'user_comments_page.dart';
 import 'orders_page.dart';
 import 'faq_page.dart';
+import 'about_page.dart';
 import 'ticket/tickets_page.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -223,7 +224,14 @@ class _ProfilePageState extends State<ProfilePage> {
                         _MenuItem(
                           icon: Icons.info_outline,
                           title: 'Hakkımızda',
-                          onTap: () {},
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const AboutPage(),
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),
