@@ -5,6 +5,7 @@ import '../viewmodel/product_viewmodel.dart';
 import '../viewmodel/profile_viewmodel.dart';
 import 'home/home_page.dart';
 import 'categories/categories_page.dart';
+import 'product/product_list_page.dart';
 import 'profile/profile_page.dart';
 import 'special/special_page.dart';
 import 'widgets/widgets.dart';
@@ -30,6 +31,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     _pages = [
       HomePage(onSeeAllCategories: () => _onNavTap(NavIndex.categories)),
       const CategoriesPage(),
+      const ProductListPage(title: 'Tüm Ürünler', sortKey: 'sortDefault'),
       const SpecialPage(),
       const ProfilePage(),
     ];
@@ -58,6 +60,9 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
         break;
       case NavIndex.categories:
         context.read<CategoryViewModel>().fetchCategories();
+        break;
+      case NavIndex.products:
+        context.read<ProductViewModel>().fetchAllProducts(refresh: true);
         break;
       case NavIndex.special:
         // Şimdilik boş, ileride Sana Özel verileri buraya eklenebilir

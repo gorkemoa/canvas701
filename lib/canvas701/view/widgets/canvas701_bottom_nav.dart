@@ -48,6 +48,11 @@ class Canvas701BottomNav extends StatelessWidget {
               activeIcon: Icon(Icons.grid_view),
               label: 'Kategoriler',
             ),
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.shopping_bag_outlined),
+              activeIcon: Icon(Icons.shopping_bag),
+              label: 'Ürünler',
+            ),
             BottomNavigationBarItem(
               icon: ShaderMask(
                 shaderCallback: (bounds) => const LinearGradient(
@@ -93,6 +98,7 @@ class NavIndex {
 
   static const int home = 0;
   static const int categories = 1;
-  static const int special = 2;
-  static const int profile = 3;
+  static const int products = 2;
+  static const int special = 3;
+  static const int profile = 4;
 }

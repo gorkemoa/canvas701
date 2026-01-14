@@ -201,13 +201,15 @@ class _ProductListPageState extends State<ProductListPage> {
         backgroundColor: Canvas701Colors.primary,
         elevation: 0,
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: Colors.white,
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: Navigator.of(context).canPop()
+            ? IconButton(
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: Colors.white,
+                ),
+                onPressed: () => Navigator.pop(context),
+              )
+            : null,
         actions: [
           Stack(
             children: [

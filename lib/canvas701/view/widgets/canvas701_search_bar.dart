@@ -22,9 +22,17 @@ class Canvas701SearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Canvas701Colors.primary,
+      decoration: BoxDecoration(
+        color: Canvas701Colors.primary,
+        border: Border(
+          top: BorderSide(
+            color: Colors.white.withOpacity(0.3),
+            width: 1,
+          ),
+        ),
+      ),
       padding: const EdgeInsets.fromLTRB(
-        Canvas701Spacing.md,
+        Canvas701Spacing.sm,
         5,
         Canvas701Spacing.md,
         10,
@@ -51,10 +59,17 @@ class Canvas701SearchBar extends StatelessWidget {
                 ),
                 decoration: InputDecoration(
                   hintText: hintText,
-                  prefixIcon: Icon(
-                    Icons.search_rounded,
-                    color: Canvas701Colors.primary,
-                    size: 22,
+                  prefixIcon: Padding(
+                    padding: const EdgeInsets.only(left: 10, right: 1),
+                    child: Icon(
+                      Icons.search_rounded,
+                      color: Canvas701Colors.primary,
+                      size: 20,
+                    ),
+                  ),
+                  prefixIconConstraints: const BoxConstraints(
+                    minWidth: 0,
+                    minHeight: 0,
                   ),
                   suffixIcon: controller != null && controller!.text.isNotEmpty
                       ? IconButton(
@@ -68,7 +83,7 @@ class Canvas701SearchBar extends StatelessWidget {
                     fontSize: 13,
                   ),
                   border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 10),
+                  contentPadding: const EdgeInsets.only(left: 0, right: 10),
                 ),
               ),
             ),
