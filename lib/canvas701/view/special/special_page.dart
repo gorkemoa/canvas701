@@ -845,43 +845,7 @@ class _ContactFormSection extends StatelessWidget {
             ),
             child: Column(
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: _FormField(
-                        controller: viewModel.firstNameController,
-                        label: 'Ad',
-                        hint: 'Adınız',
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _FormField(
-                        controller: viewModel.lastNameController,
-                        label: 'Soyad',
-                        hint: 'Soyadınız',
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                _FormField(
-                  controller: viewModel.phoneController,
-                  label: 'Telefon',
-                  hint: '0 (5XX) XXX XX XX',
-                  keyboardType: TextInputType.phone,
-                  prefixIcon: CupertinoIcons.phone,
-                ),
-                const SizedBox(height: 16),
-                _FormField(
-                  controller: viewModel.emailController,
-                  label: 'E-posta',
-                  hint: 'ornek@email.com',
-                  keyboardType: TextInputType.emailAddress,
-                  prefixIcon: CupertinoIcons.mail,
-                ),
                 if (viewModel.userAddresses.isNotEmpty) ...[
-                  const SizedBox(height: 12),
                   SizedBox(
                     height: 44,
                     child: ListView.builder(
@@ -938,7 +902,43 @@ class _ContactFormSection extends StatelessWidget {
                       },
                     ),
                   ),
+                  const SizedBox(height: 16),
                 ],
+                Row(
+                  children: [
+                    Expanded(
+                      child: _FormField(
+                        controller: viewModel.firstNameController,
+                        label: 'Ad',
+                        hint: 'Adınız',
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _FormField(
+                        controller: viewModel.lastNameController,
+                        label: 'Soyad',
+                        hint: 'Soyadınız',
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                _FormField(
+                  controller: viewModel.phoneController,
+                  label: 'Telefon',
+                  hint: '0 (5XX) XXX XX XX',
+                  keyboardType: TextInputType.phone,
+                  prefixIcon: CupertinoIcons.phone,
+                ),
+                const SizedBox(height: 16),
+                _FormField(
+                  controller: viewModel.emailController,
+                  label: 'E-posta',
+                  hint: 'ornek@email.com',
+                  keyboardType: TextInputType.emailAddress,
+                  prefixIcon: CupertinoIcons.mail,
+                ),
                 const SizedBox(height: 16),
                 _FormField(
                   controller: viewModel.addressController,
