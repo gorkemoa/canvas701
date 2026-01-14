@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../constants/api_constants.dart';
 import '../model/banner_response.dart';
+import '../model/faq_model.dart';
 import '../model/kvkk_response.dart';
 import '../model/size_model.dart';
 import '../model/specials_model.dart';
@@ -120,4 +121,22 @@ class GeneralService extends BaseService {
     }
   }
 
+  /// SSS (Sıkça Sorulan Sorular) listesini getir
+  Future<FaqResponse> getFaqs() async {
+    final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.faqList}');
+
+    logRequest('GET', url.toString());
+
+    try {
+      final response = await http.get(url, headers: getHeaders());
+
+      logResponse(response.statusCode, response.body);
+
+      final responseData = jsonDecode(response.body);
+      return FaqResponse.fromJson(responseData);
+    } catch (e) {
+      debugPrint('--- API ERROR: $e ---');
+      return FaqResponse(error: true, success: false);
+    }
+  }
 }

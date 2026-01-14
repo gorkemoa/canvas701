@@ -47,8 +47,7 @@ class ApiConstants {
   // General
   static const String kvkkAgreement =
       'service/general/general/contracts/kvkkAgreement';
-  static const String getTypeList = 'service/general/general/types/list';
-  static const String bannerList = 'service/general/general/banner/list';
+  static const String getTypeList = 'service/general/general/types/list';  static const String faqList = 'service/general/general/faq/list';  static const String bannerList = 'service/general/general/banner/list';
   static const String getSpecials = 'service/general/general/specials/list';
 
   // Basket

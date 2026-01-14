@@ -13,6 +13,7 @@ import '../services/token_manager.dart';
 import '../model/special_models.dart';
 import '../model/size_model.dart';
 import '../model/address_models.dart';
+import '../model/type_model.dart';
 import '../theme/canvas701_theme_data.dart';
 import '../view/widgets/image_filter_sheet.dart';
 import 'profile_viewmodel.dart';
@@ -43,6 +44,10 @@ class SpecialViewModel extends ChangeNotifier {
   List<CanvasSize> _availableSizes = [];
   List<CanvasSize> get availableSizes => _availableSizes;
 
+  // Product Types from API
+  List<ProductType> _productTypes = [];
+  List<ProductType> get productTypes => _productTypes;
+
   // Form Fields
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController lastNameController = TextEditingController();
@@ -63,6 +68,7 @@ class SpecialViewModel extends ChangeNotifier {
   SpecialViewModel() {
     _prefillFromProfile();
     fetchSizes();
+    fetchProductTypes();
     checkOnboarding();
     fetchUserAddresses();
   }
@@ -138,6 +144,22 @@ class SpecialViewModel extends ChangeNotifier {
     }
   }
 
+  Future<void> fetchProductTypes() async {
+    try {
+      final response = await _generalService.getTypes();
+      if (response.success && response.data != null) {
+        _productTypes = response.data!.types;
+        // İlk variant için varsayılan tip seç
+        if (_productTypes.isNotEmpty && _selectedVariants[0].tableType == null) {
+          _selectedVariants[0].tableType = _productTypes[0].typeName;
+        }
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Error fetching product types: $e');
+    }
+  }
+
   void _prefillFromProfile() {
     final user = ProfileViewModel().user;
     if (user != null) {
@@ -159,6 +181,9 @@ class SpecialViewModel extends ChangeNotifier {
       if (_availableSizes.isNotEmpty) {
         newSlot.sizeTitle = _availableSizes[0].sizeTitle;
       }
+      if (_productTypes.isNotEmpty) {
+        newSlot.tableType = _productTypes[0].typeName;
+      }
       _selectedVariants.add(newSlot);
       notifyListeners();
     }
@@ -172,6 +197,9 @@ class SpecialViewModel extends ChangeNotifier {
       _selectedVariants[0] = SelectedVariantData();
       if (_availableSizes.isNotEmpty) {
         _selectedVariants[0].sizeTitle = _availableSizes[0].sizeTitle;
+      }
+      if (_productTypes.isNotEmpty) {
+        _selectedVariants[0].tableType = _productTypes[0].typeName;
       }
       notifyListeners();
     }
@@ -211,6 +239,25 @@ class SpecialViewModel extends ChangeNotifier {
 
       if (filteredFile != null) {
         _selectedVariants[index].image = XFile(filteredFile.path);
+        
+        // Görselin boyutlarını al ve oranına göre tip seç
+        final decodedImage = await decodeImageFromList(await filteredFile.readAsBytes());
+        final width = decodedImage.width;
+        final height = decodedImage.height;
+        final ratio = width / height;
+
+        String? detectedType;
+        if ((ratio - 1).abs() < 0.1) {
+          detectedType = 'Kare';
+        } else {
+          detectedType = 'Dikdörtgen';
+        }
+
+        // Eğer tespit edilen tip mevcut tipler arasında varsa seç
+        if (_productTypes.any((t) => t.typeName == detectedType)) {
+          _selectedVariants[index].tableType = detectedType;
+        }
+        
         notifyListeners();
       }
     }
@@ -246,6 +293,11 @@ class SpecialViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void updateType(int index, String typeName) {
+    _selectedVariants[index].tableType = typeName;
+    notifyListeners();
+  }
+
   Future<String?> _fileToBase64(XFile file) async {
     try {
       final Uint8List bytes = await file.readAsBytes();
@@ -269,11 +321,12 @@ class SpecialViewModel extends ChangeNotifier {
 
       final List<SpecialVariant> variants = [];
       for (var variantData in _selectedVariants) {
-        if (variantData.image != null && variantData.sizeTitle != null) {
+        if (variantData.image != null && variantData.sizeTitle != null && variantData.tableType != null) {
           final base64Image = await _fileToBase64(variantData.image!);
           if (base64Image != null) {
             variants.add(SpecialVariant(
               variant: variantData.sizeTitle!,
+              tableType: variantData.tableType!,
               image: base64Image,
             ));
           }
@@ -281,7 +334,7 @@ class SpecialViewModel extends ChangeNotifier {
       }
 
       if (variants.isEmpty) {
-        throw Exception('Lütfen en az bir görsel yükleyin ve boyut seçin');
+        throw Exception('Lütfen en az bir görsel yükleyin, boyut ve tablo tipi seçin');
       }
 
       if (firstNameController.text.isEmpty || lastNameController.text.isEmpty || phoneController.text.isEmpty || addressController.text.isEmpty) {
@@ -326,7 +379,8 @@ class SpecialViewModel extends ChangeNotifier {
 
 class SelectedVariantData {
   String? sizeTitle;
+  String? tableType;
   XFile? image;
 
-  SelectedVariantData({this.sizeTitle, this.image});
+  SelectedVariantData({this.sizeTitle, this.tableType, this.image});
 }

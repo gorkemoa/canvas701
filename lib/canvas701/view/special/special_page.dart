@@ -8,6 +8,7 @@ import '../widgets/widgets.dart';
 import '../../../core/widgets/app_mode_switcher.dart';
 import '../../viewmodel/special_viewmodel.dart';
 import '../../model/size_model.dart';
+import '../../model/type_model.dart';
 
 class SpecialPage extends StatelessWidget {
   const SpecialPage({super.key});
@@ -127,12 +128,15 @@ class _SpecialPageContent extends StatelessWidget {
                         child: _ImageUploadCard(
                           index: index,
                           selectedSize: variant.sizeTitle,
+                          selectedType: variant.tableType,
                           imagePath: variant.image?.path,
                           onTap: () => viewModel.pickImage(index, context),
                           onRemove: () => viewModel.removeSlot(index),
                           onEdit: () => viewModel.editImage(index, context),
                           onSizeChanged: (val) => viewModel.updateSize(index, val),
+                          onTypeChanged: (val) => viewModel.updateType(index, val),
                           availableSizes: viewModel.availableSizes,
+                          availableTypes: viewModel.productTypes,
                         ),
                       );
                     },
@@ -467,22 +471,28 @@ class _HeroSection extends StatelessWidget {
 class _ImageUploadCard extends StatelessWidget {
   final int index;
   final String? selectedSize;
+  final String? selectedType;
   final String? imagePath;
   final VoidCallback onTap;
   final VoidCallback onRemove;
   final VoidCallback onEdit;
   final Function(String) onSizeChanged;
+  final Function(String) onTypeChanged;
   final List<CanvasSize> availableSizes;
+  final List<ProductType> availableTypes;
 
   const _ImageUploadCard({
     required this.index,
     this.selectedSize,
+    this.selectedType,
     this.imagePath,
     required this.onTap,
     required this.onRemove,
     required this.onEdit,
     required this.onSizeChanged,
+    required this.onTypeChanged,
     required this.availableSizes,
+    required this.availableTypes,
   });
 
   @override
@@ -511,8 +521,8 @@ class _ImageUploadCard extends StatelessWidget {
           GestureDetector(
             onTap: onTap,
             child: Container(
-              width: 90,
-              height: 90,
+              width: 100,
+              height: 100,
               margin: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: hasImage ? null : Canvas701Colors.surfaceVariant,
@@ -529,8 +539,8 @@ class _ImageUploadCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                           child: Image.file(
                             File(imagePath!),
-                            width: 90,
-                            height: 90,
+                            width: 100,
+                            height: 100,
                             fit: BoxFit.cover,
                           ),
                         ),
@@ -580,6 +590,58 @@ class _ImageUploadCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Tablo Tipi Seçimi
+                  Text(
+                    'Tablo Tipi',
+                    style: Canvas701Typography.labelSmall.copyWith(
+                      color: Canvas701Colors.textSecondary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  availableTypes.isEmpty
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : SizedBox(
+                          height: 32,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: availableTypes.length,
+                            separatorBuilder: (_, __) => const SizedBox(width: 8),
+                            itemBuilder: (context, index) {
+                              final type = availableTypes[index];
+                              final isSelected = selectedType == type.typeName;
+                              return GestureDetector(
+                                onTap: () => onTypeChanged(type.typeName),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  decoration: BoxDecoration(
+                                    color: isSelected ? Canvas701Colors.primary : Canvas701Colors.surfaceVariant,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: isSelected ? Canvas701Colors.primary : Canvas701Colors.border.withOpacity(0.5),
+                                    ),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    type.typeName,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                      color: isSelected ? Colors.white : Canvas701Colors.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                  const SizedBox(height: 10),
+                  // Boyut Seçimi
                   Text(
                     'Boyut Seçin',
                     style: Canvas701Typography.labelSmall.copyWith(

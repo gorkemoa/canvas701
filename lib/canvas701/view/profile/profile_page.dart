@@ -12,6 +12,7 @@ import 'address_page.dart';
 import 'coupons_page.dart';
 import 'user_comments_page.dart';
 import 'orders_page.dart';
+import 'faq_page.dart';
 import 'ticket/tickets_page.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -188,11 +189,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           title: 'Kayıtlı Kartlarım',
                           onTap: () {},
                         ),
-                        _MenuItem(
-                          icon: Icons.notifications_none_outlined,
-                          title: 'Duyuru Tercihlerim',
-                          onTap: () {},
-                        ),
+                       
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -202,7 +199,14 @@ class _ProfilePageState extends State<ProfilePage> {
                         _MenuItem(
                           icon: Icons.help_outline,
                           title: 'Yardım Merkezi',
-                          onTap: () {},
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const FaqPage(),
+                              ),
+                            );
+                          },
                         ),
                         _MenuItem(
                           icon: Icons.chat_bubble_outline,

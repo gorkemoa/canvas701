@@ -32,16 +32,19 @@ class SpecialTableRequest {
 
 class SpecialVariant {
   final String variant;
+  final String tableType;
   final String image; // base64
 
   SpecialVariant({
     required this.variant,
+    required this.tableType,
     required this.image,
   });
 
   Map<String, dynamic> toJson() {
     return {
       'variant': variant,
+      'tableType': tableType,
       'image': image,
     };
   }

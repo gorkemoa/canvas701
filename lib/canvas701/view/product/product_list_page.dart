@@ -3,6 +3,7 @@ import 'package:canvas701/canvas701/viewmodel/category_viewmodel.dart';
 import 'package:canvas701/canvas701/viewmodel/product_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/widgets/app_mode_switcher.dart';
 import '../../model/model.dart';
 import '../../model/category_response.dart';
 import '../../model/filter_list_response.dart';
@@ -54,8 +55,9 @@ class _ProductListPageState extends State<ProductListPage> {
     _searchController.text = widget.searchText ?? '';
     _selectedSortKey = widget.sortKey;
     _selectedTypeKey = widget.typeKey;
-    _selectedCategoryIds =
-        widget.categoryId != null ? [widget.categoryId!] : [];
+    _selectedCategoryIds = widget.categoryId != null
+        ? [widget.categoryId!]
+        : [];
     _updateActiveFilterCount();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -93,8 +95,8 @@ class _ProductListPageState extends State<ProductListPage> {
     // Kategori kontrolü
     final bool hasDifferentCategory =
         _selectedCategoryIds.length != (widget.categoryId != null ? 1 : 0) ||
-            (widget.categoryId != null &&
-                !_selectedCategoryIds.contains(widget.categoryId));
+        (widget.categoryId != null &&
+            !_selectedCategoryIds.contains(widget.categoryId));
 
     if (_selectedCategoryIds.isNotEmpty && hasDifferentCategory) {
       count++;
@@ -126,8 +128,9 @@ class _ProductListPageState extends State<ProductListPage> {
           setState(() {
             _selectedSortKey = widget.sortKey;
             _selectedTypeKey = widget.typeKey;
-            _selectedCategoryIds =
-                widget.categoryId != null ? [widget.categoryId!] : [];
+            _selectedCategoryIds = widget.categoryId != null
+                ? [widget.categoryId!]
+                : [];
           });
           _updateActiveFilterCount();
           _fetchProducts(refresh: true);
@@ -193,161 +196,165 @@ class _ProductListPageState extends State<ProductListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Canvas701Colors.background,
-      appBar: AppBar(
-        title: Text(
-          widget.title,
-          style: const TextStyle(color: Colors.white, fontSize: 18),
+      body: _buildContent(),
+      floatingActionButton: _buildFilterFAB(),
+    );
+  }
+
+  Widget _buildFilterFAB() {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        FloatingActionButton(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+          onPressed: _showFilterBottomSheet,
+          backgroundColor: Canvas701Colors.primary,
+          child: const Icon(
+            Icons.tune_rounded,
+            color: Colors.white,
+          ),
         ),
-        backgroundColor: Canvas701Colors.primary,
-        elevation: 0,
-        centerTitle: true,
-        leading: Navigator.of(context).canPop()
-            ? IconButton(
-                icon: const Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white,
-                ),
-                onPressed: () => Navigator.pop(context),
-              )
-            : null,
-        actions: [
-          Stack(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.tune_rounded, color: Colors.white),
-                onPressed: _showFilterBottomSheet,
-                tooltip: 'Filtrele',
+        if (_activeFilterCount > 0)
+          Positioned(
+            right: -5,
+            top: -5,
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: const BoxDecoration(
+                color: Colors.red,
+                shape: BoxShape.circle,
               ),
-              if (_activeFilterCount > 0)
-                Positioned(
-                  right: 8,
-                  top: 8,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
-                    constraints: const BoxConstraints(
-                      minWidth: 18,
-                      minHeight: 18,
-                    ),
-                    child: Text(
-                      '$_activeFilterCount',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
+              constraints: const BoxConstraints(minWidth: 22, minHeight: 22),
+              child: Center(
+                child: Text(
+                  '$_activeFilterCount',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-            ],
+              ),
+            ),
           ),
-        ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(60),
-          child: Canvas701SearchBar(
-            controller: _searchController,
-            onSubmitted: _onSearch,
-            onClear: () {
-              _searchController.clear();
-              _fetchProducts(refresh: true);
-            },
-          ),
-        ),
-      ),
-      body: _buildContent(),
+      ],
     );
   }
 
   Widget _buildContent() {
-    if (_isLoading && _products.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_errorMessage != null && _products.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(_errorMessage!),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => _fetchProducts(refresh: true),
-              child: const Text('Tekrar Dene'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (_products.isEmpty) {
-      return Center(
-        child: Text(
-          _searchController.text.isNotEmpty
-              ? '"${_searchController.text}" için sonuç bulunamadı.'
-              : 'Ürün bulunamadı.',
-        ),
-      );
-    }
-
     return RefreshIndicator(
+      edgeOffset: 105,
       onRefresh: () => _fetchProducts(refresh: true),
       child: CustomScrollView(
         controller: _scrollController,
+        physics: const BouncingScrollPhysics(),
         slivers: [
-          // Active Filters Chips
-          if (_activeFilterCount > 0)
-            SliverToBoxAdapter(child: _buildActiveFiltersBar()),
-          SliverPadding(
-            padding: const EdgeInsets.all(Canvas701Spacing.md),
-            sliver: SliverGrid(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 0.5,
-                crossAxisSpacing: Canvas701Spacing.md,
-                mainAxisSpacing: Canvas701Spacing.md,
+          SliverAppBar(
+            backgroundColor: Canvas701Colors.primary,
+            elevation: 0,
+            toolbarHeight: 45,
+            titleSpacing: 0,
+            automaticallyImplyLeading: false,
+            pinned: true,
+            title: AppModeSwitcher(isBack: Navigator.of(context).canPop()),
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(60),
+              child: Canvas701SearchBar(
+                controller: _searchController,
+                onSubmitted: _onSearch,
+                onClear: () {
+                  _searchController.clear();
+                  _fetchProducts(refresh: true);
+                },
               ),
-              delegate: SliverChildBuilderDelegate((context, index) {
-                final apiProduct = _products[index];
-                final product = Product.fromApi(apiProduct);
+            ),
+          ),
+          if (_isLoading && _products.isEmpty)
+            const SliverFillRemaining(
+              child: Center(child: CircularProgressIndicator()),
+            )
+          else if (_errorMessage != null && _products.isEmpty)
+            SliverFillRemaining(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(_errorMessage!),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => _fetchProducts(refresh: true),
+                      child: const Text('Tekrar Dene'),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else if (_products.isEmpty)
+            SliverFillRemaining(
+              child: Center(
+                child: Text(
+                  _searchController.text.isNotEmpty
+                      ? '"${_searchController.text}" için sonuç bulunamadı.'
+                      : 'Ürün bulunamadı.',
+                ),
+              ),
+            )
+          else ...[
+            // Active Filters Chips
+            if (_activeFilterCount > 0)
+              SliverToBoxAdapter(child: _buildActiveFiltersBar()),
+            SliverPadding(
+              padding: const EdgeInsets.all(Canvas701Spacing.md),
+              sliver: SliverGrid(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 0.5,
+                  crossAxisSpacing: Canvas701Spacing.md,
+                  mainAxisSpacing: Canvas701Spacing.md,
+                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final apiProduct = _products[index];
+                  final product = Product.fromApi(apiProduct);
 
-                return Consumer<FavoritesViewModel>(
-                  builder: (context, favViewModel, child) {
-                    final isFav = favViewModel.isFavorite(apiProduct.productID);
-                    return ProductCard(
-                      product: product,
-                      isFavorite: isFav,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                ProductDetailPage(product: product),
-                          ),
-                        );
-                      },
-                      onFavorite: () {
-                        favViewModel.toggleFavorite(apiProduct.productID);
-                      },
-                    );
-                  },
-                );
-              }, childCount: _products.length),
-            ),
-          ),
-          if (_hasNextPage && _isLoading)
-            const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: Canvas701Spacing.lg),
-                child: Center(child: CircularProgressIndicator()),
+                  return Consumer<FavoritesViewModel>(
+                    builder: (context, favViewModel, child) {
+                      final isFav = favViewModel.isFavorite(
+                        apiProduct.productID,
+                      );
+                      return ProductCard(
+                        product: product,
+                        isFavorite: isFav,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  ProductDetailPage(product: product),
+                            ),
+                          );
+                        },
+                        onFavorite: () {
+                          favViewModel.toggleFavorite(apiProduct.productID);
+                        },
+                      );
+                    },
+                  );
+                }, childCount: _products.length),
               ),
             ),
-          const SliverToBoxAdapter(
-            child: SizedBox(height: Canvas701Spacing.xxl),
-          ),
+            if (_hasNextPage && _isLoading)
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: Canvas701Spacing.lg),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+              ),
+            const SliverToBoxAdapter(
+              child: SizedBox(height: Canvas701Spacing.xxl + 60),
+            ),
+          ],
         ],
       ),
     );
@@ -408,7 +415,8 @@ class _ProductListPageState extends State<ProductListPage> {
           }
 
           // Category Chips
-          final bool hasDifferentCategory = _selectedCategoryIds.length !=
+          final bool hasDifferentCategory =
+              _selectedCategoryIds.length !=
                   (widget.categoryId != null ? 1 : 0) ||
               (widget.categoryId != null &&
                   !_selectedCategoryIds.contains(widget.categoryId));
@@ -466,8 +474,9 @@ class _ProductListPageState extends State<ProductListPage> {
                     setState(() {
                       _selectedSortKey = widget.sortKey;
                       _selectedTypeKey = widget.typeKey;
-                      _selectedCategoryIds =
-                          widget.categoryId != null ? [widget.categoryId!] : [];
+                      _selectedCategoryIds = widget.categoryId != null
+                          ? [widget.categoryId!]
+                          : [];
                     });
                     _updateActiveFilterCount();
                     _fetchProducts(refresh: true);
