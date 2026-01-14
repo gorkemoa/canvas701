@@ -9,6 +9,7 @@ class Product {
   final List<String> images;
   final String? thumbnailUrl;
   final String collectionId;
+  final String tableType;
   final List<String> categoryIds;
   final List<ProductSize> availableSizes;
   final bool isNew;
@@ -27,6 +28,7 @@ class Product {
     required this.images,
     this.thumbnailUrl,
     required this.collectionId,
+    required this.tableType,
     required this.categoryIds,
     required this.availableSizes,
     this.isNew = false,
@@ -54,11 +56,13 @@ class Product {
       images: [apiProduct.productImage],
       thumbnailUrl: apiProduct.productImage,
       collectionId: '',
+      tableType: '', // API listesinde gelmiyor, sadece detayda var
       categoryIds: [],
       availableSizes: [
         ProductSize(
           id: 'default',
           name: '50x70 cm',
+          tableType: '',
           width: 50,
           height: 70,
           price: parsePrice(apiProduct.productPrice),
@@ -99,6 +103,7 @@ class Product {
     List<String>? images,
     String? thumbnailUrl,
     String? collectionId,
+    String? tableType,
     List<String>? categoryIds,
     List<ProductSize>? availableSizes,
     bool? isNew,
@@ -117,6 +122,7 @@ class Product {
       images: images ?? this.images,
       thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
       collectionId: collectionId ?? this.collectionId,
+      tableType: tableType ?? this.tableType,
       categoryIds: categoryIds ?? this.categoryIds,
       availableSizes: availableSizes ?? this.availableSizes,
       isNew: id != null ? this.isNew : isNew ?? this.isNew,
@@ -132,6 +138,7 @@ class Product {
 class ProductSize {
   final String id;
   final String name; // örn: "50x70 cm"
+  final String tableType; // örn: "Kare", "Dikdörtgen"
   final int width; // cm
   final int height; // cm
   final double price; // Bu boyut için fiyat
@@ -139,13 +146,14 @@ class ProductSize {
   const ProductSize({
     required this.id,
     required this.name,
+    required this.tableType,
     required this.width,
     required this.height,
     required this.price,
   });
 
   /// Boyut gösterimi
-  String get displaySize => '${width}x$height cm';
+  String get displaySize => name.isNotEmpty ? name : '${width}x$height cm';
 }
 
 class ProductDetailResponse {
@@ -212,6 +220,7 @@ class ApiProductDetail {
   final String rating;
   final String cargoInfo;
   final String cargoDetail;
+  final String productTableType;
   final bool isFavorite;
   final List<ApiProductGallery> galleries;
   final ApiProductCategory? categories;
@@ -278,6 +287,7 @@ class ApiProductDetail {
     required this.rating,
     required this.cargoInfo,
     required this.cargoDetail,
+    required this.productTableType,
     required this.isFavorite,
     required this.galleries,
     this.categories,
@@ -304,6 +314,7 @@ class ApiProductDetail {
       rating: json['rating'] ?? '0',
       cargoInfo: json['cargoInfo'] ?? '',
       cargoDetail: json['cargoDetail'] ?? '',
+      productTableType: json['productTableType'] ?? '',
       isFavorite: json['isFavorite'] ?? false,
       galleries:
           (json['galleries'] as List?)
@@ -350,6 +361,7 @@ class ApiProductCategory {
 class ApiProductSize {
   final int sizeID;
   final String sizeName;
+  final String sizeTableType;
   final String sizePrice;
   final String sizePriceDiscount;
   final int sizeDiscountType;
@@ -359,6 +371,7 @@ class ApiProductSize {
   ApiProductSize({
     required this.sizeID,
     required this.sizeName,
+    required this.sizeTableType,
     required this.sizePrice,
     required this.sizePriceDiscount,
     required this.sizeDiscountType,
@@ -370,6 +383,7 @@ class ApiProductSize {
     return ApiProductSize(
       sizeID: json['sizeID'] ?? 0,
       sizeName: json['sizeName'] ?? '',
+      sizeTableType: json['sizeTableType'] ?? '',
       sizePrice: json['sizePrice'] ?? '',
       sizePriceDiscount: json['sizePriceDiscount'] ?? '',
       sizeDiscountType: json['sizeDiscountType'] ?? 0,

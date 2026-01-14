@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../model/banner_response.dart';
+import '../model/type_model.dart';
 import '../services/general_service.dart';
 
 class GeneralViewModel extends ChangeNotifier {
@@ -7,6 +8,9 @@ class GeneralViewModel extends ChangeNotifier {
 
   List<ApiBanner> _banners = [];
   List<ApiBanner> get banners => _banners;
+
+  List<ProductType> _productTypes = [];
+  List<ProductType> get productTypes => _productTypes;
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -25,6 +29,20 @@ class GeneralViewModel extends ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  Future<void> fetchProductTypes() async {
+    if (_productTypes.isNotEmpty) return;
+
+    try {
+      final response = await _generalService.getTypes();
+      if (response.success && response.data != null) {
+        _productTypes = response.data!.types;
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('GeneralViewModel fetchProductTypes Error: $e');
     }
   }
 }

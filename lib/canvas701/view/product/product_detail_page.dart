@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:canvas701/canvas701/theme/canvas701_theme_data.dart';
 import 'package:canvas701/canvas701/viewmodel/favorites_viewmodel.dart';
+import 'package:canvas701/canvas701/viewmodel/general_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -23,6 +24,7 @@ class ProductDetailPage extends StatefulWidget {
 
 class _ProductDetailPageState extends State<ProductDetailPage> {
   Object? _selectedSize;
+  String? _selectedType;
   int _quantity = 1;
   bool _isAddingToCart = false;
 
@@ -35,6 +37,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       context.read<ProductViewModel>().fetchProductDetail(
         int.parse(widget.product.id),
       );
+      context.read<GeneralViewModel>().fetchProductTypes();
     });
   }
 
@@ -213,6 +216,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         fallbackCode: widget.product.code,
                       ),
                       const SizedBox(height: 32),
+                      _buildTypeSelection(productDetail),
+                      const SizedBox(height: 24),
                       _buildSizeSelection(productDetail),
                       const SizedBox(height: 32),
                       _buildCargoInfo(productDetail),
@@ -308,9 +313,151 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     );
   }
 
+  Widget _buildTypeSelection(ApiProductDetail? productDetail) {
+    if (productDetail == null) return const SizedBox.shrink();
+
+    return Consumer<GeneralViewModel>(
+      builder: (context, generalViewModel, child) {
+        if (generalViewModel.productTypes.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        // Üründe mevcut olan tipleri bul
+        final availableTypesInProduct =
+            productDetail.sizes
+                .map((s) => s.sizeTableType)
+                .where((t) => t.isNotEmpty)
+                .toSet();
+
+        if (availableTypesInProduct.isEmpty) return const SizedBox.shrink();
+
+        // Sadece üründe olan tipleri filtrele
+        final typesToShow =
+            generalViewModel.productTypes
+                .where((t) => availableTypesInProduct.contains(t.typeName))
+                .toList();
+
+        if (typesToShow.isEmpty) return const SizedBox.shrink();
+
+        // İlk açılışta tavsiye edilen tipi seç
+        if (_selectedType == null && productDetail.productTableType.isNotEmpty) {
+          _selectedType = productDetail.productTableType;
+        } else if (_selectedType == null && typesToShow.isNotEmpty) {
+          _selectedType = typesToShow.first.typeName;
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Tablo Tipi',
+              style: Canvas701Typography.titleMedium.copyWith(
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 40,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: typesToShow.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 10),
+                itemBuilder: (context, index) {
+                  final type = typesToShow[index];
+                  final isSelected = _selectedType == type.typeName;
+
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _selectedType = type.typeName;
+                        // Tip değişince o tipe ait ilk boyutu seç
+                        final firstSizeOfType = productDetail.sizes.firstWhere(
+                          (s) => s.sizeTableType == type.typeName,
+                          orElse: () => productDetail.sizes.first,
+                        );
+                        _selectedSize = firstSizeOfType;
+                      });
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      decoration: BoxDecoration(
+                        color:
+                            isSelected ? Canvas701Colors.primary : Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color:
+                              isSelected
+                                  ? Canvas701Colors.primary
+                                  : Canvas701Colors.border,
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        type.typeName,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight:
+                              isSelected ? FontWeight.w600 : FontWeight.w500,
+                          color:
+                              isSelected
+                                  ? Colors.white
+                                  : Canvas701Colors.textPrimary,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            if (_selectedType != null &&
+                productDetail.productTableType.isNotEmpty &&
+                _selectedType != productDetail.productTableType)
+              Padding(
+                padding: const EdgeInsets.only(top: 12.0),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.amber.shade200),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, size: 16, color: Colors.amber.shade900),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Önerilen tip dışındaki seçimlerde görselde kadraj kayması veya kalite kaybı oluşabilir.',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.amber.shade900,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildSizeSelection(ApiProductDetail? productDetail) {
-    final List<dynamic> sizes =
-        productDetail?.sizes ?? widget.product.availableSizes;
+    List<dynamic> sizes = productDetail?.sizes ?? widget.product.availableSizes;
+
+    // Seçili tip varsa ona göre filtrele
+    if (productDetail != null && _selectedType != null) {
+      sizes =
+          productDetail.sizes
+              .where((s) => s.sizeTableType == _selectedType)
+              .toList();
+    }
 
     if (sizes.isEmpty) return const SizedBox.shrink();
 
@@ -318,6 +465,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     // ama se&ccedil;ili olan hala eski modelden gelen veri ise ilkini seç.
     if (_selectedSize == null ||
         (productDetail != null && _selectedSize is! ApiProductSize)) {
+      _selectedSize = sizes.first;
+    }
+
+    // Eğer seçili boyut şu anki listede yoksa ilkini seç (Tip değişince gerekebilir)
+    if (_selectedSize is ApiProductSize &&
+        !sizes.any((s) => s is ApiProductSize && s.sizeID == (_selectedSize as ApiProductSize).sizeID)) {
       _selectedSize = sizes.first;
     }
 

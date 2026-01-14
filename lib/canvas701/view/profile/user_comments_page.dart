@@ -241,6 +241,7 @@ class _UserCommentsPageState extends State<UserCommentsPage> {
             images: [comment.productImage],
             thumbnailUrl: comment.productImage,
             collectionId: '',
+            tableType: '',
             categoryIds: [],
             availableSizes: [
               ProductSize(
@@ -249,6 +250,7 @@ class _UserCommentsPageState extends State<UserCommentsPage> {
                 width: 0,
                 height: 0,
                 price: 0,
+                tableType: '',
               ),
             ],
             createdAt: DateTime.now(),

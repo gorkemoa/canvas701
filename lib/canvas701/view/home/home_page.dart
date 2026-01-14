@@ -100,6 +100,7 @@ class _HomePageState extends State<HomePage> {
         images: [banner.postMainImage ?? ''],
         thumbnailUrl: banner.postThumbImage ?? '',
         collectionId: '',
+        tableType: '',
         categoryIds: [],
         availableSizes: [
           const ProductSize(
@@ -108,6 +109,7 @@ class _HomePageState extends State<HomePage> {
             width: 50,
             height: 70,
             price: 0,
+            tableType: '',
           ),
         ],
         createdAt: DateTime.now(),
