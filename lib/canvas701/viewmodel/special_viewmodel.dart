@@ -256,6 +256,7 @@ class SpecialViewModel extends ChangeNotifier {
         // Eğer tespit edilen tip mevcut tipler arasında varsa seç
         if (_productTypes.any((t) => t.typeName == detectedType)) {
           _selectedVariants[index].tableType = detectedType;
+          _selectedVariants[index].suggestedType = detectedType;
         }
         
         notifyListeners();
@@ -380,7 +381,8 @@ class SpecialViewModel extends ChangeNotifier {
 class SelectedVariantData {
   String? sizeTitle;
   String? tableType;
+  String? suggestedType;
   XFile? image;
 
-  SelectedVariantData({this.sizeTitle, this.tableType, this.image});
+  SelectedVariantData({this.sizeTitle, this.tableType, this.suggestedType, this.image});
 }

@@ -312,7 +312,8 @@ class _ServicesPageState extends State<ServicesPage> {
                           childAspectRatio: 1.8,
                           children: [
                             _buildSmallServiceCard(
-                              assetPath: 'assets/logos/Canvas701-Logo.png',
+                              assetPath:
+                                  'https://office701.b-cdn.net/canvas701/logo/canvas701-new-logo-black.png',
                               onTap: () {
                                 Navigator.pushAndRemoveUntil(
                                   context,
@@ -374,7 +375,10 @@ class _ServicesPageState extends State<ServicesPage> {
             ),
           ],
         ),
-        child: Center(child: Image.asset(assetPath, fit: BoxFit.contain)),
+        child: Center(
+            child: assetPath.startsWith('http')
+                ? Image.network(assetPath, fit: BoxFit.contain)
+                : Image.asset(assetPath, fit: BoxFit.contain)),
       ),
     );
   }
@@ -402,7 +406,10 @@ class _ServicesPageState extends State<ServicesPage> {
             ),
           ],
         ),
-        child: Center(child: Image.asset(assetPath, fit: BoxFit.contain)),
+        child: Center(
+            child: assetPath.startsWith('http')
+                ? Image.network(assetPath, fit: BoxFit.contain)
+                : Image.asset(assetPath, fit: BoxFit.contain)),
       ),
     );
   }

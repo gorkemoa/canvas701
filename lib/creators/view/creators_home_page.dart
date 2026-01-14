@@ -27,15 +27,9 @@ class CreatorsHomePage extends StatelessWidget {
               // Creators Logo/Icon
               Container(
                 width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: Colors.deepPurple.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.palette_outlined,
-                  size: 60,
-                  color: Colors.deepPurple,
+                child: Image.network(
+                  'https://office701.b-cdn.net/canvas701/logo/canvas701-creators-ogo-black.png',
+                  fit: BoxFit.contain,
                 ),
               ),
               const SizedBox(height: 32),

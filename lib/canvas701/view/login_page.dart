@@ -98,10 +98,10 @@ class _LoginPageState extends State<LoginPage> {
                     children: [
                       const SizedBox(height: 150),
                       // Başlık 
-                       Image.asset(
-                        'assets/Canvas701-Logo.png',
+                       Image.network(
+                        'https://office701.b-cdn.net/canvas701/logo/canvas701-new-logo-black.png',
                         height: 100,
-                      color: Color( 0xFFFFFFFF),
+                      color: const Color( 0xFFFFFFFF),
                       ),
                       const SizedBox(height: 40),
 

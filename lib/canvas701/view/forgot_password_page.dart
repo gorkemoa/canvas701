@@ -96,8 +96,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     children: [
                       const SizedBox(height: 150),
                       // Logo
-                      Image.asset(
-                        'assets/Canvas701-Logo.png',
+                      Image.network(
+                        'https://office701.b-cdn.net/canvas701/logo/canvas701-new-logo-black.png',
                         height: 80,
                         color: Colors.white,
                       ),

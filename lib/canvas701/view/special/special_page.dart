@@ -53,11 +53,11 @@ class _SpecialPageContent extends StatelessWidget {
               ),
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                       Row(
+                      Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
@@ -74,42 +74,58 @@ class _SpecialPageContent extends StatelessWidget {
                                     '1',
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontWeight: FontWeight.w600,
+                                      fontWeight: FontWeight.w800,
                                       fontSize: 14,
                                     ),
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 14),
                               Text(
                                 'Görsel ve Boyut Seçin',
-                                style: Canvas701Typography.titleMedium.copyWith(
-                                  fontWeight: FontWeight.w600,
+                                style: Canvas701Typography.titleLarge.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: -0.5,
                                 ),
                               ),
                             ],
                           ),
                           if (viewModel.selectedVariants.length < 5)
-                            TextButton.icon(
-                              onPressed: () => viewModel.addSlot(),
-                              icon: const Icon(CupertinoIcons.add_circled, size: 18),
-                              label: const Text('Ekle'),
-                              style: TextButton.styleFrom(
-                                foregroundColor: Canvas701Colors.primary,
-                                textStyle: Canvas701Typography.labelSmall.copyWith(
-                                  fontWeight: FontWeight.w600,
+                            Material(
+                              color: Canvas701Colors.primary.withOpacity(0.08),
+                              borderRadius: BorderRadius.circular(10),
+                              child: InkWell(
+                                onTap: () => viewModel.addSlot(),
+                                borderRadius: BorderRadius.circular(10),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(CupertinoIcons.plus_circle_fill, size: 16, color: Canvas701Colors.primary),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        'Ekle',
+                                        style: Canvas701Typography.labelMedium.copyWith(
+                                          fontWeight: FontWeight.w700,
+                                          color: Canvas701Colors.primary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
                         ],
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 10),
                       Padding(
-                        padding: const EdgeInsets.only(left: 40),
+                        padding: const EdgeInsets.only(left: 46),
                         child: Text(
-                          'İstediğiniz boyutlar için görselleri yükleyin',
+                          'Sipariş etmek istediğiniz her tablo için bir görsel seçin.',
                           style: Canvas701Typography.bodySmall.copyWith(
-                            color: Canvas701Colors.textTertiary,
+                            color: Canvas701Colors.textSecondary,
+                            height: 1.3,
                           ),
                         ),
                       ),
@@ -129,6 +145,7 @@ class _SpecialPageContent extends StatelessWidget {
                           index: index,
                           selectedSize: variant.sizeTitle,
                           selectedType: variant.tableType,
+                          suggestedType: variant.suggestedType,
                           imagePath: variant.image?.path,
                           onTap: () => viewModel.pickImage(index, context),
                           onRemove: () => viewModel.removeSlot(index),
@@ -472,6 +489,7 @@ class _ImageUploadCard extends StatelessWidget {
   final int index;
   final String? selectedSize;
   final String? selectedType;
+  final String? suggestedType;
   final String? imagePath;
   final VoidCallback onTap;
   final VoidCallback onRemove;
@@ -485,6 +503,7 @@ class _ImageUploadCard extends StatelessWidget {
     required this.index,
     this.selectedSize,
     this.selectedType,
+    this.suggestedType,
     this.imagePath,
     required this.onTap,
     required this.onRemove,
@@ -502,250 +521,282 @@ class _ImageUploadCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Canvas701Colors.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: hasImage ? Canvas701Colors.primary.withOpacity(0.4) : Canvas701Colors.border,
-          width: hasImage ? 1.5 : 1,
+          color: hasImage ? Canvas701Colors.primary.withOpacity(0.3) : Canvas701Colors.border.withOpacity(0.6),
+          width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Row(
+      child: Stack(
         children: [
-          // Image Preview Area
-          GestureDetector(
-            onTap: onTap,
-            child: Container(
-              width: 100,
-              height: 100,
-              margin: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: hasImage ? null : Canvas701Colors.surfaceVariant,
-                borderRadius: BorderRadius.circular(12),
-                border: hasImage ? null : Border.all(
-                  color: Canvas701Colors.border,
-                  style: BorderStyle.solid,
-                ),
-              ),
-              child: hasImage
-                  ? Stack(
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.file(
-                            File(imagePath!),
-                            width: 100,
-                            height: 100,
-                            fit: BoxFit.cover,
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Image Preview Area
+                    GestureDetector(
+                      onTap: onTap,
+                      child: Container(
+                        width: 90,
+                        height: 90,
+                        decoration: BoxDecoration(
+                          color: Canvas701Colors.surfaceVariant,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: Canvas701Colors.border.withOpacity(0.5),
                           ),
                         ),
-                        Positioned(
-                          top: 4,
-                          right: 4,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.6),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.refresh_rounded,
-                              color: Colors.white,
-                              size: 12,
-                            ),
-                          ),
-                        ),
-                      ],
-                    )
-                  : Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          CupertinoIcons.photo_on_rectangle,
-                          color: Canvas701Colors.textTertiary,
-                          size: 24,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Yükle',
-                          style: Canvas701Typography.labelSmall.copyWith(
-                            color: Canvas701Colors.textTertiary,
-                            fontSize: 10,
-                          ),
-                        ),
-                      ],
-                    ),
-            ),
-          ),
-
-          // Info Area
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Tablo Tipi Seçimi
-                  Text(
-                    'Tablo Tipi',
-                    style: Canvas701Typography.labelSmall.copyWith(
-                      color: Canvas701Colors.textSecondary,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  availableTypes.isEmpty
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : SizedBox(
-                          height: 32,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: availableTypes.length,
-                            separatorBuilder: (_, __) => const SizedBox(width: 8),
-                            itemBuilder: (context, index) {
-                              final type = availableTypes[index];
-                              final isSelected = selectedType == type.typeName;
-                              return GestureDetector(
-                                onTap: () => onTypeChanged(type.typeName),
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 200),
-                                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                                  decoration: BoxDecoration(
-                                    color: isSelected ? Canvas701Colors.primary : Canvas701Colors.surfaceVariant,
+                        child: hasImage
+                            ? Stack(
+                                children: [
+                                  ClipRRect(
                                     borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(
-                                      color: isSelected ? Canvas701Colors.primary : Canvas701Colors.border.withOpacity(0.5),
+                                    child: Image.file(
+                                      File(imagePath!),
+                                      width: 90,
+                                      height: 90,
+                                      fit: BoxFit.cover,
                                     ),
                                   ),
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    type.typeName,
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                                      color: isSelected ? Colors.white : Canvas701Colors.textPrimary,
+                                  Positioned(
+                                    bottom: 0,
+                                    right: 0,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(6),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: const BorderRadius.only(
+                                          topLeft: Radius.circular(12),
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.1),
+                                            blurRadius: 4,
+                                          ),
+                                        ],
+                                      ),
+                                      child: const Icon(
+                                        CupertinoIcons.camera_rotate,
+                                        color: Canvas701Colors.primary,
+                                        size: 14,
+                                      ),
                                     ),
                                   ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                  const SizedBox(height: 10),
-                  // Boyut Seçimi
-                  Text(
-                    'Boyut Seçin',
-                    style: Canvas701Typography.labelSmall.copyWith(
-                      color: Canvas701Colors.textSecondary,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  availableSizes.isEmpty
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : InkWell(
-                          onTap: () => _showIOSPicker(context),
-                          borderRadius: BorderRadius.circular(8),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: Canvas701Colors.surfaceVariant,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Canvas701Colors.border.withOpacity(0.5)),
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    selectedSize ?? 'Seçiniz',
-                                    style: Canvas701Typography.bodyMedium.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      color: Canvas701Colors.textPrimary,
-                                    ),
+                                ],
+                              )
+                            : Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(
+                                    CupertinoIcons.photo_on_rectangle,
+                                    color: Canvas701Colors.primary,
+                                    size: 28,
                                   ),
-                                ),
-                                if (selectedSize != null)
+                                  const SizedBox(height: 4),
                                   Text(
-                                    availableSizes.firstWhere((s) => s.sizeTitle == selectedSize).sizePrice,
+                                    'Yükle',
                                     style: Canvas701Typography.labelSmall.copyWith(
                                       color: Canvas701Colors.primary,
                                       fontWeight: FontWeight.w700,
+                                      fontSize: 10,
                                     ),
                                   ),
-                                const SizedBox(width: 4),
-                                Icon(
-                                  CupertinoIcons.chevron_down,
-                                  size: 14,
-                                  color: Canvas701Colors.textTertiary,
-                                ),
-                              ],
+                                ],
+                              ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+
+                    // Info Area
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Tablo Tipi',
+                            style: Canvas701Typography.labelSmall.copyWith(
+                              color: Canvas701Colors.textSecondary,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                        ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Icon(
-                        hasImage ? CupertinoIcons.checkmark_circle_fill : CupertinoIcons.arrow_up_circle,
-                        size: 14,
-                        color: hasImage ? Canvas701Colors.success : Canvas701Colors.primary,
+                          const SizedBox(height: 8),
+                          if (availableTypes.isEmpty)
+                            const CupertinoActivityIndicator(radius: 8)
+                          else
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 6,
+                              children: availableTypes.map((type) {
+                                final isSelected = selectedType == type.typeName;
+                                return GestureDetector(
+                                  onTap: () => onTypeChanged(type.typeName),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: isSelected ? Canvas701Colors.primary : Canvas701Colors.surfaceVariant,
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: isSelected ? Canvas701Colors.primary : Canvas701Colors.border.withOpacity(0.5),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      type.typeName,
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                                        color: isSelected ? Colors.white : Canvas701Colors.textPrimary,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          if (hasImage && suggestedType != null && selectedType != suggestedType)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 10),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: Colors.amber.shade50,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: Colors.amber.shade200),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(CupertinoIcons.exclamationmark_triangle_fill, size: 14, color: Colors.amber.shade900),
+                                    const SizedBox(width: 6),
+                                    Expanded(
+                                      child: Text(
+                                        'Görselinize en uygun tip $suggestedType olarak belirlendi.',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.amber.shade900,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
-                      const SizedBox(width: 4),
-                      Text(
-                        hasImage ? 'Görsel Hazır' : 'Görsel Bekleniyor',
-                        style: Canvas701Typography.labelSmall.copyWith(
-                          color: hasImage ? Canvas701Colors.success : Canvas701Colors.primary,
-                          fontSize: 11,
+                    ),
+                    const SizedBox(width: 24), // Space for action button
+                  ],
+                ),
+                const SizedBox(height: 16),
+                
+                // Size Selection & Edit Button
+                Row(
+                  children: [
+                    Expanded(
+                      child: InkWell(
+                        onTap: () => _showIOSPicker(context),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: Canvas701Colors.surfaceVariant.withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Canvas701Colors.border.withOpacity(0.3)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(CupertinoIcons.resize, size: 16, color: Canvas701Colors.textSecondary),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  selectedSize ?? 'Boyut Seçin',
+                                  style: Canvas701Typography.bodyMedium.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              if (selectedSize != null && availableSizes.any((s) => s.sizeTitle == selectedSize))
+                                Text(
+                                  availableSizes.firstWhere((s) => s.sizeTitle == selectedSize).sizePrice,
+                                  style: Canvas701Typography.labelMedium.copyWith(
+                                    color: Canvas701Colors.primary,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              const SizedBox(width: 4),
+                              const Icon(CupertinoIcons.chevron_down, size: 14, color: Canvas701Colors.textTertiary),
+                            ],
+                          ),
                         ),
+                      ),
+                    ),
+                    if (hasImage) ...[
+                      const SizedBox(width: 12),
+                      IconButton(
+                        onPressed: onEdit,
+                        style: IconButton.styleFrom(
+                          backgroundColor: Canvas701Colors.primary.withOpacity(0.1),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        icon: const Icon(CupertinoIcons.slider_horizontal_3, color: Canvas701Colors.primary, size: 20),
+                        tooltip: 'Düzenle',
                       ),
                     ],
-                  ),
-                ],
-              ),
+                  ],
+                ),
+                
+                const SizedBox(height: 12),
+                
+                // Status Indicator
+                Row(
+                  children: [
+                    Icon(
+                      hasImage ? CupertinoIcons.checkmark_circle_fill : CupertinoIcons.info_circle,
+                      size: 14,
+                      color: hasImage ? Canvas701Colors.success : Canvas701Colors.warning,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      hasImage ? 'Görsel başarıyla yüklendi' : 'Görsel bekleniyor...',
+                      style: Canvas701Typography.labelSmall.copyWith(
+                        color: hasImage ? Canvas701Colors.success : Canvas701Colors.textTertiary,
+                        fontWeight: hasImage ? FontWeight.w600 : FontWeight.w400,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
 
-          // Action Buttons
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (hasImage)
-                  IconButton(
-                    onPressed: onEdit,
-                    constraints: const BoxConstraints(minHeight: 36, minWidth: 36),
-                    icon: Icon(
-                      CupertinoIcons.slider_horizontal_3,
-                      size: 20,
-                      color: Canvas701Colors.primary.withOpacity(0.8),
-                    ),
-                    tooltip: 'Düzenle',
-                  ),
-                IconButton(
-                  onPressed: onRemove,
-                  constraints: const BoxConstraints(minHeight: 36, minWidth: 36),
-                  icon: Icon(
-                    CupertinoIcons.trash,
-                    size: 18,
-                    color: Canvas701Colors.error.withOpacity(0.7),
-                  ),
-                  tooltip: 'Kaldır',
+          // Delete Button (Absolutely Positioned)
+          Positioned(
+            top: 8,
+            right: 8,
+            child: Material(
+              color: Colors.transparent,
+              child: IconButton(
+                onPressed: onRemove,
+                constraints: const BoxConstraints(minHeight: 32, minWidth: 32),
+                padding: EdgeInsets.zero,
+                icon: Icon(
+                  CupertinoIcons.xmark_circle_fill,
+                  color: Canvas701Colors.error.withOpacity(0.3),
+                  size: 24,
                 ),
-              ],
+                hoverColor: Canvas701Colors.error.withOpacity(0.1),
+                splashRadius: 16,
+              ),
             ),
           ),
         ],

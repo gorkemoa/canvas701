@@ -57,8 +57,8 @@ class _SplashPageState extends State<SplashPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
-        child: Image.asset(
-          'assets/logos/Canvas701-Logo.png',
+        child: Image.network(
+          'https://office701.b-cdn.net/canvas701/logo/canvas701-new-logo-black.png',
           width: 200, // İhtiyaca göre ayarlanabilir
           fit: BoxFit.contain,
         ),

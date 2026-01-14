@@ -129,7 +129,8 @@ class AppModeSwitcher extends StatelessWidget {
                         children: [
                           _buildLogoItem(
                             isActive: currentMode == AppMode.canvas,
-                            assetPath: 'assets/Canvas701-Logo.png',
+                            assetPath:
+                                'https://office701.b-cdn.net/canvas701/logo/canvas701-new-logo-black.png',
                             onTap: () =>
                                 AppModeManager.instance.setMode(AppMode.canvas),
                             width: canvasWidth,
@@ -138,7 +139,8 @@ class AppModeSwitcher extends StatelessWidget {
                           const SizedBox(width: gap),
                           _buildLogoItem(
                             isActive: currentMode == AppMode.creators,
-                            assetPath: 'assets/Creators.png',
+                            assetPath:
+                                'https://office701.b-cdn.net/canvas701/logo/canvas701-creators-ogo-black.png',
                             onTap: () => AppModeManager.instance.setMode(
                               AppMode.creators,
                             ),
@@ -222,13 +224,21 @@ class AppModeSwitcher extends StatelessWidget {
                 child: AnimatedOpacity(
                   duration: const Duration(milliseconds: 400),
                   opacity: isActive ? 1.0 : 0.5,
-                  child: Image.asset(
-                    assetPath,
-                    height: 13,
-                    fit: BoxFit.contain,
-                    color: isActive ? null : Colors.white.withOpacity(0.9),
-                    colorBlendMode: isActive ? null : BlendMode.srcIn,
-                  ),
+                  child: assetPath.startsWith('http')
+                      ? Image.network(
+                          assetPath,
+                          height: 13,
+                          fit: BoxFit.contain,
+                          color: isActive ? null : Colors.white.withOpacity(0.9),
+                          colorBlendMode: isActive ? null : BlendMode.srcIn,
+                        )
+                      : Image.asset(
+                          assetPath,
+                          height: 13,
+                          fit: BoxFit.contain,
+                          color: isActive ? null : Colors.white.withOpacity(0.9),
+                          colorBlendMode: isActive ? null : BlendMode.srcIn,
+                        ),
                 ),
               ),
             ),
