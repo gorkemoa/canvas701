@@ -428,4 +428,36 @@ class UserService extends BaseService {
       );
     }
   }
+
+  /// Kullanıcının yorumlarını getir
+  Future<UserCommentsResponse> getUserComments() async {
+    debugPrint('--- UserService.getUserComments() CALLED ---');
+
+    final token = await _tokenManager.getAuthToken();
+    if (token == null) {
+      return UserCommentsResponse(error: true, success: false);
+    }
+
+    final url = Uri.parse(
+        '${ApiConstants.baseUrl}${ApiConstants.getUserComments}?userToken=$token');
+
+    logRequest('GET', url.toString());
+
+    try {
+      final response = await http.get(url, headers: getHeaders());
+
+      logResponse(response.statusCode, response.body);
+
+      if (response.statusCode == 403) {
+        _tokenManager.redirectToLogin();
+        return UserCommentsResponse(error: true, success: false);
+      }
+
+      final responseData = jsonDecode(response.body);
+      return UserCommentsResponse.fromJson(responseData);
+    } catch (e) {
+      debugPrint('--- UserService.getUserComments() ERROR: $e ---');
+      return UserCommentsResponse(error: true, success: false);
+    }
+  }
 }

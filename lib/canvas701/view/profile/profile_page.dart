@@ -10,6 +10,7 @@ import 'profile_info_page.dart';
 import 'change_password_page.dart';
 import 'address_page.dart';
 import 'coupons_page.dart';
+import 'user_comments_page.dart';
 import 'orders_page.dart';
 import 'ticket/tickets_page.dart';
 
@@ -166,6 +167,18 @@ class _ProfilePageState extends State<ProfilePage> {
                               context,
                               MaterialPageRoute(
                                 builder: (context) => const CouponsPage(),
+                              ),
+                            );
+                          },
+                        ),
+                        _MenuItem(
+                          icon: Icons.rate_review_outlined,
+                          title: 'Değerlendirmelerim',
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const UserCommentsPage(),
                               ),
                             );
                           },

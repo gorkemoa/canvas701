@@ -5,7 +5,6 @@ import '../../theme/canvas701_theme_data.dart';
 import '../../services/order_service.dart';
 import '../../services/user_service.dart';
 import '../../model/order_models.dart';
-import '../../model/user_models.dart';
 
 class OrderDetailPage extends StatefulWidget {
   final int orderID;
