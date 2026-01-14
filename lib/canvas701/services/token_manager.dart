@@ -58,8 +58,8 @@ class TokenManager {
 
     debugPrint(
       '--- TokenManager.getUserToken() auth: ${authToken != null ? "EXISTS" : "NULL"}, '
-      'user: ${userToken != null ? "EXISTS" : "NULL"} -> '
-      'Using: ${currentToken != null ? "TOKEN FOUND" : "NULL"} ---',
+      'regToken: ${userToken != null ? "EXISTS" : "NULL"} -> '
+      'Active: ${authToken != null ? "AUTH_TOKEN" : (userToken != null ? "USER_TOKEN" : "NONE")} ---',
     );
     return currentToken;
   }

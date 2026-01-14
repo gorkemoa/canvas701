@@ -34,6 +34,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     _selectedSize = widget.product.availableSizes.first;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Sayfa her açıldığında seçimleri sıfırla ki build içinde tekrar hesaplansın
+      setState(() {
+        _selectedType = null;
+        _selectedSize = null;
+      });
+
       context.read<ProductViewModel>().fetchProductDetail(
         int.parse(widget.product.id),
       );
@@ -103,9 +109,39 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ProductViewModel>(
-      builder: (context, viewModel, child) {
+    return Consumer2<ProductViewModel, GeneralViewModel>(
+      builder: (context, viewModel, generalViewModel, child) {
         final productDetail = viewModel.selectedProduct;
+
+        // Önerilen tablo tipini ve ilk boyutu otomatik seç
+        // productId kontrolü ekleyerek her ürün için ayrı hesaplanmasını sağla
+        if (productDetail != null &&
+            productDetail.productID.toString() == widget.product.id &&
+            _selectedType == null &&
+            generalViewModel.productTypes.isNotEmpty) {
+          final availableTypes =
+              productDetail.sizes
+                  .map((s) => s.sizeTableType)
+                  .where((t) => t.isNotEmpty)
+                  .toSet();
+
+          if (availableTypes.isNotEmpty) {
+            final recommendedType = productDetail.productTableType;
+            if (recommendedType.isNotEmpty &&
+                availableTypes.contains(recommendedType)) {
+              _selectedType = recommendedType;
+            } else {
+              _selectedType = availableTypes.first;
+            }
+
+            // Seçilen tipe ait ilk boyutu da seç
+            _selectedSize = productDetail.sizes.firstWhere(
+              (s) => s.sizeTableType == _selectedType,
+              orElse: () => productDetail.sizes.first,
+            );
+          }
+        }
+
         final images =
             productDetail?.galleries.map((g) => g.img).toList() ??
             widget.product.images;
@@ -216,7 +252,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         fallbackCode: widget.product.code,
                       ),
                       const SizedBox(height: 32),
-                      _buildTypeSelection(productDetail),
+                      _buildTypeSelection(productDetail, generalViewModel),
                       const SizedBox(height: 24),
                       _buildSizeSelection(productDetail),
                       const SizedBox(height: 32),
@@ -313,88 +349,87 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     );
   }
 
-  Widget _buildTypeSelection(ApiProductDetail? productDetail) {
+  Widget _buildTypeSelection(
+    ApiProductDetail? productDetail,
+    GeneralViewModel generalViewModel,
+  ) {
     if (productDetail == null) return const SizedBox.shrink();
 
-    return Consumer<GeneralViewModel>(
-      builder: (context, generalViewModel, child) {
-        if (generalViewModel.productTypes.isEmpty) {
-          return const SizedBox.shrink();
-        }
+    if (generalViewModel.productTypes.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
-        // Üründe mevcut olan tipleri bul
-        final availableTypesInProduct =
-            productDetail.sizes
-                .map((s) => s.sizeTableType)
-                .where((t) => t.isNotEmpty)
-                .toSet();
+    // Üründe mevcut olan tipleri bul
+    final availableTypesInProduct =
+        productDetail.sizes
+            .map((s) => s.sizeTableType)
+            .where((t) => t.isNotEmpty)
+            .toSet();
 
-        if (availableTypesInProduct.isEmpty) return const SizedBox.shrink();
+    if (availableTypesInProduct.isEmpty) return const SizedBox.shrink();
 
-        // Sadece üründe olan tipleri filtrele
-        final typesToShow =
-            generalViewModel.productTypes
-                .where((t) => availableTypesInProduct.contains(t.typeName))
-                .toList();
+    // Sadece üründe olan tipleri filtrele
+    final typesToShow =
+        generalViewModel.productTypes
+            .where((t) => availableTypesInProduct.contains(t.typeName))
+            .toList();
 
-        if (typesToShow.isEmpty) return const SizedBox.shrink();
+    if (typesToShow.isEmpty) return const SizedBox.shrink();
 
-        // İlk açılışta tavsiye edilen tipi seç
-        if (_selectedType == null && productDetail.productTableType.isNotEmpty) {
-          _selectedType = productDetail.productTableType;
-        } else if (_selectedType == null && typesToShow.isNotEmpty) {
-          _selectedType = typesToShow.first.typeName;
-        }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Tablo Tipi',
+          style: Canvas701Typography.titleMedium.copyWith(
+            fontWeight: FontWeight.w700,
+            fontSize: 14,
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 40,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: typesToShow.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 10),
+            itemBuilder: (context, index) {
+              final type = typesToShow[index];
+              final isSelected = _selectedType == type.typeName;
+              final isRecommended =
+                  type.typeName == productDetail.productTableType;
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Tablo Tipi',
-              style: Canvas701Typography.titleMedium.copyWith(
-                fontWeight: FontWeight.w700,
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              height: 40,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: typesToShow.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 10),
-                itemBuilder: (context, index) {
-                  final type = typesToShow[index];
-                  final isSelected = _selectedType == type.typeName;
-
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedType = type.typeName;
-                        // Tip değişince o tipe ait ilk boyutu seç
-                        final firstSizeOfType = productDetail.sizes.firstWhere(
-                          (s) => s.sizeTableType == type.typeName,
-                          orElse: () => productDetail.sizes.first,
-                        );
-                        _selectedSize = firstSizeOfType;
-                      });
-                    },
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      decoration: BoxDecoration(
-                        color:
-                            isSelected ? Canvas701Colors.primary : Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color:
-                              isSelected
-                                  ? Canvas701Colors.primary
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _selectedType = type.typeName;
+                    // Tip değişince o tipe ait ilk boyutu seç
+                    final firstSizeOfType = productDetail.sizes.firstWhere(
+                      (s) => s.sizeTableType == type.typeName,
+                      orElse: () => productDetail.sizes.first,
+                    );
+                    _selectedSize = firstSizeOfType;
+                  });
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  decoration: BoxDecoration(
+                    color: isSelected ? Canvas701Colors.primary : Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color:
+                          isSelected
+                              ? Canvas701Colors.primary
+                              : isRecommended
+                                  ? Canvas701Colors.primary.withOpacity(0.3)
                                   : Canvas701Colors.border,
-                        ),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: Row(
+                    children: [
+                      Text(
                         type.typeName,
                         style: TextStyle(
                           fontSize: 12,
@@ -406,45 +441,56 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                   : Canvas701Colors.textPrimary,
                         ),
                       ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            if (_selectedType != null &&
-                productDetail.productTableType.isNotEmpty &&
-                _selectedType != productDetail.productTableType)
-              Padding(
-                padding: const EdgeInsets.only(top: 12.0),
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.amber.shade50,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.amber.shade200),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.info_outline, size: 16, color: Colors.amber.shade900),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Önerilen tip dışındaki seçimlerde görselde kadraj kayması veya kalite kaybı oluşabilir.',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.amber.shade900,
-                            fontWeight: FontWeight.w500,
-                          ),
+                      if (isRecommended) ...[
+                        const SizedBox(width: 4),
+                        Icon(
+                          Icons.star,
+                          size: 12,
+                          color: isSelected ? Colors.white : Canvas701Colors.primary,
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ),
+              );
+            },
+          ),
+        ),
+        if (_selectedType != null &&
+            productDetail.productTableType.isNotEmpty &&
+            _selectedType != productDetail.productTableType)
+          Padding(
+            padding: const EdgeInsets.only(top: 12.0),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.amber.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.amber.shade200),
               ),
-          ],
-        );
-      },
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    size: 16,
+                    color: Colors.amber.shade900,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Önerilen tip dışındaki seçimlerde görselde kadraj kayması veya kalite kaybı oluşabilir.',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.amber.shade900,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
     );
   }
 

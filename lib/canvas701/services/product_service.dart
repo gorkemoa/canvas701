@@ -118,6 +118,7 @@ class ProductService extends BaseService {
 
       debugPrint('--- GET PRODUCT DETAIL RESPONSE ---');
       debugPrint('Status Code: ${response.statusCode}');
+      debugPrint('Body: ${response.body}');
 
       if (response.statusCode == 403) {
         await _tokenManager.clearAll();

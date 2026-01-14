@@ -296,34 +296,37 @@ class ApiProductDetail {
 
   factory ApiProductDetail.fromJson(Map<String, dynamic> json) {
     return ApiProductDetail(
-      productID: json['productID'] ?? 0,
-      productName: json['productName'] ?? '',
-      productExcerpt: json['productExcerpt'] ?? '',
-      productDescription: json['productDescription'] ?? '',
-      productCode: json['productCode'] ?? '',
-      productLink: json['productLink'] ?? '',
-      productImage: json['productImage'] ?? '',
-      productFeaturedImage: json['productFeaturedImage'] ?? '',
-      productStock: json['productStock'] ?? 0,
-      productPrice: json['productPrice'] ?? '',
-      productPriceDiscount: json['productPriceDiscount'] ?? '',
-      productDiscountType: json['productDiscountType'] ?? 0,
-      productDiscount: json['productDiscount'] ?? '',
+      productID: int.tryParse(json['productID']?.toString() ?? '') ?? 0,
+      productName: json['productName']?.toString() ?? '',
+      productExcerpt: json['productExcerpt']?.toString() ?? '',
+      productDescription: json['productDescription']?.toString() ?? '',
+      productCode: json['productCode']?.toString() ?? '',
+      productLink: json['productLink']?.toString() ?? '',
+      productImage: json['productImage']?.toString() ?? '',
+      productFeaturedImage: json['productFeaturedImage']?.toString() ?? '',
+      productStock: int.tryParse(json['productStock']?.toString() ?? '') ?? 0,
+      productPrice: json['productPrice']?.toString() ?? '',
+      productPriceDiscount: json['productPriceDiscount']?.toString() ?? '',
+      productDiscountType:
+          int.tryParse(json['productDiscountType']?.toString() ?? '') ?? 0,
+      productDiscount: json['productDiscount']?.toString() ?? '',
       productDiscountIcon: json['productDiscountIcon'] ?? '',
-      totalComments: json['totalComments'] ?? 0,
-      rating: json['rating'] ?? '0',
-      cargoInfo: json['cargoInfo'] ?? '',
-      cargoDetail: json['cargoDetail'] ?? '',
-      productTableType: json['productTableType'] ?? '',
-      isFavorite: json['isFavorite'] ?? false,
+      totalComments:
+          int.tryParse(json['totalComments']?.toString() ?? '') ?? 0,
+      rating: json['rating']?.toString() ?? '0',
+      cargoInfo: json['cargoInfo']?.toString() ?? '',
+      cargoDetail: json['cargoDetail']?.toString() ?? '',
+      productTableType: json['productTableType']?.toString() ?? '',
+      isFavorite: json['isFavorite'] == true,
       galleries:
           (json['galleries'] as List?)
               ?.map((g) => ApiProductGallery.fromJson(g))
               .toList() ??
           [],
-      categories: json['categories'] != null
-          ? ApiProductCategory.fromJson(json['categories'])
-          : null,
+      categories:
+          json['categories'] != null
+              ? ApiProductCategory.fromJson(json['categories'])
+              : null,
       sizes:
           (json['sizes'] as List?)
               ?.map((s) => ApiProductSize.fromJson(s))
@@ -381,14 +384,15 @@ class ApiProductSize {
 
   factory ApiProductSize.fromJson(Map<String, dynamic> json) {
     return ApiProductSize(
-      sizeID: json['sizeID'] ?? 0,
-      sizeName: json['sizeName'] ?? '',
-      sizeTableType: json['sizeTableType'] ?? '',
-      sizePrice: json['sizePrice'] ?? '',
-      sizePriceDiscount: json['sizePriceDiscount'] ?? '',
-      sizeDiscountType: json['sizeDiscountType'] ?? 0,
-      sizeDiscount: json['sizeDiscount'] ?? '',
-      sizeDiscountIcon: json['sizeDiscountIcon'] ?? '',
+      sizeID: int.tryParse(json['sizeID']?.toString() ?? '') ?? 0,
+      sizeName: json['sizeName']?.toString() ?? '',
+      sizeTableType: json['sizeTableType']?.toString() ?? '',
+      sizePrice: json['sizePrice']?.toString() ?? '',
+      sizePriceDiscount: json['sizePriceDiscount']?.toString() ?? '',
+      sizeDiscountType:
+          int.tryParse(json['sizeDiscountType']?.toString() ?? '') ?? 0,
+      sizeDiscount: json['sizeDiscount']?.toString() ?? '',
+      sizeDiscountIcon: json['sizeDiscountIcon']?.toString() ?? '',
     );
   }
 }
@@ -544,15 +548,15 @@ class ApiProduct {
 
   factory ApiProduct.fromJson(Map<String, dynamic> json) {
     return ApiProduct(
-      productID: json['productID'] ?? 0,
-      productCode: json['productCode'] ?? '',
-      productName: json['productName'] ?? '',
-      productImage: json['productImage'] ?? '',
-      productPrice: json['productPrice'] ?? '',
-      productPriceOriginal: json['productPriceOriginal'] ?? '',
-      productDiscountIcon: json['productDiscountIcon'] ?? '',
-      isDiscount: json['isDiscount'] ?? false,
-      isFavorite: json['isFavorite'] ?? false,
+      productID: int.tryParse(json['productID']?.toString() ?? '') ?? 0,
+      productCode: json['productCode']?.toString() ?? '',
+      productName: json['productName']?.toString() ?? '',
+      productImage: json['productImage']?.toString() ?? '',
+      productPrice: json['productPrice']?.toString() ?? '',
+      productPriceOriginal: json['productPriceOriginal']?.toString() ?? '',
+      productDiscountIcon: json['productDiscountIcon']?.toString() ?? '',
+      isDiscount: json['isDiscount'] == true,
+      isFavorite: json['isFavorite'] == true,
     );
   }
 }
