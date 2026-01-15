@@ -35,6 +35,7 @@ class _SplashPageState extends State<SplashPage> {
         context.read<ProductViewModel>().fetchFilters(),
         context.read<ProductViewModel>().fetchBestsellers(),
         context.read<ProductViewModel>().fetchNewArrivals(),
+        context.read<ProductViewModel>().fetchCampaigns(),
         context.read<ProductViewModel>().fetchAllProducts(refresh: true),
         context.read<ProfileViewModel>().fetchUser(),
         context.read<FavoritesViewModel>().fetchFavorites(),

@@ -25,6 +25,9 @@ class ApiConstants {
   // Products
   static const String getCategories = 'service/products/category/list/0';
   static const String allProducts = 'service/products/product/list/all';
+  static const String campaignList = 'service/products/product/campaigns/list';
+  static String getCampaignDetail(int campId) =>
+      'service/products/product/campaigns/detail?campID=$campId';
   static const String filterList = 'service/products/product/list/filterList';
   static String getProductDetail(int productId) =>
       'service/products/product/detail/$productId';

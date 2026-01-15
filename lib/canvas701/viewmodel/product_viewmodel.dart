@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/product_service.dart';
 import '../model/product_models.dart';
 import '../model/filter_list_response.dart';
+import '../model/campaign_response.dart';
 
 class ProductViewModel extends ChangeNotifier {
   static final ProductViewModel _instance = ProductViewModel._internal();
@@ -18,6 +19,12 @@ class ProductViewModel extends ChangeNotifier {
 
   List<ApiProduct> _newArrivals = [];
   List<ApiProduct> get newArrivals => _newArrivals;
+
+  List<ApiCampaign> _campaigns = [];
+  List<ApiCampaign> get campaigns => _campaigns;
+
+  ApiCampaign? _selectedCampaign;
+  ApiCampaign? get selectedCampaign => _selectedCampaign;
 
   FilterListData? _filters;
   FilterListData? get filters => _filters;
@@ -36,6 +43,12 @@ class ProductViewModel extends ChangeNotifier {
 
   bool _isNewArrivalsLoading = false;
   bool get isNewArrivalsLoading => _isNewArrivalsLoading;
+
+  bool _isCampaignsLoading = false;
+  bool get isCampaignsLoading => _isCampaignsLoading;
+
+  bool _isCampaignDetailLoading = false;
+  bool get isCampaignDetailLoading => _isCampaignDetailLoading;
 
   bool _isDetailLoading = false;
   bool get isDetailLoading => _isDetailLoading;
@@ -129,6 +142,45 @@ class ProductViewModel extends ChangeNotifier {
       debugPrint('Fetch New Arrivals Error: $e');
     } finally {
       _isNewArrivalsLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchCampaigns() async {
+    if (_isCampaignsLoading) return;
+
+    _isCampaignsLoading = true;
+    notifyListeners();
+
+    try {
+      final response = await _productService.getCampaigns();
+
+      if (response.success && response.data != null) {
+        _campaigns = response.data!.campaigns;
+      }
+    } catch (e) {
+      debugPrint('Fetch Campaigns Error: $e');
+    } finally {
+      _isCampaignsLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchCampaignDetail(int campId) async {
+    _isCampaignDetailLoading = true;
+    _selectedCampaign = null;
+    notifyListeners();
+
+    try {
+      final response = await _productService.getCampaignDetail(campId);
+
+      if (response.success && response.data != null) {
+        _selectedCampaign = response.data!.campaign;
+      }
+    } catch (e) {
+      debugPrint('Fetch Campaign Detail Error: $e');
+    } finally {
+      _isCampaignDetailLoading = false;
       notifyListeners();
     }
   }

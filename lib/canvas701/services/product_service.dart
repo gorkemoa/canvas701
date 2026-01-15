@@ -5,6 +5,7 @@ import '../constants/api_constants.dart';
 import '../model/category_response.dart';
 import '../model/product_models.dart';
 import '../model/filter_list_response.dart';
+import '../model/campaign_response.dart';
 import 'base_service.dart';
 import 'token_manager.dart';
 
@@ -42,6 +43,69 @@ class ProductService extends BaseService {
     } catch (e) {
       debugPrint('--- GET CATEGORIES ERROR: $e ---');
       return CategoryResponse(error: true, success: false);
+    }
+  }
+
+  // ==================== CAMPAIGNS ====================
+
+  /// Kampanyaları getir
+  Future<CampaignResponse> getCampaigns() async {
+    final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.campaignList}');
+
+    debugPrint('--- GET CAMPAIGNS REQUEST ---');
+    debugPrint('URL: $url');
+
+    try {
+      final response = await http.get(url, headers: getHeaders());
+
+      debugPrint('--- GET CAMPAIGNS RESPONSE ---');
+      debugPrint('Status Code: ${response.statusCode}');
+
+      if (isHtmlResponse(response.body)) {
+        debugPrint('--- GET CAMPAIGNS ERROR: Received HTML instead of JSON ---');
+        return CampaignResponse(error: true, success: false);
+      }
+
+      final responseData = jsonDecode(response.body);
+      return CampaignResponse.fromJson(responseData);
+    } catch (e) {
+      debugPrint('--- GET CAMPAIGNS ERROR: $e ---');
+      return CampaignResponse(error: true, success: false);
+    }
+  }
+
+  /// Kampanya detayını getir
+  Future<CampaignDetailResponse> getCampaignDetail(int campId) async {
+    final userToken = await _tokenManager.getUserToken();
+    String urlString =
+        '${ApiConstants.baseUrl}${ApiConstants.getCampaignDetail(campId)}';
+
+    if (userToken != null && userToken.isNotEmpty) {
+      urlString += '&userToken=$userToken';
+    }
+
+    final url = Uri.parse(urlString);
+
+    debugPrint('--- GET CAMPAIGN DETAIL REQUEST ---');
+    debugPrint('URL: $url');
+
+    try {
+      final response = await http.get(url, headers: getHeaders());
+
+      debugPrint('--- GET CAMPAIGN DETAIL RESPONSE ---');
+      debugPrint('Status Code: ${response.statusCode}');
+
+      if (isHtmlResponse(response.body)) {
+        debugPrint(
+            '--- GET CAMPAIGN DETAIL ERROR: Received HTML instead of JSON ---');
+        return CampaignDetailResponse(error: true, success: false);
+      }
+
+      final responseData = jsonDecode(response.body);
+      return CampaignDetailResponse.fromJson(responseData);
+    } catch (e) {
+      debugPrint('--- GET CAMPAIGN DETAIL ERROR: $e ---');
+      return CampaignDetailResponse(error: true, success: false);
     }
   }
 

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:canvas701/canvas701/theme/canvas701_theme_data.dart';
 import 'package:canvas701/canvas701/view/product/product_detail_page.dart';
 import 'package:canvas701/canvas701/view/product/product_list_page.dart';
+import 'package:canvas701/canvas701/view/campaign/campaign_detail_page.dart';
 import 'package:canvas701/canvas701/viewmodel/favorites_viewmodel.dart';
 import 'package:canvas701/canvas701/viewmodel/general_viewmodel.dart';
 import 'package:flutter/material.dart';
@@ -33,12 +34,41 @@ class _HomePageState extends State<HomePage> {
   Timer? _bannerTimer;
   Timer? _announcementTimer;
 
-  final List<String> _announcements = [
+  final List<String> _defaultAnnouncements = [
     'KAMPANYA: TÜM ÜRÜNLERDE KARGO BEDAVA!',
     'YENİ SEZON: ÖZEL TASARIM KANVAS TABLOLAR',
     'FIRSAT: %20 İNDİRİM BUGÜNE ÖZEL',
     'KALİTE: %100 PAMUKLU KANVAS KUMAŞI',
   ];
+
+  String _stripHtml(String? htmlString) {
+    if (htmlString == null || htmlString.isEmpty) return '';
+    // HTML taglarını ve bazı yaygın entity'leri temizle
+    return htmlString
+        .replaceAll(RegExp(r'<[^>]*>'), '')
+        .replaceAll('&nbsp;', ' ')
+        .replaceAll('&ccedil;', 'ç')
+        .replaceAll('&Ccedil;', 'Ç')
+        .replaceAll('&ouml;', 'ö')
+        .replaceAll('&Ouml;', 'Ö')
+        .replaceAll('&uuml;', 'ü')
+        .replaceAll('&Uuml;', 'Ü')
+        .replaceAll('&igrave;', 'i')
+        .replaceAll('&nbsp;', ' ')
+        .replaceAll('\r', '')
+        .replaceAll('\n', '')
+        .trim();
+  }
+
+  List<String> get _activeAnnouncements {
+    final campaigns = context.read<ProductViewModel>().campaigns;
+    if (campaigns.isEmpty) return _defaultAnnouncements;
+    return campaigns.map((e) {
+      final title = e.campTitle.toUpperCase();
+      final desc = _stripHtml(e.campDesc);
+      return desc.isEmpty ? title : '$title: $desc';
+    }).toList();
+  }
 
   @override
   void initState() {
@@ -84,8 +114,11 @@ class _HomePageState extends State<HomePage> {
     _announcementTimer?.cancel();
     _announcementTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
       if (!mounted) return;
+      final currentAnnouncements = _activeAnnouncements;
+      if (currentAnnouncements.isEmpty) return;
+
       setState(() {
-        if (_currentAnnouncementIndex < _announcements.length - 1) {
+        if (_currentAnnouncementIndex < currentAnnouncements.length - 1) {
           _currentAnnouncementIndex++;
         } else {
           _currentAnnouncementIndex = 0;
@@ -430,86 +463,111 @@ class _HomePageState extends State<HomePage> {
 
 
   Widget _buildAnnouncementBar() {
-    return Container(
-      height: 44,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Canvas701Colors.surface,
-        border: Border(
-          bottom: BorderSide(color: Canvas701Colors.primary.withOpacity(0.08), width: 1),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.015),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 1000),
-        layoutBuilder: (Widget? currentChild, List<Widget> previousChildren) {
-          return Stack(
-            alignment: Alignment.center,
-            children: <Widget>[
-              if (currentChild != null) currentChild,
-              ...previousChildren,
-            ],
-          );
-        },
-        transitionBuilder: (Widget child, Animation<double> animation) {
-          final isEntering = child.key == ValueKey<int>(_currentAnnouncementIndex);
-          
-          return AnimatedBuilder(
-            animation: animation,
-            builder: (context, _) {
-              // Mekanik Saat (Analog Flip) Matematiği:
-              // isEntering (Yeni): Animation 0 -> 1. Rotate -90'dan 0'a. Pivot: Üst.
-              // !isEntering (Eski): Animation 1 -> 0. Rotate 0'dan 90'a. Pivot: Alt.
-              
-              final double angle = isEntering 
-                  ? (1.0 - animation.value) * -1.570796 
-                  : (1.0 - animation.value) * 1.570796;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        final campaigns = context.read<ProductViewModel>().campaigns;
+        if (campaigns.isNotEmpty) {
+          final safeIndex = _currentAnnouncementIndex >= campaigns.length
+              ? 0
+              : _currentAnnouncementIndex;
+          final campaign = campaigns[safeIndex];
 
-              return Transform(
-                transform: Matrix4.identity()
-                  ..setEntry(3, 2, 0.005) // 3D Derinlik
-                  ..rotateX(angle),
-                alignment: isEntering ? Alignment.topCenter : Alignment.bottomCenter,
-                child: Opacity(
-                  // Geçişin daha temiz durması için yumuşak fade
-                  opacity: animation.value.clamp(0.0, 1.0),
-                  child: child,
-                ),
-              );
-            },
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CampaignDetailPage(
+                campaignId: campaign.campID,
+                title: campaign.campTitle,
+              ),
+            ),
           );
-        },
-        child: Container(
-          key: ValueKey<int>(_currentAnnouncementIndex),
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.auto_awesome, size: 14, color: Canvas701Colors.primary),
-              const SizedBox(width: 12),
-              Flexible(
-                child: Text(
-                  _announcements[_currentAnnouncementIndex],
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Canvas701Colors.primary,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.5,
+        }
+      },
+      child: Container(
+        height: 44,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Canvas701Colors.surface,
+          border: Border(
+            bottom: BorderSide(
+                color: Canvas701Colors.primary.withOpacity(0.08), width: 1),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.015),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 1000),
+          layoutBuilder: (Widget? currentChild, List<Widget> previousChildren) {
+            return Stack(
+              alignment: Alignment.center,
+              children: <Widget>[
+                ...previousChildren,
+                if (currentChild != null) currentChild,
+              ],
+            );
+          },
+          transitionBuilder: (Widget child, Animation<double> animation) {
+            final isEntering =
+                child.key == ValueKey<int>(_currentAnnouncementIndex);
+
+            return AnimatedBuilder(
+              animation: animation,
+              builder: (context, _) {
+                final double angle = isEntering
+                    ? (1.0 - animation.value) * -1.570796
+                    : (1.0 - animation.value) * 1.570796;
+
+                return Transform(
+                  transform: Matrix4.identity()
+                    ..setEntry(3, 2, 0.005) // 3D Derinlik
+                    ..rotateX(angle),
+                  alignment:
+                      isEntering ? Alignment.topCenter : Alignment.bottomCenter,
+                  child: Opacity(
+                    opacity: animation.value.clamp(0.0, 1.0),
+                    child: child,
+                  ),
+                );
+              },
+            );
+          },
+          child: Container(
+            key: ValueKey<int>(_currentAnnouncementIndex),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Flexible(
+                  child: Consumer<ProductViewModel>(
+                    builder: (context, viewModel, _) {
+                      final announcements = _activeAnnouncements;
+                      final safeIndex =
+                          _currentAnnouncementIndex >= announcements.length
+                              ? 0
+                              : _currentAnnouncementIndex;
+
+                      return Text(
+                        announcements[safeIndex],
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Canvas701Colors.primary,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      );
+                    },
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              const Icon(Icons.auto_awesome, size: 14, color: Canvas701Colors.primary),
-            ],
+              ],
+            ),
           ),
         ),
       ),
