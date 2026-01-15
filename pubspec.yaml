@@ -52,6 +52,7 @@ dependencies:
   flutter_local_notifications: any
   file_picker: ^10.3.8
   image: ^4.7.2
+  app_links: ^6.1.1
 
 dev_dependencies:
   flutter_test:

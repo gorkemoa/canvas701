@@ -22,8 +22,13 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>com.googleusercontent.apps.943279152524-r1144khaidbp09ajr3mre248j9e6nt4n</string>
+				<string>canvas701</string>
 			</array>
 		</dict>
+	</array>
+	<key>NSUserActivityTypes</key>
+	<array>
+		<string>NSUserActivityTypeBrowsingWeb</string>
 	</array>
 	<key>CFBundleName</key>
 	<string>canvas701</string>
@@ -48,7 +53,7 @@
 	<key>FirebaseAppDelegateProxyEnabled</key>
 	<false/>
 	<key>FlutterDeepLinkingEnabled</key>
-	<true/>
+	<false/>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>https</string>

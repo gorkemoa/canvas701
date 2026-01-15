@@ -1,5 +1,6 @@
 import 'package:canvas701/canvas701/services/firebase_messaging_service.dart';
 import 'package:canvas701/canvas701/services/navigation_service.dart';
+import 'package:canvas701/canvas701/services/deep_link_service.dart';
 import 'package:canvas701/canvas701/theme/canvas701_theme.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -33,6 +34,8 @@ Future<void> main() async {
   NavigationService.navigatorKey = navigatorKey;
   // Initialize Firebase Messaging Service
   await FirebaseMessagingService.initialize();
+  // Initialize Deep Link Service
+  DeepLinkService.instance.init(navigatorKey);
 
   // Status bar style
   SystemChrome.setSystemUIOverlayStyle(
@@ -84,6 +87,11 @@ class _Canvas701AppState extends State<Canvas701App> {
   @override
   Widget build(BuildContext context) {
     final appMode = AppModeManager.instance;
+
+    // Navigator hazır olduğunda bekleyen deep link varsa işle
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      DeepLinkService.instance.checkPendingLink();
+    });
 
     return MaterialApp(
       title: 'Canvas701',

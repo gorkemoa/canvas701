@@ -26,6 +26,11 @@ import FirebaseMessaging
     Messaging.messaging().apnsToken = deviceToken
     super.application(application, didRegisterForRemoteNotificationsWithDeviceToken: deviceToken)
   }
+
+  // Universal Link yakalama fonksiyonu
+  override func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
+    return super.application(application, continue: userActivity, restorationHandler: restorationHandler)
+  }
   
   // Hata durumunda super çağrısı
   override func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {

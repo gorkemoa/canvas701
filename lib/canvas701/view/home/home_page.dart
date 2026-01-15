@@ -29,17 +29,28 @@ class _HomePageState extends State<HomePage> {
   final PageController _bannerController = PageController();
   final TextEditingController _searchController = TextEditingController();
   int _currentBannerIndex = 0;
+  int _currentAnnouncementIndex = 0;
   Timer? _bannerTimer;
+  Timer? _announcementTimer;
+
+  final List<String> _announcements = [
+    'KAMPANYA: TÜM ÜRÜNLERDE KARGO BEDAVA!',
+    'YENİ SEZON: ÖZEL TASARIM KANVAS TABLOLAR',
+    'FIRSAT: %20 İNDİRİM BUGÜNE ÖZEL',
+    'KALİTE: %100 PAMUKLU KANVAS KUMAŞI',
+  ];
 
   @override
   void initState() {
     super.initState();
     _startBannerTimer();
+    _startAnnouncementTimer();
   }
 
   @override
   void dispose() {
     _bannerTimer?.cancel();
+    _announcementTimer?.cancel();
     _bannerController.dispose();
     _searchController.dispose();
     super.dispose();
@@ -66,6 +77,20 @@ class _HomePageState extends State<HomePage> {
           curve: Curves.easeInOut,
         );
       }
+    });
+  }
+
+  void _startAnnouncementTimer() {
+    _announcementTimer?.cancel();
+    _announcementTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (!mounted) return;
+      setState(() {
+        if (_currentAnnouncementIndex < _announcements.length - 1) {
+          _currentAnnouncementIndex++;
+        } else {
+          _currentAnnouncementIndex = 0;
+        }
+      });
     });
   }
 
@@ -155,8 +180,8 @@ class _HomePageState extends State<HomePage> {
           // Hero Banner
           SliverToBoxAdapter(child: _buildHeroBanner()),
 
-          // USP Bar
-          SliverToBoxAdapter(child: _buildUSPBar()),
+          // Announcement Bar
+          SliverToBoxAdapter(child: _buildAnnouncementBar()),
 
           // Categories Section
           SliverToBoxAdapter(
@@ -293,135 +318,192 @@ class _HomePageState extends State<HomePage> {
           return const SizedBox.shrink();
         }
 
-        return Column(
-          children: [
-            SizedBox(
-              height: 250,
-              width: double.infinity,
-              child: PageView.builder(
-                controller: _bannerController,
-                onPageChanged: (index) {
-                  setState(() {
-                    _currentBannerIndex = index;
-                  });
-                },
-                itemCount: banners.length,
-                itemBuilder: (context, index) {
-                  final banner = banners[index];
-                  return GestureDetector(
-                    onTap: () => _handleBannerTap(banner),
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: Canvas701Spacing.md),
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          image: NetworkImage(banner.postMainImage ?? ''),
-                          fit: BoxFit.cover,
+        return Padding(
+          padding: const EdgeInsets.only(bottom: Canvas701Spacing.md),
+          child: Stack(
+            alignment: Alignment.bottomCenter,
+            children: [
+              SizedBox(
+                height: 250,
+                width: double.infinity,
+                child: PageView.builder(
+                  controller: _bannerController,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _currentBannerIndex = index;
+                    });
+                  },
+                  itemCount: banners.length,
+                  itemBuilder: (context, index) {
+                    final banner = banners[index];
+                    return GestureDetector(
+                      onTap: () => _handleBannerTap(banner),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: NetworkImage(banner.postMainImage ?? ''),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        child: Stack(
+                          children: [
+                            Positioned(
+                              left: Canvas701Spacing.lg,
+                              bottom: Canvas701Spacing.xl + 4,
+                              right: Canvas701Spacing.lg,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (banner.postTitle != null)
+                                    Text(
+                                      banner.postTitle!,
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w900,
+                                        height: 1.1,
+                                        shadows: [
+                                          Shadow(
+                                            color: Colors.black.withOpacity(0.9),
+                                            offset: const Offset(0, 2),
+                                            blurRadius: 10,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  if (banner.postExcerpt != null) ...[
+                                    const SizedBox(height: Canvas701Spacing.xs),
+                                    Text(
+                                      banner.postExcerpt!,
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        shadows: [
+                                          Shadow(
+                                            color: Colors.black.withOpacity(0.9),
+                                            offset: const Offset(0, 2),
+                                            blurRadius: 10,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      child: Stack(
-                        children: [
-                          Positioned(
-                            left: Canvas701Spacing.lg,
-                            bottom: Canvas701Spacing.lg,
-                            right: Canvas701Spacing.lg,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (banner.postTitle != null)
-                                  Text(
-                                    banner.postTitle!,
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w900,
-                                      height: 1.1,
-                                      shadows: [
-                                        Shadow(
-                                          color: Colors.black.withOpacity(0.9),
-                                          offset: const Offset(0, 2),
-                                          blurRadius: 10,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                if (banner.postExcerpt != null) ...[
-                                  const SizedBox(height: Canvas701Spacing.xs),
-                                  Text(
-                                    banner.postExcerpt!,
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      shadows: [
-                                        Shadow(
-                                          color: Colors.black.withOpacity(0.9),
-                                          offset: const Offset(0, 2),
-                                          blurRadius: 10,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        ],
+                    );
+                  },
+                ),
+              ),
+              // Page Indicator
+              Positioned(
+                bottom: Canvas701Spacing.md,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(banners.length, (index) {
+                    final isSelected = _currentBannerIndex == index;
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      width: isSelected ? 24 : 8,
+                      height: 8,
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(4),
+                        color: isSelected
+                            ? Colors.white
+                            : Colors.white.withOpacity(0.4),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  }),
+                ),
               ),
-            ),
-            // Page Indicator
-            Padding(
-              padding: const EdgeInsets.only(bottom: Canvas701Spacing.md),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(banners.length, (index) {
-                  final isSelected = _currentBannerIndex == index;
-                  return AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    width: isSelected ? 24 : 8,
-                    height: 8,
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(4),
-                      color: isSelected
-                          ? Canvas701Colors.primary
-                          : Canvas701Colors.primary.withOpacity(0.2),
-                    ),
-                  );
-                }),
-              ),
-            ),
-          ],
+            ],
+          ),
         );
       },
     );
   }
 
 
-  Widget _buildUSPBar() {
+  Widget _buildAnnouncementBar() {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: Canvas701Spacing.md),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _buildUSPItem(Icons.local_shipping_outlined, 'Ücretsiz Kargo'),
-          _buildUSPItem(Icons.security, '3D Secure'),
-          _buildUSPItem(Icons.replay, '14 Gün İade'),
-        ],
+      height: 34,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Canvas701Colors.surfaceVariant.withOpacity(0.5),
+        border: Border(
+          top: BorderSide(color: Canvas701Colors.border.withOpacity(0.4), width: 0.5),
+          bottom: BorderSide(color: Canvas701Colors.border.withOpacity(0.4), width: 0.5),
+        ),
       ),
-    );
-  }
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 800),
+        layoutBuilder: (Widget? currentChild, List<Widget> previousChildren) {
+          return Stack(
+            alignment: Alignment.center,
+            children: <Widget>[
+              ...previousChildren,
+              if (currentChild != null) currentChild,
+            ],
+          );
+        },
+        transitionBuilder: (Widget child, Animation<double> animation) {
+          final isEntering = child.key == ValueKey<int>(_currentAnnouncementIndex);
+          
+          return AnimatedBuilder(
+            animation: animation,
+            builder: (context, _) {
+              // Mekanik saat (flip clock) matematiği:
+              // Eski olan öne doğru "yıkılır" (90 derece öne), yeni olan arkadan "yükselir"
+              final double rotateX = isEntering 
+                  ? (1.0 - animation.value) * -1.570796 // Yeni: -90 dereceden 0'a
+                  : (1.0 - animation.value) * 1.570796;  // Eski: 0 dereceden 90'a (öne devrilme)
 
-  Widget _buildUSPItem(IconData icon, String text) {
-    return Column(
-      children: [
-        Icon(icon, size: 24, color: Canvas701Colors.textSecondary),
-        const SizedBox(height: Canvas701Spacing.xs),
-        Text(text, style: Canvas701Typography.labelSmall),
-      ],
+              return Transform(
+                transform: Matrix4.identity()
+                  ..setEntry(3, 2, 0.006) // Daha derin 3D perspektifi
+                  ..rotateX(rotateX),
+                alignment: isEntering ? Alignment.topCenter : Alignment.bottomCenter,
+                child: FadeTransition(
+                  opacity: animation,
+                  child: child,
+                ),
+              );
+            },
+          );
+        },
+        child: Container(
+          key: ValueKey<int>(_currentAnnouncementIndex),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.star, size: 12, color: Canvas701Colors.primary),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  _announcements[_currentAnnouncementIndex],
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Canvas701Colors.textPrimary,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Icon(Icons.star, size: 12, color: Canvas701Colors.primary),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
