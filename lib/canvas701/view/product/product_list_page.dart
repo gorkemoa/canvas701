@@ -183,12 +183,18 @@ class _ProductListPageState extends State<ProductListPage> {
           if (_hasNextPage) _currentPage++;
         });
       } else {
-        setState(() => _errorMessage = 'Ürünler yüklenemedi');
+        if (mounted) {
+          setState(() => _errorMessage = 'Ürünler yüklenemedi');
+        }
       }
     } catch (e) {
-      setState(() => _errorMessage = e.toString());
+      if (mounted) {
+        setState(() => _errorMessage = e.toString());
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 

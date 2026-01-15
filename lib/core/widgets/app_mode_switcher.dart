@@ -131,8 +131,14 @@ class AppModeSwitcher extends StatelessWidget {
                             isActive: currentMode == AppMode.canvas,
                             assetPath:
                                 'https://office701.b-cdn.net/canvas701/logo/canvas701-new-logo-black.png',
-                            onTap: () =>
-                                AppModeManager.instance.setMode(AppMode.canvas),
+                            onTap: () {
+                              final manager = AppModeManager.instance;
+                              if (manager.currentMode != AppMode.canvas) {
+                                manager.setMode(AppMode.canvas);
+                              }
+                              // Her durumda stack'i temizle ve ana sayfaya dön
+                              Navigator.of(context).popUntil((route) => route.isFirst);
+                            },
                             width: canvasWidth,
                             height: switcherHeight,
                           ),
@@ -141,9 +147,14 @@ class AppModeSwitcher extends StatelessWidget {
                             isActive: currentMode == AppMode.creators,
                             assetPath:
                                 'https://office701.b-cdn.net/canvas701/logo/canvas701-creators-ogo-black.png',
-                            onTap: () => AppModeManager.instance.setMode(
-                              AppMode.creators,
-                            ),
+                            onTap: () {
+                              final manager = AppModeManager.instance;
+                              if (manager.currentMode != AppMode.creators) {
+                                manager.setMode(AppMode.creators);
+                              }
+                              // Her durumda stack'i temizle ve ana sayfaya dön
+                              Navigator.of(context).popUntil((route) => route.isFirst);
+                            },
                             width: creatorsWidth,
                             height: switcherHeight,
                           ),

@@ -319,7 +319,7 @@ class _HomePageState extends State<HomePage> {
         }
 
         return Padding(
-          padding: const EdgeInsets.only(bottom: Canvas701Spacing.md),
+          padding: const EdgeInsets.only(bottom: 0),
           child: Stack(
             alignment: Alignment.bottomCenter,
             children: [
@@ -431,23 +431,29 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildAnnouncementBar() {
     return Container(
-      height: 34,
+      height: 44,
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Canvas701Colors.surfaceVariant.withOpacity(0.5),
+        color: Canvas701Colors.surface,
         border: Border(
-          top: BorderSide(color: Canvas701Colors.border.withOpacity(0.4), width: 0.5),
-          bottom: BorderSide(color: Canvas701Colors.border.withOpacity(0.4), width: 0.5),
+          bottom: BorderSide(color: Canvas701Colors.primary.withOpacity(0.08), width: 1),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.015),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 800),
+        duration: const Duration(milliseconds: 1000),
         layoutBuilder: (Widget? currentChild, List<Widget> previousChildren) {
           return Stack(
             alignment: Alignment.center,
             children: <Widget>[
-              ...previousChildren,
               if (currentChild != null) currentChild,
+              ...previousChildren,
             ],
           );
         },
@@ -457,19 +463,22 @@ class _HomePageState extends State<HomePage> {
           return AnimatedBuilder(
             animation: animation,
             builder: (context, _) {
-              // Mekanik saat (flip clock) matematiği:
-              // Eski olan öne doğru "yıkılır" (90 derece öne), yeni olan arkadan "yükselir"
-              final double rotateX = isEntering 
-                  ? (1.0 - animation.value) * -1.570796 // Yeni: -90 dereceden 0'a
-                  : (1.0 - animation.value) * 1.570796;  // Eski: 0 dereceden 90'a (öne devrilme)
+              // Mekanik Saat (Analog Flip) Matematiği:
+              // isEntering (Yeni): Animation 0 -> 1. Rotate -90'dan 0'a. Pivot: Üst.
+              // !isEntering (Eski): Animation 1 -> 0. Rotate 0'dan 90'a. Pivot: Alt.
+              
+              final double angle = isEntering 
+                  ? (1.0 - animation.value) * -1.570796 
+                  : (1.0 - animation.value) * 1.570796;
 
               return Transform(
                 transform: Matrix4.identity()
-                  ..setEntry(3, 2, 0.006) // Daha derin 3D perspektifi
-                  ..rotateX(rotateX),
+                  ..setEntry(3, 2, 0.005) // 3D Derinlik
+                  ..rotateX(angle),
                 alignment: isEntering ? Alignment.topCenter : Alignment.bottomCenter,
-                child: FadeTransition(
-                  opacity: animation,
+                child: Opacity(
+                  // Geçişin daha temiz durması için yumuşak fade
+                  opacity: animation.value.clamp(0.0, 1.0),
                   child: child,
                 ),
               );
@@ -478,12 +487,12 @@ class _HomePageState extends State<HomePage> {
         },
         child: Container(
           key: ValueKey<int>(_currentAnnouncementIndex),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.star, size: 12, color: Canvas701Colors.primary),
-              const SizedBox(width: 8),
+              const Icon(Icons.auto_awesome, size: 14, color: Canvas701Colors.primary),
+              const SizedBox(width: 12),
               Flexible(
                 child: Text(
                   _announcements[_currentAnnouncementIndex],
@@ -491,15 +500,15 @@ class _HomePageState extends State<HomePage> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: Canvas701Colors.textPrimary,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.8,
+                    color: Canvas701Colors.primary,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.5,
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
-              const Icon(Icons.star, size: 12, color: Canvas701Colors.primary),
+              const SizedBox(width: 12),
+              const Icon(Icons.auto_awesome, size: 14, color: Canvas701Colors.primary),
             ],
           ),
         ),
@@ -511,9 +520,9 @@ class _HomePageState extends State<HomePage> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         Canvas701Spacing.md,
-        Canvas701Spacing.lg,
         Canvas701Spacing.md,
         Canvas701Spacing.md,
+        Canvas701Spacing.sm,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
